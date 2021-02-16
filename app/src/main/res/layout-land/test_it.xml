@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ConstraintLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+
+    <TextView
+        android:id="@+id/waitingText"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:shadowColor="@android:color/background_dark"
+        android:shadowDx="2.0"
+        android:shadowDy="2.0"
+        android:shadowRadius="1.8"
+        android:text="Please wait while we load your prize list"
+        android:textColor="@android:color/primary_text_dark"
+        android:textSize="20sp" />
+
+
+
+        <TextView
+            android:id="@+id/waitingText2"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+
+            android:layout_alignParentBottom="true"
+
+            android:shadowColor="@android:color/background_dark"
+            android:shadowDx="2.0"
+            android:shadowDy="2.0"
+            android:shadowRadius="1.8"
+            android:text="Please wait while we load your prize list 2"
+            android:textColor="@android:color/primary_text_dark"
+            android:textSize="20sp" />
+
+
+    <ProgressBar
+        android:layout_below="@id/waitingText2"
+        android:layout_width="wrap_content"
+
+        android:layout_height="40dp" android:indeterminate="true"/>
+
+
+
+    </ConstraintLayout>

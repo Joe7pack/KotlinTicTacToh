@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/constraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal">
+
+<TextView
+    android:id="@+id/textView"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+
+    android:shadowColor="@android:color/background_dark"
+    android:shadowDx="2.0"
+    android:shadowDy="2.0"
+    android:shadowRadius="1.8"
+    android:text="@string/splash_screen"
+    android:textColor="@android:color/primary_text_dark"
+    android:textSize="25sp"
+
+    app:layout_constraintEnd_toEndOf="@+id/constraintLayout"
+    app:layout_constraintStart_toStartOf="@+id/constraintLayout"
+    app:layout_constraintTop_toTopOf="@+id/constraintLayout"
+    android:layout_marginBottom="70dp"
+    />
+
+
+    <TextView
+        android:id="@+id/waiterText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="100dp"
+        android:layout_marginLeft="100dp"
+        android:layout_marginTop="100dp"
+        android:shadowColor="@android:color/background_dark"
+        android:shadowDx="2.0"
+        android:shadowDy="2.0"
+        android:shadowRadius="1.8"
+        android:text="@string/prize_list_wait"
+        android:textColor="@android:color/primary_text_dark"
+        android:textSize="25sp"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <ProgressBar
+        android:layout_height="40dp"
+        android:layout_width="fill_parent"
+
+
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="150dp"
+        android:layout_marginRight="150dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:minWidth="200dp"
+        android:minHeight="10dp"
+        android:progress="0"
+        app:layout_constraintStart_toEndOf="@+id/waiterText"
+        app:layout_constraintTop_toBottomOf="@+id/waiterText"
+
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

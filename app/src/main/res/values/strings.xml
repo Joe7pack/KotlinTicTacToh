@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    
+	<!-- these elements need to be changed before going to production -->
+
+	<!-- increment version number to match values found in app/build.gradle -->
+	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Version 1.105.16</string>
+    <string name="about_2" translatable="false">Copyright © 1986&#8211;2021 &#8211; Tom Volpert and
+		Joe Guzzardo. All rights reserved.</string>
+
+	<!-- string name="domainName">http://www.guzzardo.com:6260</string -->
+	<!-- this is for Grails -->
+	<string name="domainName">http://player.alterrigo.com</string>
+	<!-- string name="domainName">http://player.willyshmo.com</string -->
+	<!-- string name="domainName" translatable="false">http://willyshmo.com:8080</string --> 
+
+	<string name="RabbitMQQueuePrefixx" translatable="false">test</string>
+	<string name="RabbitMQHostNamex" translatable="false">3.16.84.32</string>
+	<string name="RabbitMQPortNumberx" translatable="false">5672</string>
+	<!--string name="RabbitMQHostName" translatable="false">rabbitMq.willyshmo.com</string -->
+	<!--string name="RabbitMQHostName" translatable="false">24.148.41.245</string -->
+		
+	<string name="debug" translatable="false">true</string>
+	<string name="prizesAvailable" translatable="false">true</string>
+
+	<!-- above elements need to be changed before going to production -->
+    
+	<string name="start_comp" translatable="false">Start &#812;&#812; Willy goes first</string>
+	<string name="start_player" translatable="false">Start &#812;&#812; You go first</string>
+	<string name="ok" translatable="false">@android:string/ok</string>
+	<string name="about_ok" translatable="false">@android:string/ok</string>
+	<string name="rules" translatable="false">Rules</string>
+	<string name="about" translatable="false">About</string>
+	<string name="one_player" translatable="false">1 Player</string>
+	<string name="two_player" translatable="false">2 Players</string>
+	<string name="player_1" translatable="false">Player 1</string>
+	<string name="player_2" translatable="false">Player 2</string>
+	<string name="settings" translatable="false">Settings</string>
+	<string name="explain1" translatable="false">This game is played just like Tic Tac Toe with the
+		following additional rules:</string>
+	<string name="explain2" translatable="false">1. You may place a card to the left, right, above
+		or beneath a card already on the board. No diagonal moves are allowed.
+		(The moves available will be highlighted in green).</string>
+	<string name="explain3" translatable="false">2. The XO card is a wild card that can make either
+		player a winner. If the XO card is played on a winning move then the
+		XO card is assigned the value of the winner\'s card choice.</string>
+	<string name="explain4" translatable="false">3. Scoring:</string>
+	<string name="explain5" translatable="false">10 points for a win when the player wins with their
+		own move.</string>
+	<string name="explain6" translatable="false">30 points (to the opponent) when the player causes
+		the opponent to win with that move.</string>
+	<string name="explain7" translatable="false">Have fun!</string>
+	<string name="app_name" translatable="false">Willy Shmo\'s Kotlin Tic Tac Toe</string>
+	<string name="splash_screen" translatable="false">Can you outwit your opponent?</string>
+	<string name="splash_name" translatable="false">Willy Shmo\'s Tic Tac Toe Game</string>
+	<string name="rules_name" translatable="false">Rules</string>
+	<string name="about_name" translatable="false">About</string>
+	<string name="one_player_name" translatable="false">One Player</string>
+	<string name="two_player_name" translatable="false">Two Players</string>
+	<string name="select_player" translatable="false">Select Player</string>
+	<string name="prizes" translatable="false">Win Prizes!</string>
+	<string name="show_prizes" translatable="false">Prizes you can win!</string>
+	<!-- string name="about_2">Copyright © 1986&#8211;2013 &#8211; Tom Volpert and
+		Joe Guzzardo. U.S. Patent number 4,813,681. All rights reserved.</string -->
+		
+	<string name="about_3" translatable="false">Check your score and meet Willy and the rest of the Hobo
+		gang at WillyShmo.com</string>
+	<string name="about_4" translatable="false"></string>
+	<string name="google_play_service_error" translatable="false">Google Play service error</string>
+	<string name="alert_dialog_ok" translatable="false">OK</string>
+	<string name="alert_dialog_cancel" translatable="false">Cancel</string>
+	<string name="alert_dialog_username" translatable="false">Name: </string>
+	<string name="alert_dialog_text_entry_player1_name" translatable="false">Player 1 Name: </string>
+	<string name="alert_dialog_text_entry_player2_name" translatable="false">Player 2 Name: </string>
+	<string name="move_mode" translatable="false">Move mode</string>
+	<string name="sound_mode" translatable="false">Sound</string>
+	<string name="reset_scores" translatable="false">Reset scores</string>
+	<string name="alert_dialog_reset_scores" translatable="false">Reset scores?</string>
+	<!-- string name="client_name" translatable="false">Select IP address</string -->
+	<!-- string name="client_dialog_ip" translatable="false">IP address entry screen</string -->
+	<!-- string name="connect_server_ok" translatable="false">Connect it!</string -->
+	<string name="play_over_network" translatable="false">Play Over Network?</string>
+	<string name="alert_dialog_starting_token_value" translatable="false">You must choose to start as O or X</string>
+	<string name="alert_dialog_seeker_entry_token_settings" translatable="false">Game token size</string>
+	<string name="alert_dialog_seeker_entry_token_size" translatable="false">Game token size</string>
+	
+	<string name="alert_dialog_seeker_entry_token_color_1" translatable="false">Player 1 game token color</string>
+	<string name="alert_dialog_seeker_entry_token_color_2" translatable="false">Player 2 game token color</string>
+			
+	<string name="token_size_smallest" translatable="false">Small</string>
+	<string name="token_size_medium" translatable="false">Medium</string>
+	<string name="token_size_largest" translatable="false">Large</string>
+	<string name="tie" translatable="false">This is a tie! Play Again?</string>
+	<string name="wild_card_explanation" translatable="false">You must choose to Start as either X or O</string>
+	<string name="start_o" translatable="false">Start as O</string>
+	<string name="start_x" translatable="false">Start as X</string>
+
+
+	<string name="would_like_to_play" translatable="false">would like to play</string>
+	<string name="network_not_available" translatable="false">Prizes and network play not available</string>
+	<string name="prizes_you_can_win" translatable="false">"Prizes you can win!"</string>
+	<string name="distance_in_miles" translatable="false">"Distance (miles)"</string>
+	<string name="not_applicable" translatable="false">"N/A"</string>
+	<string name="multiple_locations" translatable="false">"Multiple locations"</string>
+
+	<!-- License checking status messages -->
+	<string name="check_license">Check license</string>
+	<string name="checking_license">Checking license...</string>
+	<string name="dont_allow">Don\'t allow the user access</string>
+	<string name="allow">Allow the user access</string>
+	<string name="application_error">Application error: %1$s</string>
+
+	<!-- Unlicensed dialog messages -->
+	<string name="unlicensed_dialog_title">Application not licensed</string>
+	<string name="unlicensed_dialog_body">This application is not licensed. Please purchase it from Android Market.</string>
+	<string name="unlicensed_dialog_retry_body">Unable to validate license. Have you logged onto your Google account?.</string>
+	<string name="buy_button">Buy app</string>
+	<string name="retry_button">Retry</string>
+	<string name="quit_button">Exit</string>
+
+	<string name="location_updated">Location updated</string>
+	<string name="launch_activity">Launch Location Service</string>
+	<string name="remove_location_updates">Remove location updates</string>
+    <string name="latitude_label">Latitude</string>
+	<string name="longitude_label">Longitude</string>
+	<string name="last_update_time_label">Last updated at</string>
+	<string name="permission_rationale">To win prizes we would like to know your location</string>
+	<string name="permission_denied_explanation">Location permission denied.</string>
+	<string name="start_updates">location updates started</string>
+	<string name="stop_updates">location updates stopped</string>
+	<string name="location_settings_inadequate_warning">You were already warned once!</string>
+    <string name="appbar_scrolling_view_behavior">well behaved</string>
+	<string name="prize_list_wait">Please wait while we load your prize list</string>
+
+
+</resources>
+

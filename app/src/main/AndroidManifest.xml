@@ -1,0 +1,137 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.guzzardo.android.willyshmo.kotlintictacdoh">
+
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
+<uses-permission android:name="com.android.vending.CHECK_LICENSE" />
+
+<!-- android:theme="@style/CustomTheme" -->
+
+<!-- application
+    android:name="WillyShmoApplication"    -->
+
+
+<application
+    android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication"
+
+    android:allowBackup="true"
+    android:icon="@drawable/icon"
+    android:label="@string/app_name"
+    android:theme="@style/Theme.AppCompat.Light"
+    android:screenOrientation="landscape" >
+
+    <!-- android:debuggable="true" -->
+    <!-- don't forget to remove this before releasing to public! -->
+    <!-- android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.TwitterApplication" -->
+
+    <!-- activity
+        android:name="SplashScreen" -->
+
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.SplashScreen"
+        android:label="@string/splash_name"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyTheme" >
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity"
+        android:label="@string/app_name"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyTheme" >
+        <intent-filter>
+            <action android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+    </activity>
+
+
+
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.FusedLocationActivity"
+        android:parentActivityName=".SplashScreen"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyTheme" >
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".SplashScreen" />
+    </activity>
+
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.RulesActivity"
+        android:label="@string/rules_name"
+        android:screenOrientation="landscape">
+    </activity>
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.AboutActivity"
+        android:label="@string/about_name"
+        android:screenOrientation="landscape">
+    </activity>
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.OnePlayerActivity"
+        android:label="@string/one_player_name"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyTheme" >
+    </activity>
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.TwoPlayerActivity"
+        android:label="@string/two_player_name"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyTheme" >
+    </activity>
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity"
+        android:noHistory="true"
+        android:screenOrientation="landscape" />
+
+    <!-- Dialog samples -->
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.SettingsDialogs"
+        android:label="@string/settings"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyTheme" >
+    </activity>
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.PlayOverNetwork"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyListTheme" >
+    </activity>
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.PlayersOnlineActivity"
+        android:label="@string/select_player"
+        android:noHistory="true"
+        android:screenOrientation="landscape" />
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.PrizesAvailableActivity"
+        android:label="@string/show_prizes"
+        android:noHistory="true"
+        android:screenOrientation="landscape"
+        android:theme="@style/WillyListTheme" />
+
+    <activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.GetConfigurationActivity" />
+
+    <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="ca-app-pub-0452251857239552~2506755884"
+        />
+
+    <activity
+        android:name="com.google.android.gms.ads.AdActivity"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
+    <!-- ATTENTION: This was auto-generated to add Google Play services to your project for
+         App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+
+    <!--uses-library android:name="com.google.android.vending.licensing.CHECK_LICENSE"
+        android:required="true" / -->
+
+</application>
+
+</manifest>
