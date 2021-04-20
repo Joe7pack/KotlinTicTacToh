@@ -299,8 +299,8 @@ public class FusedLocationActivity extends Activity implements ToastMessage {
                 //myLatitude = location.getLatitude();
                 //myLongitude = location.getLongitude();
                 writeToLog("FusedLocationActivity", "My latitude: " + myLatitude + " my Longitude: " + myLongitude);
-                WillyShmoApplication.setLatitude(myLatitude);
-                WillyShmoApplication.setLongitude(myLongitude);
+                WillyShmoApplication.Companion.setLatitude(myLatitude);
+                WillyShmoApplication.Companion.setLongitude(myLongitude);
 
                 //SplashScreen callerActivity = (SplashScreen)WillyShmoApplication.getCallerActivity();
 
@@ -440,7 +440,7 @@ public class FusedLocationActivity extends Activity implements ToastMessage {
     private static class ErrorHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            Toast.makeText(WillyShmoApplication.getWillyShmoApplicationContext(), (String)msg.obj, Toast.LENGTH_LONG).show();
+            Toast.makeText(WillyShmoApplication.Companion.getWillyShmoApplicationContext(), (String)msg.obj, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -546,7 +546,7 @@ public class FusedLocationActivity extends Activity implements ToastMessage {
     }
 
     private static void writeToLog(String filter, String msg) {
-        if ("true".equalsIgnoreCase(WillyShmoApplication.getWillyShmoApplicationContext().getResources().getString(R.string.debug))) {
+        if ("true".equalsIgnoreCase(WillyShmoApplication.Companion.getWillyShmoApplicationContext().getResources().getString(R.string.debug))) {
             Log.d(filter, msg);
         }
     }

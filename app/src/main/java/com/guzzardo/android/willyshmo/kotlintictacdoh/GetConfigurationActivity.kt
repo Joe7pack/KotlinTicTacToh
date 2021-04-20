@@ -10,8 +10,7 @@ class GetConfigurationActivity : Activity(), ToastMessage {
     /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val getConfigurationValuesFromDB =
-            GetConfigurationValuesFromDB()
+        val getConfigurationValuesFromDB = GetConfigurationValuesFromDB()
         getConfigurationValuesFromDB.execute(this, applicationContext, resources)
     }
 

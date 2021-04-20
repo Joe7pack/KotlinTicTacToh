@@ -16,7 +16,7 @@
 
 <application
     android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication"
-
+    android:usesCleartextTraffic="true"
     android:allowBackup="true"
     android:icon="@drawable/icon"
     android:label="@string/app_name"

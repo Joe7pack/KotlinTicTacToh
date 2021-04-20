@@ -23,7 +23,7 @@ class AcceptGameDialog : DialogFragment(), ToastMessage {
         mPlayerId = myBundle.getInt("player1Id")
     }
 
-    fun setContext(applicationContext: Context?) {
+    fun setContext(applicationContext: Context) {
         mApplicationContext = applicationContext
     }
 
@@ -45,58 +45,29 @@ class AcceptGameDialog : DialogFragment(), ToastMessage {
     }
 
     private fun rejectGame() { //this is what the server side will see
-        val hostName =
-            WillyShmoApplication.getConfigMap("RabbitMQIpAddress") as String
-        val queuePrefix =
-            WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") as String
-        //String hostName = mResources.getString(R.string.RabbitMQHostName);
-//		String qName = mResources.getString(R.string.RabbitMQQueuePrefix) + "-" + "server"  + "-" + mOpposingPlayerId;
-        //String qName = mResources.getString(R.string.RabbitMQQueuePrefix) + "-" + "client"  + "-" + mOpposingPlayerId;
-        val qName =
-            "$queuePrefix-client-$mOpposingPlayerId"
-        val messageToOpponent =
-            "noPlay,$mPlayerName,$mPlayerId"
-        SendMessageToRabbitMQTask().execute(
-            hostName,
-            qName,
-            null,
-            messageToOpponent,
-            this,
-            mResources
-        )
+        val hostName = WillyShmoApplication.getConfigMap("RabbitMQIpAddress") as String
+        val queuePrefix = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") as String
+        val qName = "$queuePrefix-client-$mOpposingPlayerId"
+        val messageToOpponent = "noPlay,$mPlayerName,$mPlayerId"
+        SendMessageToRabbitMQTask().execute(hostName, qName, null, messageToOpponent, this, mResources)
     }
 
     private fun acceptGame() { //this is what the server side will see
-        val settings =
-            mApplicationContext!!.getSharedPreferences(
-                UserPreferences.PREFS_NAME,
-                0
-            )
+        writeToLog("AcceptGameDialog", "at start of acceptGame method")
+        val settings = mApplicationContext!!.getSharedPreferences(UserPreferences.PREFS_NAME,0)
         val editor = settings.edit()
         editor.putString("ga_opponent_screenName", mOpposingPlayerName)
         editor.commit()
         val i = Intent(mApplicationContext, GameActivity::class.java)
         i.putExtra(GameActivity.START_SERVER, "true")
-        //i.putExtra(GameActivity.START_CLIENT, "true"); 
         i.putExtra(GameActivity.PLAYER1_ID, mPlayerId)
         i.putExtra(GameActivity.PLAYER1_NAME, mPlayerName)
-        i.putExtra(
-            GameActivity.START_CLIENT_OPPONENT_ID,
-            mOpposingPlayerId
-        )
+        i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, mOpposingPlayerId)
         i.putExtra(GameActivity.PLAYER2_NAME, mOpposingPlayerName)
         i.putExtra(GameActivity.HAVE_OPPONENT, "true")
         writeToLog("AcceptGameDialog", "starting server only")
         startActivity(i)
     }
-
-    /*
-    override fun sendToastMessage(message: String) {
-        val msg = errorHandler!!.obtainMessage()
-        msg.obj = message
-        errorHandler!!.sendMessage(msg)
-    }
-    */
 
     override fun sendToastMessage(message: String?) {
         TODO("Not yet implemented")
@@ -107,11 +78,7 @@ class AcceptGameDialog : DialogFragment(), ToastMessage {
 
     inner class ErrorHandler : Handler() {
         override fun handleMessage(msg: Message) {
-            Toast.makeText(
-                mApplicationContext,
-                msg.obj as String,
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(mApplicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -122,15 +89,10 @@ class AcceptGameDialog : DialogFragment(), ToastMessage {
         private var mPlayerName: String? = null
         private var mPlayerId: Int? = null
         private var mResources: Resources? = null
-        var errorHandler: ErrorHandler? =
-            null
+        var errorHandler: ErrorHandler? = null
 
         private fun writeToLog(filter: String, msg: String) {
-            if ("true".equals(
-                    mResources!!.getString(R.string.debug),
-                    ignoreCase = true
-                )
-            ) {
+            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
             }
         }

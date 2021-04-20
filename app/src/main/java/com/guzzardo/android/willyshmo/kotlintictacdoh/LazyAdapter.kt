@@ -16,16 +16,19 @@ import java.math.BigDecimal
 
 class LazyAdapter(
     private val activity: Activity,
-    private val imageDescription: Array<String>,
-    private val imageBitmap: Array<Bitmap>,
-    private val imageWidth: Array<String>,
-    private val imageHeight: Array<String>,
-    private val prizeDistance: Array<String>,
-    private val prizeLocation: Array<String>,
+    private val imageDescription: Array<String?>,
+    private val imageBitmap: Array<Bitmap?>,
+    private val imageWidth: Array<String?>,
+    private val imageHeight: Array<String?>,
+    private val prizeDistance: Array<String?>,
+    private val prizeLocation: Array<String?>,
     private val resources: Resources
 ) : BaseAdapter(), ToastMessage {
     override fun getCount(): Int {
-        return imageDescription.size
+        if (imageDescription != null) {
+            return imageDescription.size
+        }
+        return 0
     }
 
     override fun getItem(position: Int): Any {
@@ -51,13 +54,18 @@ class LazyAdapter(
             //			System.out.println("convert View: " + e.getMessage());
         }
         val text = vi?.findViewById<View>(R.id.prize_description) as TextView
-        text.text = imageDescription[position]
+        text.text = imageDescription?.get(position) ?: ""
+
+
+
+
+
         text.setBackgroundColor(Color.LTGRAY)
         val image =
             vi.findViewById<View>(R.id.prize_image) as ImageView
-        val width = Integer.valueOf(imageWidth[position])
-        val height = Integer.valueOf(imageHeight[position])
-        image.layoutParams = LinearLayout.LayoutParams(width, height)
+        val width = imageWidth[position]?.let { Integer.valueOf(it) }
+        val height = imageHeight[position]?.let { Integer.valueOf(it) }
+        image.layoutParams = width?.let { height?.let { it1 -> LinearLayout.LayoutParams(it, it1) } }
         image.setImageBitmap(imageBitmap[position])
         val textDistance = vi.findViewById<View>(R.id.prize_distance) as TextView
         if (prizeLocation[position] == "1") {

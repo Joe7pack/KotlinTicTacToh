@@ -29,11 +29,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
-//import android.support.v4.app.FragmentManager;
-//import android.support.v4.app.FragmentTransaction;
-
-//import PlayersOnlineActivity.PlayersOnlineFragment.ListThread;
-
 public class PlayersOnlineActivity extends Activity implements ToastMessage {
 	
     private String mUsersOnline;
@@ -47,12 +42,8 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
     private static PlayersOnlineActivity mPlayersOnlineActivity;
     private static int mSelectedPosition = -1;
     private static RabbitMQMessageConsumer mMessageConsumer;
-    //private static boolean mWaitingForOpponent = true;
     private static RabbitMQPlayerResponseHandler mRabbitMQPlayerResponseHandler;
     private String mRabbitMQPlayerResponse;
-    //private static String mOpponentName;
-    //private static String mOpponentId;
-    //private static ListThread mWaitForOpponent;
 
     //TODO - consider saving mUserNames and mUserIds in savedInstanceState and changing AndroidManifest.PlayersOnlineActivity 
     // android:noHistory to false so that we can restore prior list when user presses back button in GameActivity
@@ -92,7 +83,6 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
     	public void setRabbitMQResponse(String rabbitMQResponse) {
   	  		mRabbitMQPlayerResponse = rabbitMQResponse;
   	  	}
-		
   	  	public String getRabbitMQResponse() {
   	  		return mRabbitMQPlayerResponse;
   	  	}
@@ -120,14 +110,7 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
   			}
   		});
   	}
-    
-//    @Override
-//    public void onBackPressed()
-//    {
-//        super.onBackPressed();
-//        PlayersOnlineFragment.onBackPressed();
-//    }    
-    
+
     @Override
     public void onPause() {
     	super.onPause();
@@ -146,7 +129,6 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
     public static class PlayersOnlineFragment extends ListFragment {
         private boolean mDualPane;
         private int mCurCheckPosition = 0;
-//        private ListThread mWaitForOpponent;
 
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
@@ -172,12 +154,6 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
                 // Make sure our UI is in the correct state.
                 showDetails(mCurCheckPosition);
             }
-
-//            mSelectedPosition = -1;
-//            mRabbitMQPlayerResponseHandler.getRabbitMQResponse(); // get rid of any old game requests            
-//            mRabbitMQPlayerResponseHandler.setRabbitMQResponse("null"); // get rid of any old game requests 
-//           	mWaitForOpponent = new ListThread();
-//           	mWaitForOpponent.start();
        }
         
         private void showAcceptDialog(String opponentName, String opponentId) {
@@ -207,7 +183,6 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
             myBundle.putString("playerName", mPlayer1Name);
             myBundle.putInt("player1Id", mPlayer1Id);
             RejectGameDialog rejectGameDialog = new RejectGameDialog();
-            //RejectGameDialog rejectGameDialog = new RejectGameDialog(opponentName, opponentId, mPlayer1Name, mPlayer1Id, mApplicationContext, mResources);
             rejectGameDialog.setArguments(myBundle);
             rejectGameDialog.setContext(mApplicationContext);
             rejectGameDialog.setResources(mResources);
@@ -235,41 +210,6 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
          	new DisposeRabbitMQTask().execute(mMessageConsumer, mResources, mPlayersOnlineActivity);      
         }
 
-        /*
-        public class ListThread extends Thread { 
-        	@Override
-        	public void run() {
-        		try {
-                    mWaitingForOpponent = true;
-                    
-        			while (mWaitingForOpponent) {
-        				sleep(1000);
-        				if (null != mRabbitMQPlayerResponseHandler.getRabbitMQResponse()) { 
-        					writeToLog("PlayersOnlineActivity", "Retrieving command: " + mRabbitMQPlayerResponseHandler.getRabbitMQResponse()); 
-        					String [] responseValues = mRabbitMQPlayerResponseHandler.getRabbitMQResponse().split(",");
-    						mRabbitMQPlayerResponseHandler.setRabbitMQResponse(null);
-        					if (responseValues.length > 2) {
-        						mOpponentName = responseValues[1];
-        						mOpponentId = responseValues[2];
-        						if ("noPlay".equals(responseValues[0])) {
-        							showRejectDialog(mOpponentName, mOpponentId); //never called
-        						}
-        						if ("letsPlay".equals(responseValues[0])) {
-        							showAcceptDialog(mOpponentName, mOpponentId);
-        						}
-        					}
-        					//display pop up saying opposing player would like to play
-        					//if this players accepts request from opponent then 
-        					// perform logic similar to setUpClientAndServer()
-        				}
-        			}
-        		} catch (Exception e) {
-  					mPlayersOnlineActivity.sendToastMessage(e.getMessage());
-        		}
-        	}
-        }
-        */
-        
         @Override
         public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
@@ -295,7 +235,6 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
 	        SharedPreferences settings = mApplicationContext.getSharedPreferences(UserPreferences.PREFS_NAME, 0);
 	        SharedPreferences.Editor editor = settings.edit();
 	        editor.putString("ga_opponent_screenName", mUserNames[which]);
-	        //editor.commit();
             editor.apply();
         	
         	Intent i = new Intent(mApplicationContext, GameActivity.class);
@@ -309,53 +248,10 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
             writeToLog("PlayersOnlineActivity", "starting client and server");
         	startActivity(i);
         }
-        
-        /**
-         * Helper function to show the details of a selected item, either by
-         * displaying a fragment in-place in the current UI, or starting a
-         * whole new activity in which it is displayed.
-         */
+
         void showDetails(int index) {
             mCurCheckPosition = index;
-
-//            if (mDualPane) {
-//                // We can display everything in-place with fragments, so update
-//                // the list to highlight the selected item and show the data.
-//                getListView().setItemChecked(index, true);
-//
-//                // Check what fragment is currently shown, replace if needed.
-//                DetailsFragment details = (DetailsFragment)
-//                        getFragmentManager().findFragmentById(R.id.details);
-//                if (details == null || details.getShownIndex() != index) {
-//                    // Make new fragment to show this selection.
-//                    details = DetailsFragment.newInstance(index);
-//
-//                    // Execute a transaction, replacing any existing fragment
-//                    // with this one inside the frame.
-//                    FragmentTransaction ft = getFragmentManager().beginTransaction();
-//                    if (index == 0) {
-//                        ft.replace(R.id.details, details);
-//                    } else {
-//                        ft.replace(R.id.a_item, details);
-//                    }
-//                    ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-//                    ft.commit();
-//                }
-//
-//            } else {
-//                // Otherwise we need to launch a new activity to display
-//                // the dialog fragment with selected text.
-//                Intent intent = new Intent();
-//                intent.setClass(getActivity(), DetailsActivity.class);
-//                intent.putExtra("index", index);
-//                startActivity(intent);
-//            }
         }
-        
-//        static void onBackPressed() {
-//        	System.out.println("on back pressed");
-//        }
-
     }
 
     static private void startGame() {
@@ -408,8 +304,7 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
         		userTreeMap.put(userName, userMapValues);  
         	}
         } catch (JSONException e) {
-//            e.printStackTrace();	
-        	writeToLog("PlayersOnlineActivity", "parseUserList: " + e.getMessage());
+         	writeToLog("PlayersOnlineActivity", "parseUserList: " + e.getMessage());
 			sendToastMessage(e.getMessage());			
         }
         return userTreeMap;
@@ -430,27 +325,14 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
         //editor.commit();
         editor.apply();
     }
-    
-    
-//    @Override
-//    public void onBackPressed() {
-//    	Fragment fragment = getFragmentManager().findFragmentById(R.id.players_online);
-//   	   if (fragment instanceOf YourFragmet) {
-//    	   super.onBackPressed();
-    	
-//  	          finish();
-//   	          return;
-//   	   }
-//   	}    
-    
-	/**
+
+    /**
      * A simple utility Handler to display an error message as a Toast popup
      */
     
     private class ErrorHandler extends Handler {
         @Override
-        public void handleMessage(Message msg)
-        {
+        public void handleMessage(Message msg) {
     		Toast.makeText(getApplicationContext(), (String)msg.obj, Toast.LENGTH_LONG).show();
         }
     }

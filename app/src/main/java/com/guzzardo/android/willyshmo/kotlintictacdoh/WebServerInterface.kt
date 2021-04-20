@@ -54,7 +54,7 @@ object WebServerInterface {
                 writeToLog("WebServerInterface", "finally exception: " + e.message)
             }
         }
-        WillyShmoApplication.setNetworkAvailable(networkAvailable)
+        WillyShmoApplication.isNetworkAvailable = networkAvailable
         return result
     }
 

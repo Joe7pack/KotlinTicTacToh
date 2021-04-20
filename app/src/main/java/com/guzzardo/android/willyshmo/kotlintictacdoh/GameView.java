@@ -369,7 +369,8 @@ public class GameView extends View {
     public void setGamePrize() {
     	mPrizeLocation = -1;
     	//FIXME also need to think about human vs network
-    	if (WillyShmoApplication.getPrizeNames() != null && !HUMAN_VS_HUMAN) {
+    	//if (WillyShmoApplication.getPrizeNames() != null && !HUMAN_VS_HUMAN) {
+        if (WillyShmoApplication.Companion.isNetworkAvailable() && !HUMAN_VS_HUMAN) {
 //      if (WillyShmoApplication.getPrizeNames() != null) { uncomment this line to test prizes with another player
     		mPrizeLocation = mRandom.nextInt(BoardSpaceValues.BOARDSIZE);
 //    		mPrizeLocation = 11; //set prize to a fixed location
@@ -577,7 +578,6 @@ public class GameView extends View {
 //    		mClientThread.setMessageToServer(tokenListString);
 //    		String player2Id = mGameActivity.getPlayer2Id();
     		
-    		//TODO send this list to player 2 via Twitter
     		mGameActivity.sendMessageToServerHost(tokenListString);
     		
     		setViewDisabled(true);
@@ -588,24 +588,7 @@ public class GameView extends View {
             mGameActivity.sendToastMessage(e.getMessage());
         } 
     }
-    
-//    public void sendMessageToTwitter(String twitterMessage) {
-//    	try {
-//    		final TembooSession tembooSession = new TembooSession(AuthenticationValues.getTembooAccountName(), 
-//    				AuthenticationValues.getTembooAppKeyName(), AuthenticationValues.getTembooAppKeyValue());
-//
-//    		SendTwitterDirectMessage sendTwitterDirectMessage = new SendTwitterDirectMessage();
-//    		sendTwitterDirectMessage.execute(this, tembooSession, mContext, twitterMessage, mTwitterOpponentScreenName);
-//    	} catch (TembooException e) {
-//    		//FIXME - do something with these exceptions!
-//    		e.printStackTrace();
-//    	}
-//    }
-    
-    public void setTwitterApplicationResponse(String twitterResponse) {
-    	System.out.println("twitter response: " + twitterResponse);
-    }
-    
+
     private void resetUnusedTokens() {
         for (ColorBall ball : mColorBall) {
        		if (ball.isDisabled())         	
@@ -713,11 +696,7 @@ public class GameView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        
-//        System.out.println("onDraw called with margin set to: "+MARGIN+" landscape offset: "+mOffsetX);
-//        System.out.println("mSxy: "+mSxy+" mOffsetX: "+mOffsetX+" mOffsetY: "+mOffsetY);
         int s3  = mSxy * 5;
-        
         int x7 = mOffsetX;
         int y7 = mOffsetY;
         Bitmap tokenToDraw = null;
@@ -766,8 +745,6 @@ public class GameView extends View {
                     v = mData[k];
                 }
 
-                //TODO - add some logic to handle mBmpCross, mBmpCircle and mBmpTakenMove == null
-//                if (HUMAN_VS_HUMAN) {
                 if (HUMAN_VS_HUMAN && (v == State.PLAYER1 || v == State.PLAYER2)) {
                 	if (mSelectedCell == k && mBoardSpaceAvailable[k]) {
                 		//this is required to allow blinking

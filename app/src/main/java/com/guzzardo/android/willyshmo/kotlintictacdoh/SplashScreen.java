@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import static com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.getWillyShmoApplicationContext;
+//import static com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.companion; . .Companion.getWillyShmoApplicationContext;
 
 
 /*
@@ -36,7 +36,7 @@ FusedLocationActivity gets Location permissions and then gets the Location
 FusedLocationActivity then calls GetPrizeListTask via an async call
 GetPrizeListTask then calls MainActivity which displays the screen showing the load prizes button
 LoadPrizesTask is no longer used
- */
+*/
 
 public class SplashScreen extends Activity implements ToastMessage {
     protected boolean mActive = true;
@@ -44,12 +44,7 @@ public class SplashScreen extends Activity implements ToastMessage {
     private static int mSplashTime = 2500;
     public static ErrorHandler mErrorHandler;
     private static Resources mResources;
-
     String MSG_KEY = "message key";
-
-    //boolean isPermitted = false;
-    //TextView waitText;
-
     /**
      * perform the action in `handleMessage` when the thread calls
      * `mHandler.sendMessage(msg)`
@@ -84,9 +79,6 @@ public class SplashScreen extends Activity implements ToastMessage {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.splash2);
-        //setContentView(R.layout.splash_with_guidelines);
-        //pgsBar = (ProgressBar) findViewById(R.id.progressBar);
 
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
@@ -101,18 +93,20 @@ public class SplashScreen extends Activity implements ToastMessage {
             mPrizesAvailable = true;
         }
 
-        WillyShmoApplication.setLatitude(0);
-        WillyShmoApplication.setLongitude(0);
+        WillyShmoApplication.Companion.setLatitude(0);
+        WillyShmoApplication.Companion.setLongitude(0);
 
-        WillyShmoApplication.setCallerActivity(SplashScreen.this);
-        WillyShmoApplication.setWillyShmoApplicationContext(this.getApplicationContext());
+        WillyShmoApplication.Companion.setCallerActivity(SplashScreen.this);
+        WillyShmoApplication.Companion.setWillyShmoApplicationContext(this.getApplicationContext());
+        //WillyShmoApplication.Companion.setPrizeNames(null);
 
         if (mPrizesAvailable) {
             //new LoadPrizesTask().execute(SplashScreen.this, getApplicationContext(), getResources());
             //mSkipWaitCheck = true;
         }
 
-        Context willyShmoApplicationContext = getWillyShmoApplicationContext();
+        //Context willyShmoApplicationContext = getWillyShmoApplicationContext();
+        Context willyShmoApplicationContext = WillyShmoApplication.Companion.getWillyShmoApplicationContext();
 
         Intent myIntent = new Intent(willyShmoApplicationContext, FusedLocationActivity.class);
         startActivity(myIntent);

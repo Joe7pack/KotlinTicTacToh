@@ -41,7 +41,7 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
             params[0] as SplashScreen
         mApplicationContext = params[1] as Context
         mResources = params[2] as Resources
-        WillyShmoApplication.setCallerActivity(mCallerActivity)
+        WillyShmoApplication.callerActivity = mCallerActivity
         writeToLog(
             "LoadPrizesTask",
             "doInBackground called  at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss")

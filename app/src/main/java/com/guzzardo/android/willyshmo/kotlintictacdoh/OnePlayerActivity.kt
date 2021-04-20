@@ -33,31 +33,11 @@ import android.widget.Button
         val player1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
         if (player1Name != null) mPlayer1Name = player1Name
 
-//        String player2Name = getIntent().getStringExtra(GameActivity.PLAYER2_NAME);
-//        if (player2Name != null)
-//        	mPlayer2Name = player2Name;
-        mButtonPlayer1MoveFirst =
-            findViewById<View>(R.id.start_player) as Button
+        mButtonPlayer1MoveFirst = findViewById<View>(R.id.start_player) as Button
         mButtonPlayer1MoveFirst!!.text = "$mPlayer1Name moves first?"
-        mButtonPlayer2MoveFirst =
-            findViewById<View>(R.id.start_comp) as Button
+        mButtonPlayer2MoveFirst = findViewById<View>(R.id.start_comp) as Button
         mButtonPlayer2MoveFirst!!.text = "$mPlayer2Name moves first?"
 
-//        findViewById(R.id.player_1).setOnClickListener(
-//                new OnClickListener() {
-//            public void onClick(View v) {
-//            	startGame(1);
-//                finish();
-//            }
-//        });
-//        
-//        findViewById(R.id.player_2).setOnClickListener(
-//                new OnClickListener() {
-//            public void onClick(View v) {
-//            	startGame(2);
-//                finish();
-//            }
-//        });
         findViewById<View>(R.id.start_player).setOnClickListener { startGame(true) }
         findViewById<View>(R.id.start_comp).setOnClickListener { startGame(false) }
     }

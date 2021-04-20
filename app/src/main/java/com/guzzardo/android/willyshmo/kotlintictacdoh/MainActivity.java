@@ -63,26 +63,14 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends Activity implements ToastMessage { //--, ConnectionCallbacks,
-        //OnConnectionFailedListener {
     private String mPlayer1Name, mPlayer2Name;
-    //    private static Resources mResources;
     private static double mLongitude, mLatitude;
     private static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 1;
     public static ErrorHandler mErrorHandler;
-    // Global variable to hold the current location
-    Location mCurrentLocation;
     private Button mPrizeButton;
-    //private static GoogleApiClient mGoogleApiClient;
-    //private LocationRequest mLocationRequest;
 
     private String mText = "Joes text here";
     private String mUrl = "Joes url here";
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    //private GoogleApiClient client;
 
     private static final String BASE64_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt6bYx4PqPNnRxsW9DuBAOarpGA6ds7v866szk3e28yIF5LjV/EValnRMLsRylX8FP+BEYeGZvB6THbiQ5Gm7H8i+S2tUv6sngc894hBWZnQKAmwrwgl0Zm+vtYo8fnI6jppIxX4A9+4TrzW+Onl4LeW3kafJ9nIa3P73xSLhtFoxbGjBlEVhUQDVkRl27RXC5LuyULWzsYaUOCI9Yyf06DeDlahl2SwkRoTyB0+LdYsmp0fmw49OsW6P4FkLKvo3UGl75EZyTm3vd8oze4NXNy9GiSxpfD12jhtToKDub/qd7EMJrFadUkuGoTg/qQtmDk4YVoWJvLb26KcUH51PdQIDAQAB";
 
@@ -107,30 +95,6 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
     public void onStart() {
         super.onStart();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-
-        /*
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.guzzardo.android.willyshmo.kotlintictacdoh/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
-        */
-
-        /* If you’re logging an action on an item that has already been added to the index,
-        you don’t have to add the following update line. See
-        https://firebase.google.com/docs/app-indexing/android/personal-content#update-the-index for
-        adding content to the index */
-
-        //see: https://firebase.google.com/docs/app-indexing/android/personal-content
         ArrayList<Indexable> indexableNotes = new ArrayList<>();
 
         Indexable noteToIndex = Indexables.noteDigitalDocumentBuilder()
@@ -167,17 +131,6 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
         mChecker.onDestroy();
     }
 
-
-    /*
-    public void stopUpdatesButtonHandler(View view) {
-        System.out.println("stop updates button handler");
-    }
-
-    public void startUpdatesButtonHandler(View view) {
-        System.out.println("start updates button handler");
-    }
-    */
-
     // Acquire a reference to the system Location Manager
     public interface UserPreferences {
         static final String PREFS_NAME = "TicTacDohPrefsFile";
@@ -188,14 +141,11 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.main);
-//        mResources = getResources();
         mErrorHandler = new ErrorHandler();
-        String prizeNames[] = WillyShmoApplication.getPrizeNames();
 
         findViewById(R.id.rules).setOnClickListener(
                 new OnClickListener() {
@@ -249,6 +199,7 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
             }
         });
 
+        // FIXME - set animation for Prizes button only if we are connected to the network
         Animation anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(500); //You can manage the time of the blink with this parameter
         anim.setStartOffset(20);
@@ -257,19 +208,12 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
         mPrizeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.backwithgreenborder));
         mPrizeButton.startAnimation(anim);
 
-        if (prizeNames == null || prizeNames.length == 0) {
-            mPrizeButton.setVisibility(View.GONE);
-        } else {
+        if (WillyShmoApplication.Companion.isNetworkAvailable()) {
             mPrizeButton.setVisibility(View.VISIBLE);
+        } else {
+            mPrizeButton.setVisibility(View.GONE);
         }
 
-//        AdManager.setTestDevices( new String[] {                 
-//        	     AdManager.TEST_EMULATOR,             // Android emulator
-//        	     "E83D20734F72FB3108F104ABC0FFC738",
-//        	     "5F310740585B99B1179370AC1B4490C4", // My T-Mobile G1 Test Phone
-//        	     } );
-
-        //AdRequest adRequest = new AdRequest();
         mAdView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder()
                 .addTestDevice("EE90BD2A7578BC19014DE8617761F10B") //Samsung Galaxy Note
@@ -285,19 +229,6 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
         //adRequest.addTestDevice(AdRequest.TEST_EMULATOR);             // Android emulator
         //adRequest.addTestDevice("5F310740585B99B1179370AC1B4490C4"); // My T-Mobile G1 Test Phone
         //adRequest.addTestDevice("EE90BD2A7578BC19014DE8617761F10B");  // My Samsung Note
-
-//	    int isPlayAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);	
-//	    if (isPlayAvailable == ConnectionResult.SUCCESS) {
-//	    	try {
-//	    		mLocationClient.connect();
-//	    	} catch (Exception e) {
-//	    		System.out.println("location error: " + e.getMessage());
-//	    		e.printStackTrace();
-//	    	}
-//	    }
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        //client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
         mHandler = new Handler();
 
@@ -373,7 +304,6 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
     @Override
     protected void onResume() {
         super.onResume();
-
         // Restore preferences
         SharedPreferences settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE);
         mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "Player 1");
@@ -399,109 +329,7 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
         MainActivity.mErrorHandler.sendMessage(msg);
     }
 
-    /*
-     * Called by Location Services when the request to connect the
-     * client finishes successfully. At this point, you can
-     * request the current location or start periodic updates
-     */
-
-    public void onConnected(Bundle dataBundle) {
-        // Display the connection status
-        sendToastMessage("Connected to Google Play");
-
-        // Register the listener with the Location Manager to receive location updates
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-        try {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-        } catch (SecurityException se) {
-            sendToastMessage("security exception: "+ se.getMessage());
-        }
-        //Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
-    }
-
-    /*
-     * Called by Location Services if the connection to the
-     * location client drops because of an error.
-     */
-    //@Override
-    //public void onDisconnected() {
-        // Display the connection status
-//        Toast.makeText(this, "Disconnected. Please re-connect.",
-//                Toast.LENGTH_SHORT).show();
-       // sendToastMessage("Disconnected from Google Play. Please re-connect.");
-   // }
-
-
-    public void onConnectionSuspended(int cause) {
-        // The connection has been interrupted.
-        // Disable any UI components that depend on Google APIs
-        // until onConnected() is called.
-    }
-
-    /*
-     * Called by Location Services if the attempt to
-     * Location Services fails.
-     */
-
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        /*
-         * Google Play services can resolve some errors it detects.
-         * If the error has a resolution, try sending an Intent to
-         * start a Google Play services activity that can resolve
-         * error.
-         */
-        if (connectionResult.hasResolution()) {
-            try {
-                // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(this,
-                        CONNECTION_FAILURE_RESOLUTION_REQUEST);
-                /*
-                 * Thrown if Google Play services canceled the original
-                 * PendingIntent
-                 */
-            } catch (IntentSender.SendIntentException e) {
-                // Log the error
-                //e.printStackTrace();
-                sendToastMessage("onConnectionFailed exception: " + e.getMessage());
-            }
-        } else {
-            /*
-             * If no resolution is available, display a dialog to the
-             * user with the error.
-             */
-            //FIXME - add showErrorDialog
-            //showErrorDialog(connectionResult.getErrorCode());
-        }
-    }
-
-    // Acquire a reference to the system Location Manager
-
-    // Define a listener that responds to location updates
-    LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            // Called when a new location is found by the network location provider.
-//            mCurrentLocation = mLocationClient.getLastLocation();
-            if (mLatitude == 0 && mLongitude == 0) {
-                mLatitude = mCurrentLocation.getLatitude();
-                mLongitude = mCurrentLocation.getLongitude();
-//        		GetPrizeListTask getPrizeListTask = new GetPrizeListTask();
-//        		getPrizeListTask.execute(MainActivity.this, getApplicationContext(), mResources, mPrizeButton);
-            }
-        }
-
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-
-        public void onProviderEnabled(String provider) {
-        }
-
-        public void onProviderDisabled(String provider) {
-        }
-    };
-
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
     }
 
     protected Dialog onCreateDialog(int id) {

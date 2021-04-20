@@ -167,6 +167,9 @@ public class GameActivity extends Activity implements ToastMessage {
 //	private boolean mGameStartedFromPlayerList;
     private static String mHostName;
     private static String mQueuePrefix;
+
+    private final static int ACCEPT_GAME = 1;
+    private final static int REJECT_GAME = 2;
 	
     public interface PrizeValue {
     	static final int SHMOGRANDPRIZE = 4; //player wins with a Shmo and shmo card was placed on prize card
@@ -286,9 +289,9 @@ public class GameActivity extends Activity implements ToastMessage {
             mHostWaitDialog = showHostWaitDialog();
             mHostWaitDialog.show();
             
-        	String androidId = "&deviceId=" + WillyShmoApplication.getAndroidId(); 
-        	String latitude = "&latitude=" + WillyShmoApplication.getLatitude();
-        	String longitude = "&longitude=" + WillyShmoApplication.getLongitude();
+        	String androidId = "&deviceId=" + WillyShmoApplication.Companion.getAndroidId();
+        	String latitude = "&latitude=" + WillyShmoApplication.Companion.getLatitude();
+        	String longitude = "&longitude=" + WillyShmoApplication.Companion.getLongitude();
         	String trackingInfo = androidId + latitude + longitude;
 
             String urlData = "/gamePlayer/update/?onlineNow=true&playingNow=false&opponentId=0" + trackingInfo + "&id="
@@ -987,7 +990,6 @@ public class GameActivity extends Activity implements ToastMessage {
        			mPlayer2Name = null;
         	}
         	
-//        	if (msg.what == ACCEPT_INCOMING_GAME_REQUEST_FROM_CLIENT) {
         	if (msg.what == NEW_GAME_FROM_CLIENT) {
         		mGameView.initalizeGameValues();
             	mPlayer2NameTextValue.setText(mPlayer2Name); 
@@ -1054,7 +1056,6 @@ public class GameActivity extends Activity implements ToastMessage {
         	
             if (msg.what == MSG_NETWORK_CLIENT_MAKE_FIRST_MOVE) {
             	mGameView.setCurrentPlayer(GameView.State.PLAYER1);
-//            	State currentPlayer = mGameView.getCurrentPlayer();
             	highlightCurrentPlayer(GameView.State.PLAYER1);
             	mGameView.setViewDisabled(false);
             }
@@ -1967,11 +1968,7 @@ public class GameActivity extends Activity implements ToastMessage {
         public void setMessageToServer(String newMessage) {
         	mMessageToServer = newMessage;
         }  
-        
-//        public void setMessageFromServer(String newMessage) { // called from Twitter get direct messages async task
-//        	mMessageFromServer = newMessage;
-//        }  
-        
+
         private void parseMove(String line) {
         	String [] moveValues = line.split(",");
         	if (moveValues[1] != null)
@@ -2039,12 +2036,6 @@ public class GameActivity extends Activity implements ToastMessage {
 				GameActivity.this.sendToastMessage(e.getMessage());
         	}
         	finally {
-        		
-//        		String onlineNowIndicator = "";
-//        		if (!mGameStartedFromPlayerList) {
-//        			onlineNowIndicator = "&onlineNow=false";
-//        		}
-
         		String urlData = "/gamePlayer/update/?id=" + mPlayer1Id + "&playingNow=false&onlineNow=false&opponentId=0";
 				new SendMessageToWillyShmoServer().execute(urlData, null, GameActivity.this, resources, Boolean.FALSE);
         		mPlayer1NetworkScore = mPlayer2NetworkScore = 0;
@@ -2067,8 +2058,7 @@ public class GameActivity extends Activity implements ToastMessage {
         } else if (mServerRunning) {
         	mServerRunning = false;
         }
-        
-        writeToLog("GameActivity", "onPause called"); 
+        writeToLog("GameActivity", "onPause called");
     }   
     
     private static void writeToLog(String filter, String msg) {
@@ -2106,16 +2096,12 @@ public class GameActivity extends Activity implements ToastMessage {
         			mTokensFromClient.add(new int[] {GameView.BoardSpaceValues.BOARDCENTER, tokenIntType});
         		}
         	}
-        	
         	mPlayer2Name = jsonObject.getString("player1Name");
         	mPlayer2Id = jsonObject.getString("player1Id");
         } catch (JSONException e) {
              sendToastMessage(e.getMessage());
         }
     }
-    
-    private final static int ACCEPT_GAME = 1;
-    private final static int REJECT_GAME = 2;
     
     private void setGameRequestFromClient(boolean start) {
 		mServerHasOpponent = null;
@@ -2138,7 +2124,7 @@ public class GameActivity extends Activity implements ToastMessage {
 		new SendMessageToWillyShmoServer().execute(urlData, null, GameActivity.this, resources, !start);
     } 
 
-    private Handler newNetworkGameHandler = new Handler() {
+    private final Handler newNetworkGameHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case ACCEPT_GAME:
@@ -2361,14 +2347,6 @@ public class GameActivity extends Activity implements ToastMessage {
     		//e.printStackTrace();
     		sendToastMessage(e.getMessage());
     	}
-    }
-    
-    public ServerThread getServerThread() {
-    	return mServerThread;
-    }
-    
-    public String getPlayer1Name() {
-    	return mPlayer1Name;
     }
 
 }
