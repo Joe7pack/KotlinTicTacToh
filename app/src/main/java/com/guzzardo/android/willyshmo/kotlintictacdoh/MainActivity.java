@@ -216,7 +216,7 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
 
         mAdView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder()
-                .addTestDevice("EE90BD2A7578BC19014DE8617761F10B") //Samsung Galaxy Note
+                //.addTestDevice("EE90BD2A7578BC19014DE8617761F10B") //Samsung Galaxy Note
                 // Create an ad request. Check your logcat output for the hashed device ID to
                 // get test ads on a physical device. e.g.
                 // "Use AdRequest.Builder.addTestDevice("ABCDEF012345") to get test ads on this device."
@@ -308,7 +308,6 @@ public class MainActivity extends Activity implements ToastMessage { //--, Conne
         SharedPreferences settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE);
         mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "Player 1");
         mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "Player 2");
-
     }
 
     @Override

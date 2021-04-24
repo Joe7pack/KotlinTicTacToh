@@ -207,7 +207,7 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
         public void onPause() {
         	super.onPause();
         	//mWaitingForOpponent = false;
-         	new DisposeRabbitMQTask().execute(mMessageConsumer, mResources, mPlayersOnlineActivity);      
+         	new DisposeRabbitMQTask().execute(mMessageConsumer, mResources, mPlayersOnlineActivity);
         }
 
         @Override
@@ -218,11 +218,9 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
 
         @Override
         public void onListItemClick(ListView l, View v, int position, long id) {
-        	//mWaitingForOpponent = false;
             setUpClientAndServer(position);
 
             String hostName = (String)WillyShmoApplication.getConfigMap("RabbitMQIpAddress");
-   			//String hostName = mResources.getString(R.string.RabbitMQHostName);
             String queuePrefix = (String)WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix");
    			String qName = queuePrefix + "-" + "startGame"  + "-" +  mUserIds[position];
    			
@@ -314,15 +312,12 @@ public class PlayersOnlineActivity extends Activity implements ToastMessage {
         SharedPreferences settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE);
         mUsersOnline = settings.getString("ga_users_online", null);
         mPlayer1Id = settings.getInt(GameActivity.PLAYER1_ID, 0); 
-        //mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, null); 
     }
     
     private void resetPlayersOnline() {
         SharedPreferences settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("ga_users_online", null);
-        // Commit the edits!
-        //editor.commit();
         editor.apply();
     }
 

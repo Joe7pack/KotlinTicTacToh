@@ -12,10 +12,8 @@ import com.rabbitmq.client.ShutdownSignalException;
 
 import java.io.IOException;
 
-/**
-*Consumes messages from a RabbitMQ broker
-*
-*/
+// Consumes messages from a RabbitMQ broker
+
 public class RabbitMQMessageConsumer {
 	
     private String mExchange = "test";
@@ -44,7 +42,6 @@ public class RabbitMQMessageConsumer {
 	private OnReceiveMessageHandler mOnReceiveMessageHandler;
 
 	/**
-	 *
 	 * Set the callback for received messages
 	 * @param handler The callback
 	 */
@@ -172,6 +169,7 @@ public class RabbitMQMessageConsumer {
 
 	public void dispose() {
 		mConsumeRunning = false;
+		writeToLog("RabbitMQMessageConsumer", "dispose called");
 		try {
 			if (mChannel != null)
 				mChannel.abort();

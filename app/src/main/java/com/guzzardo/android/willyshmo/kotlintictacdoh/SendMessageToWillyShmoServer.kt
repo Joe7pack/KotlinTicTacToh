@@ -10,7 +10,7 @@ import java.net.URLEncoder
 class SendMessageToWillyShmoServer :
     AsyncTask<Any?, Void?, String?>() {
     protected override fun doInBackground(vararg params: Any?): String? {
-        val urlToEncode = params[1] as String
+        val urlToEncode = params[1] as String?
         mCallerActivity = params[2] as ToastMessage
         mResources = params[3] as Resources
         mFinishActivity = params[4] as Boolean
@@ -66,39 +66,39 @@ class SendMessageToWillyShmoServer :
     }
 
     companion object {
-        private var mCallerActivity: ToastMessage? = null
-        private var mResources: Resources? = null
-        private var mFinishActivity: Boolean? = null
-        private fun convertStreamToString(`is`: InputStream?): String {
+         private var mCallerActivity: ToastMessage? = null
+         private var mResources: Resources? = null
+         private var mFinishActivity: Boolean? = null
+         private fun convertStreamToString(`is`: InputStream?): String {
             /*
-         * To convert the InputStream to String we use the BufferedReader.readLine()
-         * method. We iterate until the BufferedReader return null which means
-         * there's no more data to read. Each line will appended to a StringBuilder
-         * and returned as String.
-         */
-            val reader = BufferedReader(InputStreamReader(`is`))
-            val sb = StringBuilder()
-            var line: String? = null
-            try {
-                while (reader.readLine().also { line = it } != null) {
-                    sb.append(""" $line """.trimIndent())
-                }
-            } catch (e: IOException) {
-                writeToLog("SendMessageToWillyShmoServer","IOException: " + e.message)
-                mCallerActivity!!.sendToastMessage(e.message)
-            } catch (e: Exception) {
-                writeToLog("SendMessageToWillyShmoServer", "Exception: " + e.message)
-                mCallerActivity!!.sendToastMessage(e.message)
-            } finally {
-                try {
-                    `is`!!.close()
-                } catch (e: IOException) {
-                    writeToLog("SendMessageToWillyShmoServer", "is close IOException: " + e.message)
-                    mCallerActivity!!.sendToastMessage(e.message)
-                }
-            }
+             * To convert the InputStream to String we use the BufferedReader.readLine()
+             * method. We iterate until the BufferedReader return null which means
+             * there's no more data to read. Each line will appended to a StringBuilder
+             * and returned as String.
+             */
+         val reader = BufferedReader(InputStreamReader(`is`))
+         val sb = StringBuilder()
+         var line: String? = null
+         try {
+             while (reader.readLine().also { line = it } != null) {
+                 sb.append(""" $line """.trimIndent())
+             }
+         } catch (e: IOException) {
+             writeToLog("SendMessageToWillyShmoServer","IOException: " + e.message)
+             mCallerActivity!!.sendToastMessage(e.message)
+         } catch (e: Exception) {
+             writeToLog("SendMessageToWillyShmoServer", "Exception: " + e.message)
+             mCallerActivity!!.sendToastMessage(e.message)
+         } finally {
+             try {
+                 `is`!!.close()
+             } catch (e: IOException) {
+                 writeToLog("SendMessageToWillyShmoServer", "is close IOException: " + e.message)
+                 mCallerActivity!!.sendToastMessage(e.message)
+             }
+         }
             return sb.toString()
-        }
+         }
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {

@@ -517,38 +517,29 @@ public class GameView extends View {
 //        	colorBall[x].setDisabled(true);
         }
         
-//      if (mClientThread != null) {
-        if (isClientRunning()) {        	
+        if (isClientRunning()) {
         	sendTokensToServer();
         }
     }
     
     public void updatePlayerToken(int id, int tokenType) {
     	Bitmap bitmap = null;
-//    	int tokenColor = 0;
-    	if (id < 4) { 
-//    		tokenColor = mTokenColor1;
+    	if (id < 4) {
     		bitmap = mBmpCirclePlayer1;
     		//resource = R.drawable.lib_circlered;
     		if (tokenType == ColorBall.CROSS) {
-    			//resource = R.drawable.lib_crossred;
     			bitmap = mBmpCrossPlayer1;
     		} else {
     			if (tokenType == ColorBall.CIRCLECROSS) {
-    				//resource = R.drawable.lib_circlecrossred;
     				bitmap =  mBmpCircleCrossPlayer1;
     			}
     		}
     	} else {
-//    		tokenColor = mTokenColor2;
-        	//resource = R.drawable.lib_circleblue;
     		bitmap = mBmpCirclePlayer2;
         	if (tokenType == ColorBall.CROSS) {
-        		//resource = R.drawable.lib_crossblue;
         		bitmap =  mBmpCrossPlayer2;
         	} else {
         		if (tokenType == ColorBall.CIRCLECROSS) {
-        			//resource = R.drawable.lib_circlecrossblue;
         			bitmap =  mBmpCircleCrossPlayer2;
         		}
         	}
@@ -574,17 +565,11 @@ public class GameView extends View {
     		tokenList.put("player1Name", player1Name);
     		tokenList.put("player1Id", player1Id);
     		String tokenListString = tokenList.toString();
-    		
-//    		mClientThread.setMessageToServer(tokenListString);
-//    		String player2Id = mGameActivity.getPlayer2Id();
-    		
     		mGameActivity.sendMessageToServerHost(tokenListString);
-    		
     		setViewDisabled(true);
     		mGameActivity.highlightCurrentPlayer(State.PLAYER2);
     		mClientThread.setGameStarted(true);    		
         } catch (JSONException e) {
-            //e.printStackTrace();
             mGameActivity.sendToastMessage(e.getMessage());
         } 
     }
@@ -627,10 +612,6 @@ public class GameView extends View {
         return -1;
     }
 
-    public int getTokenAtCell(int cell) {
-    	return mBoardSpaceValue[cell];
-    }
-    
     public State getCurrentPlayer() {
         return mCurrentPlayer;
     }
@@ -648,7 +629,7 @@ public class GameView extends View {
         mWinner = winner;
     }
 
-    /** Sets winning mark on specified column or row (0..2) or diagonal (0..1). */
+    // Sets winning mark on specified column or row (0..2) or diagonal (0..1).
     public void setFinished(int col, int row, int diagonal) {
         mWinCol = col;
         mWinRow = row;
@@ -709,7 +690,7 @@ public class GameView extends View {
         setAvailableMoves(canvas, mSelectedCell, mBoardSpaceValue, mBoardSpaceAvailable);
         
         boolean prizeDrawn = false;
-        if (GameActivity.getMoveModeTouch()) {
+        if (GameActivity.Companion.getMoveModeTouch()) {
         	if (mSelectedCell > -1) {
         		int xValue = mSelectedCell % 5;
         		int yValue = calculateYValue(mSelectedCell);
@@ -820,7 +801,7 @@ public class GameView extends View {
         }
 
     	//draw the balls on the canvas
-        if (GameActivity.getMoveModeTouch()) {
+        if (GameActivity.Companion.getMoveModeTouch()) {
             for (int x = 0; x < mColorBall.length; x++) {
         		if (!mColorBall[x].isDisabled()) {
         			
@@ -841,15 +822,6 @@ public class GameView extends View {
         }
     }
     
-    public int getFirstAvailableSpace() {
-    	int x = 0;
-    	 for (x = 0; x < mBoardSpaceAvailable.length; x++) {
-    		 if (mBoardSpaceAvailable[x] == true)
-    			 return x;
-    	 }
-    	 return -1;
-    }
-
     private int calculateLeftLimit(int[] boardSpaceValue) {
     	for (int x = 4; x < 25; x+=5)
     		if (boardSpaceValue[x] !=  BoardSpaceValues.EMPTY) {
@@ -954,8 +926,6 @@ public class GameView extends View {
     				if (boardSpaceValue[x - 1] == -1 && selectedCell != x - 1) {
     					if (canvas != null) {
     						drawAvailableSquare(canvas, xValue - 1, yValue);
-//    						mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * (xValue - 1), MARGIN + mOffsetY + mSxy * yValue);
-//    						canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
     					}
     					boardSpaceAvailable[x - 1] = true;
     				}
@@ -966,8 +936,6 @@ public class GameView extends View {
     				if (boardSpaceValue[x + 1] == -1 && selectedCell != x + 1) {
     					if (canvas != null) {
     						drawAvailableSquare(canvas, xValue + 1, yValue);
-//    						mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * (xValue + 1), MARGIN + mOffsetY + mSxy * yValue);    						
-//    						canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
     					}
     					boardSpaceAvailable[x + 1] = true;
     				}
@@ -978,8 +946,6 @@ public class GameView extends View {
     				if (boardSpaceValue[x - 5] == -1 && selectedCell != x - 5) {
     					if (canvas != null) {
     						drawAvailableSquare(canvas, xValue, yValue - 1);
-//    						mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * xValue, MARGIN + mOffsetY + mSxy * (yValue - 1));    						
-//    		    			canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
     					}
     					boardSpaceAvailable[x - 5] = true;
     				}
@@ -991,8 +957,6 @@ public class GameView extends View {
     				if (boardSpaceValue[x + 5] == -1 && selectedCell != x + 5) {
     					if (canvas != null) {
     						drawAvailableSquare(canvas, xValue, yValue + 1);
-//    						mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * xValue, MARGIN + mOffsetY + mSxy * (yValue + 1));    						
-//    		    			canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
     					}
     					boardSpaceAvailable[x + 5] = true;
     				}
@@ -1004,15 +968,6 @@ public class GameView extends View {
     private void drawAvailableSquare(Canvas canvas, int xValue, int yValue) {
 		mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * xValue, MARGIN + mOffsetY + mSxy * yValue);
 		canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
-    	
-//		mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * (xValue + 1), MARGIN + mOffsetY + mSxy * yValue);    						
-//		canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
-//		
-//		mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * xValue, MARGIN + mOffsetY + mSxy * (yValue - 1));    						
-//		canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
-//		
-//		mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * xValue, MARGIN + mOffsetY + mSxy * (yValue + 1));    						
-//		canvas.drawBitmap(mBmpAvailableMove, mTakenRect, mDstRect, null);
     }
 
     //calculate the Y offset given the cell position on the game board
@@ -1036,8 +991,6 @@ public class GameView extends View {
         int w = MeasureSpec.getSize(widthMeasureSpec);
         int h = MeasureSpec.getSize(heightMeasureSpec);
         int d = w == 0 ? h : h == 0 ? w : w < h ? w : h;
-//        setMeasuredDimension(d, d);
-        
         int modeW = MeasureSpec.getMode(widthMeasureSpec);
         int modeH = MeasureSpec.getMode(heightMeasureSpec);
         
@@ -1118,39 +1071,13 @@ public class GameView extends View {
         resetUnusedTokens();
     }
     
-    protected void onSizeChangedOrig(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        
-        int boardNumber = 7;
-        if (mDisplayMode == ScreenOrientation.LANDSCAPE) {
-        	boardNumber = 5;
-        }
-        
-        int sx = (w - 2 * MARGIN) / boardNumber; //5 // was 3 in original Tic Tac Toe game
-        int sy = (h - 2 * MARGIN) / boardNumber; //5 // was 3 in original Tic Tac Toe game
-
-        int size = sx < sy ? sx : sy;
-
-        mSxy = size;
-        if (mDisplayMode == ScreenOrientation.LANDSCAPE)
-        	mOffsetX = ((w - boardNumber * size) / 2) + 20; // was w - 3 in original Tic Tac Toe game 
-        else
-        	mOffsetX = (w - boardNumber * size) / 2; // was w - 3 in original Tic Tac Toe game 
-        mOffsetY = (h - boardNumber * size) / 2; // was h - 3 in original Tic Tac Toe game 
-        
-//        mDstRect.set(MARGIN, MARGIN, size - MARGIN, size - MARGIN);
-        mDstRect.set(MARGIN, MARGIN, size - MARGIN - 1, size - MARGIN - 1);
-    }
-    
     @Override
     public boolean onTouchEvent(MotionEvent event) {
     	if (mViewDisabled)
     		return false;
     	
-        if (GameActivity.getMoveModeTouch())
+        if (GameActivity.Companion.getMoveModeTouch())
         	return moveModeTouch(event);
-    	
-    	//mBallId = -1; //nope, can't do that here, it won't allow you to move any token
     	
         int action = event.getAction();
         int X = (int)event.getX();
@@ -1198,12 +1125,7 @@ public class GameView extends View {
         			mBallId = ball.getID(); 
                     break;
         		}
-        		// check all the bounds of the ball (square)
-        		//if (X > ball.getCoordX() && X < ball.getCoordX()+50 && Y > ball.getCoordY() && Y < ball.getCoordY()+50){
-                //	balID = ball.getID();
-                //	break;
-                //}
-              }
+        	}
         	invalidate();
             return true;
         } else if (action == MotionEvent.ACTION_MOVE) {  
@@ -1238,15 +1160,6 @@ public class GameView extends View {
                 if (state == State.EMPTY)
                 	state = mCurrentPlayer;
 
-                //stopBlink(); // not sure why they were stopping it here
-
-//                mSelectedCell = cell;
-//                mSelectedValue = state;
-                //mBlinkDisplayOff = false; //this value is turned off in stopBlink()
-//                mBlinkRect.set(MARGIN + mOffsetX + xPos * sxy, MARGIN + yPos * sxy,
-//                               MARGIN + mOffsetX + (xPos + 1) * sxy, MARGIN + (yPos + 1) * sxy);
-                
-                
                 writeToLog("ClientService", "cell calculated: "+cell);
                 
                 if (mBallId > -1) {
@@ -1265,14 +1178,10 @@ public class GameView extends View {
                         mSelectedValue = state;
                         
                         writeToLog("ClientService", "ball id: "+mBallId+ " cell calculated: "+cell);
-                	} 
-                	else {
+                	} else {
                 		mBallId = -1;
                 		stopBlink();
                 		writeToLog("ClientService", "ball id: "+mBallId+ " cell calculated: "+cell+" space not available");
-//                		    mSelectedValue = State.EMPTY; 
-//                		    mCellListener.onCellSelected();
-//                		    mSelectedCell = -1;
                 	}
                 }
                 
@@ -1296,7 +1205,6 @@ public class GameView extends View {
             	mBallId = -1;
             	mBlinkRect.setEmpty();
             	mSelectedCell = -1;
-//            	mSelectedValue = State.EMPTY; 
             	mCellListener.onCellSelected();
             	writeToLog("ClientService", "outside of board selected");
             }
@@ -1331,7 +1239,7 @@ public class GameView extends View {
         	ballStart = 4;
             ballLimit = 8;
         } 
-     // if token is blinking and we've selected another valid token then turn blinking off original token and blink new token
+        // if token is blinking and we've selected another valid token then turn blinking off original token and blink new token
         // if nothing is blinking then make either a valid selected token or a valid selected move to position blink
         // if position is blinking and we've selected a valid token then move selected token to blinking position
         // if token is blinking and we've selected a valid position then move blinking selected token to valid position
@@ -1500,16 +1408,6 @@ public class GameView extends View {
     	return -1;
     }
 
-    public int selectLastHumanToken() {
-    	for (int x = 0; x < 4; x++ ) {
-    		if (mColorBall[x].isDisabled()) {
-    			continue;
-    		}
-    		return x;
-    	}
-    	return -1;
-    }
-    
     public int selectRandomComputerToken() {
     	int randomNumber = mRandom.nextInt(4);
     	
@@ -1535,17 +1433,8 @@ public class GameView extends View {
     			randomNumber = 0;
     			continue;
     		}
-//    		if (mColorBall[computerMove+randomNumber].getType() == BoardSpaceValues.CIRCLECROSS) {
-//    			randomNumber++;
-//    			continue;
-//    		}
-//    		if (mColorBall[computerMove+randomNumber].isDisabled()) {
-//    			randomNumber++;
-//    			continue;
-//    		}
     		break;
     	}
-//		colorBall[computerMove+randomNumber].setDisabled(true);
 		return computerMove+randomNumber;
     }
     
