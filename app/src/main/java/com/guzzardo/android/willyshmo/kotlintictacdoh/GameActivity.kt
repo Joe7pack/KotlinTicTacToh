@@ -1306,20 +1306,23 @@ class GameActivity : Activity(), ToastMessage {
             }
         }
         if (winnerFound[0] != -1 || winnerFound[1] != -1 || winnerFound[2] != -1) {
-            setFinished(player, winnerFound[0], winnerFound[1], winnerFound[2])
+            //setFinished(player, winnerFound[0], winnerFound[1], winnerFound[2])
+            if (player != null) {
+                setFinished(player, winnerFound[0], winnerFound[1], winnerFound[2])
+            }
             return true
         }
         return false
     }
 
     private fun checkForPrizeWin(winningPosition1: Int, winningPosition2: Int, winningPosition3: Int, winType: Int) {
-        if (mLastCellSelected == GameView.getPrizeLocation()) {
+        if (mLastCellSelected == GameView.prizeLocation) {
             if (winType == PrizeValue.SHMOPRIZE) {
                 showPrizeWon(PrizeValue.SHMOGRANDPRIZE)
             } else {
                 showPrizeWon(PrizeValue.GRANDPRIZE)
             }
-        } else if (GameView.getPrizeLocation() == winningPosition1 || GameView.getPrizeLocation() == winningPosition2 || GameView.getPrizeLocation() == winningPosition3) {
+        } else if (GameView.prizeLocation == winningPosition1 || GameView.prizeLocation == winningPosition2 || GameView.prizeLocation == winningPosition3) {
             if (winType == PrizeValue.SHMOPRIZE) {
                 showPrizeWon(PrizeValue.SHMOPRIZE)
             } else {
@@ -1328,7 +1331,7 @@ class GameActivity : Activity(), ToastMessage {
         }
     }
 
-    private fun setFinished(player: GameView.State?, col: Int, row: Int, diagonal: Int) {
+    private fun setFinished(player: GameView.State, col: Int, row: Int, diagonal: Int) {
 //TODO - not sure how to handle this yet?    	
         mGameView!!.currentPlayer = GameView.State.WIN
         mGameView!!.winner = player
