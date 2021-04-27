@@ -47,7 +47,6 @@ import java.util.*
 class GameActivity : Activity(), ToastMessage {
     private var mServer = false
     private var mClient = false
-    //private val mHandler = Handler(MyHandlerCallback())
     private val mHandler = Handler(Looper.getMainLooper(), MyHandlerCallback())
     private var mButtonNext: Button? = null
     private var mPlayer1TokenChoice = GameView.BoardSpaceValues.EMPTY
@@ -504,9 +503,9 @@ class GameActivity : Activity(), ToastMessage {
                             }
                         }
                     }
-                    //               		System.out.println("human winner list size: "+humanWinningHashMap.size());
+                    //System.out.println("human winner list size: "+humanWinningHashMap.size());
                     if (humanWinningHashMap.size == 1) {
-//               			Integer[] onlyWinningPosition = (Integer[])humanWinningHashMap.keySet().toArray();
+
                         val onlyWinningPosition: Array<Any> = humanWinningHashMap.keys.toTypedArray()
                         val testMove = onlyWinningPosition[0] as Int
                         tokenSelected = tokenChoice
@@ -532,8 +531,8 @@ class GameActivity : Activity(), ToastMessage {
                                 //                   				System.out.println("testing "+testMove+ " against winning position: "+ winningPosition);
                                 // testMove = a winning move human
                                 if (testAvailableValues[testMove]) {
-//               						computerBlockingMove = winningPosition;
-//               						break;
+                                    //computerBlockingMove = winningPosition;
+                                    //break;
                                     saveHumanWinner(testMove, 0) // space cannot be used
                                     //System.out.println("reset value at "+testMove+ " to unavailable(false) for "+ winningPosition);
                                 } else {
@@ -720,8 +719,8 @@ class GameActivity : Activity(), ToastMessage {
             }
         }
         mGameView!!.disableBall(tokenSelected)
-        selectionArray[0] = boardSpaceSelected //selectionArray[0] = boardPosition 
-        selectionArray[1] = tokenSelected //selectionArray[1] = computerToken
+        selectionArray[0] = boardSpaceSelected
+        selectionArray[1] = tokenSelected
         return selectionArray
     }
 
@@ -774,8 +773,7 @@ class GameActivity : Activity(), ToastMessage {
                 return true
             }
             if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_HOST) {
-                val urlData = ("/gamePlayer/update/?id=" + mPlayer1Id + "&playingNow=true&opponentId="
-                        + player2Id + "&userName=")
+                val urlData = ("/gamePlayer/update/?id=" + mPlayer1Id + "&playingNow=true&opponentId=" + player2Id + "&userName=")
                 SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.FALSE)
                 mClientWaitDialog!!.dismiss()
                 writeToLog("MyHandlerCallback", "client wait dialog dismissed")
@@ -894,17 +892,6 @@ class GameActivity : Activity(), ToastMessage {
  * else just put down token randomly for now
  *        	
  */
-
-//            	int index = mGameView.getFirstAvailableSpace();
-//            	int index[] = selectBestMove(); //0 = boardSpaceSelected, 1 = tokenSelected
-//            
-//            
-//            	if (index[0] != -1) {
-//                    mSoundComputerMove.start();
-//                    mGameView.setCell(index[0], mGameView.getCurrentPlayer()); //set State table
-//                    computerToken = mGameView.moveComputerToken(index[0],index[1]); //move computer token to location on board
-//                    mGameView.setBoardSpaceValue(index[0], computerToken);//set internal Board correspondingly
-//            	}
                 val computerToken = setComputerMove()
 
 // for now, the computer will never select the xo token for its opening move but we may change this in 
@@ -1307,7 +1294,6 @@ class GameActivity : Activity(), ToastMessage {
     }
 
     private fun setFinished(player: GameView.State, col: Int, row: Int, diagonal: Int) {
-//TODO - not sure how to handle this yet?    	
         mGameView!!.currentPlayer = GameView.State.WIN
         mGameView!!.winner = player
         mGameView!!.isEnabled = false
@@ -1487,8 +1473,6 @@ class GameActivity : Activity(), ToastMessage {
         savedInstanceState.putInt("ga_player1_score", mPlayer1Score)
         savedInstanceState.putInt("ga_player2_score", mPlayer2Score)
         savedInstanceState.putInt("ga_willy_score", mWillyScore)
-
-//        savedInstanceState.putBoolean("ga_human_vs_human", HUMAN_VS_HUMAN);        
         savedInstanceState.putString("ga_button", mButtonNext!!.text.toString())
         savedInstanceState.putBoolean("ga_move_mode", moveModeTouch)
         savedInstanceState.putBoolean("ga_sound_mode", soundMode)
@@ -1503,8 +1487,6 @@ class GameActivity : Activity(), ToastMessage {
         mPlayer1Score = savedInstanceState.getInt("ga_player1_score")
         mPlayer2Score = savedInstanceState.getInt("ga_player2_score")
         mWillyScore = savedInstanceState.getInt("ga_willy_score")
-
-//		HUMAN_VS_HUMAN = savedInstanceState.getBoolean("ga_human_vs_human");
         var workString = savedInstanceState.getString("ga_info")
         workString = savedInstanceState.getString("ga_button")
         mButtonNext!!.text = workString
@@ -1633,9 +1615,9 @@ class GameActivity : Activity(), ToastMessage {
     inner class ClientThread internal constructor() : Thread() {
         private var mMessageToServer: String? = null
         var boardPosition = 0
-            private set
+            //private set
         var tokenMoved = 0
-            private set
+            //private set
 
         //        public List<int[]> mTokensFromClient;
         private var mGameStarted = false

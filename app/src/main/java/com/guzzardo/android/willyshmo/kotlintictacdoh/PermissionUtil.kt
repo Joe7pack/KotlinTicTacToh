@@ -38,26 +38,18 @@ object PermissionUtil {
         permission: String,
         listener: PermissionAskListener
     ) {
-        /*
-         * If permission is not granted
-         * */
+        // If permission is not granted
         if (shouldAskPermission(context, permission)) {
-            /*
-             * If permission denied previously
-             * */
+            // If permission denied previously
             if ((context as Activity).shouldShowRequestPermissionRationale(permission)) {
                 listener.onPermissionPreviouslyDenied()
             } else {
-                /*
-                 * Permission denied or first time requested
-                 * */
+                // Permission denied or first time requested
                 if (isFirstTimeAskingPermission(context, permission)) {
                     firstTimeAskingPermission(context, permission, false)
                     listener.onPermissionAsk()
                 } else {
-                    /*
-                     * Handle the feature without permission or ask user to manually allow permission
-                     * */
+                    // Handle the feature without permission or ask user to manually allow permission
                     listener.onPermissionDisabled()
                 }
             }
@@ -81,24 +73,16 @@ object PermissionUtil {
      *     check box on previous request permission, onPermissionDisabled() would be called.
      * */
     interface PermissionAskListener {
-        /*
-         * Callback to ask permission
-         * */
+        // Callback to ask permission
         fun onPermissionAsk()
 
-        /*
-         * Callback on permission denied
-         * */
+        // Callback on permission denied
         fun onPermissionPreviouslyDenied()
 
-        /*
-         * Callback on permission "Never show again" checked and denied
-         * */
+        // Callback on permission "Never show again" checked and denied
         fun onPermissionDisabled()
 
-        /*
-         * Callback on permission granted
-         * */
+        // Callback on permission granted
         fun onPermissionGranted()
     }
 }

@@ -20,8 +20,6 @@ import com.google.android.gms.location.LocationServices
 import java.text.SimpleDateFormat
 import java.util.*
 
-//import com.google.android.gms.common.GooglePlayServicesClient;
-//import com.google.android.gms.location.LocationClient;
 /** THIS CLASS IS NO LONGER USED
  * An AsyncTask that will be used to find other players currently online
  */

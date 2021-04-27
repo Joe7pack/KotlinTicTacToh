@@ -35,19 +35,6 @@ class GetConfigurationValuesFromDB :
         try {
             writeToLog("GetConfigurationValuesFromDB", "onPostExecute called configValues: $configValues")
             val objectMapper = ObjectMapper()
-            /* original code that was converted to Kotlin by the built in Android Studio Kotlin converter
-            val result2: List<HashMap<String, Any>> =
-                objectMapper.readValue<List<*>>(
-                    configValues,
-                    MutableList::class.java
-                )
-            */
-
-           //suggestions from Stack Overflow: https://stackoverflow.com/questions/52238211/kotlin-objectmapper-readvalue-with-typereferencehashmapstring-string-can
-           // val msg = objectMapper.readValue<HashMap<String, String>>(message.payload, typeRef)
-           // val msg: HashMap<String, String> = objectMapper.readValue(message.payload, typeRef)
-           //and after applying recommendations from code correction suggestions:
-
             val result: MutableList<*>? = objectMapper.readValue(configValues, MutableList::class.java)
 
             if (result != null) {
@@ -58,14 +45,9 @@ class GetConfigurationValuesFromDB :
                     WillyShmoApplication.setConfigMap(key, value)
                 }
             }
-
-            //mCallerActivity.setAsyncMessage();
         } catch (e: Exception) {
             e.printStackTrace()
-            writeToLog(
-                "GetConfigurationValuesFromDB",
-                "onPostExecute exception called " + e.message
-            )
+            writeToLog("GetConfigurationValuesFromDB", "onPostExecute exception called " + e.message)
             mCallerActivity!!.sendToastMessage(e.message)
         }
     }

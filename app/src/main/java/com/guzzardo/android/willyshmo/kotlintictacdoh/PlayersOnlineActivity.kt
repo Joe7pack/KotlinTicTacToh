@@ -55,18 +55,7 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
         }
     }
 
-    private inner class RabbitMQPlayerResponseHandler : RabbitMQResponseHandler() {
-        /*
-        override fun setRabbitMQResponse(rabbitMQResponse: String) {
-            mRabbitMQPlayerResponse = rabbitMQResponse
-        }
-
-        override fun getRabbitMQResponse(): String {
-            return mRabbitMQPlayerResponse!!
-        }
-
-         */
-    }
+    private inner class RabbitMQPlayerResponseHandler : RabbitMQResponseHandler() { }
 
     public override fun onPause() {
         super.onPause()
@@ -181,7 +170,7 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
         fun showDetails(index: Int) {
             mCurCheckPosition = index
         }
-    }//not going to play against myself on the network// this is where the keys (userNames) gets sorted
+    } //not going to play against myself on the network// this is where the keys (userNames) gets sorted
 
     //we're creating a clone because removing an entry from the original TreeMap causes a problem for the iterator
     private val playersOnline: Unit
@@ -276,9 +265,7 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
             qNameQualifier: String,
             rabbitMQResponseHandler: RabbitMQResponseHandler?
         ) {
-            //String hostName = mResources.getString(R.string.RabbitMQHostName);
-            val qName =
-                getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + mPlayer1Id
+            val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + mPlayer1Id
             ConsumerConnectTask().execute(
                 getConfigMap("RabbitMQIpAddress"),
                 rabbitMQMessageConsumer,

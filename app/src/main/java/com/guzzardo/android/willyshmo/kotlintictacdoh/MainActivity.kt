@@ -35,22 +35,7 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import java.text.SimpleDateFormat
 import java.util.*
 
-/*
-* Copyright (C) 2010 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/   class MainActivity : Activity(), ToastMessage {
-    //--, ConnectionCallbacks,
+class MainActivity : Activity(), ToastMessage {
     private var mPlayer1Name: String? = null
     private var mPlayer2Name: String? = null
     private var mPrizeButton: Button? = null
@@ -78,11 +63,7 @@ import java.util.*
         FirebaseApp.initializeApp(this)
         FirebaseAppIndex.getInstance().update(*notesArr)
         FirebaseUserActions.getInstance().start(action)
-        Log.d(
-            "MainActivity", "onStart called at " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(
-                Date()
-            )
-        )
+        Log.d("MainActivity", "onStart called at " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
     }
 
     // After
@@ -106,9 +87,7 @@ import java.util.*
         }
     }
 
-    /**
-     * Called when the activity is first created.
-     */
+    // Called when the activity is first created.
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)

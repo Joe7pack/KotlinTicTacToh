@@ -56,10 +56,10 @@ class CurrentLocation {
     private fun isSameProvider(
         provider1: String?,
         provider2: String?
-    ): Boolean {
-        return if (provider1 == null) {
-            provider2 == null
-        } else provider1 == provider2
+        ): Boolean {
+            return if (provider1 == null) {
+                provider2 == null
+            } else provider1 == provider2
     }
 
     companion object {

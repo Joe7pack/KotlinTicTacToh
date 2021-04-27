@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.getConfigMap
 
-//import android.support.v7.app.AlertDialog;
 class RejectGameDialog : DialogFragment(), ToastMessage {
     override fun setArguments(myBundle: Bundle) {
         mOpposingPlayerName = myBundle.getString("opponentName")
@@ -34,7 +33,7 @@ class RejectGameDialog : DialogFragment(), ToastMessage {
                 .setTitle("Sorry, " + mOpposingPlayerName + " doesn't want to play now")
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setPositiveButton(android.R.string.yes) { dialog, which ->
-                    //                	acknowledgeRejection();
+                //acknowledgeRejection();
                 }
                 .create()
     }

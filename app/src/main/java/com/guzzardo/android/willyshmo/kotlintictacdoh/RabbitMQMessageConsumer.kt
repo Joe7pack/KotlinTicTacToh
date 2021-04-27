@@ -100,43 +100,17 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
                         writeToLog("RabbitMQMessageConsumer", "last message: " + String(mLastMessage))
                         //Log.d("RabbitMQMessageConsumer", "last message: " + new String(mLastMessage));
                         mMessageHandler.post(mReturnMessage)
-                        //						try {
-//							mChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-//						} catch (IOException eIO) {
-//							Log.e("mLastMessage ", "IOException");							
-//							eIO.printStackTrace();
-//						} catch (Exception e) {
-//							Log.e("mLastMessage ", "inner try error");
-//							e.printStackTrace();
-//						}
                     } catch (ie: InterruptedException) {
                         writeToLog("RabbitMQMessageConsumer", "InterruptedException: " + ie.message)
                         mToastMessage.sendToastMessage(ie.message)
                     } catch (sse: ShutdownSignalException) {
-//						boolean hardError = sse.isHardError();
-//						boolean initiatedByApplication = sse.isInitiatedByApplication();
-//						Object reason = sse.getReason();
-//						Object reference = sse.getReference();
-//						Throwable cause = sse.getCause();
-//						String localizedMessage = sse.getLocalizedMessage();
-//						Log.e("ShutdownSignalException ", "hard error: " + hardError + " initiated by application: " + initiatedByApplication + " reason: " + reason);
-//						Log.e("ShutdownSignalException ", "reference: " + reference + " cause: " + cause + " localized message: " + localizedMessage);
-//						sse.printStackTrace();
-//						mToastMessage.sendToastMessage(sse.getMessage());						
+
                     } catch (cce: ConsumerCancelledException) {
-//						Log.e("mLastMessage ", "ConsumerCancelledException");
-//						cce.printStackTrace();
-//						mToastMessage.sendToastMessage(cce.getMessage());
+
                     } catch (e: Exception) {
-//						Log.e("mLastMessage ", "outer try error");
-//						e.printStackTrace();
-//						mToastMessage.sendToastMessage(e.getMessage());
+
                     } finally {
-//						try {
-//							mChannel.queuePurge(mQueue);
-//						} catch (Exception e) {
-//							mToastMessage.sendToastMessage("queuePurge " + e.getMessage());
-//						}
+
                     }
                 }
                 writeToLog("RabbitMQMessageConsumer", "thread all done")
@@ -152,7 +126,6 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
             if (channel != null) channel!!.abort()
             if (connection != null) connection!!.close()
         } catch (e: IOException) {
-            //e.printStackTrace();
             mToastMessage.sendToastMessage("queuePurge " + e.message)
         }
     }

@@ -90,7 +90,6 @@ class SplashScreen : Activity(), ToastMessage {
             //mSkipWaitCheck = true;
         }
 
-        //Context willyShmoApplicationContext = getWillyShmoApplicationContext();
         val willyShmoApplicationContext = willyShmoApplicationContext
         val myIntent = Intent(willyShmoApplicationContext, FusedLocationActivity::class.java)
         startActivity(myIntent)

@@ -30,7 +30,8 @@ class SendMessageToWillyShmoServer :
             errorAt = "openConnection"
             val ucon = myURL.openConnection()
             /* Define InputStreams to read 
-			 * from the URLConnection. */errorAt = "getInputStream"
+			 * from the URLConnection. */
+            errorAt = "getInputStream"
             `is` = ucon.getInputStream()
             errorAt = "bufferedInputStream"
             bis = BufferedInputStream(`is`)

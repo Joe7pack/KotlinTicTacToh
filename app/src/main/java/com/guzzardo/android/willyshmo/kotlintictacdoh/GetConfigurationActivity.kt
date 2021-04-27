@@ -15,8 +15,7 @@ class GetConfigurationActivity : Activity(), ToastMessage {
     }
 
     override fun sendToastMessage(message: String?) {
-        val msg =
-            mErrorHandler!!.obtainMessage()
+        val msg = mErrorHandler!!.obtainMessage()
         msg.obj = message
         mErrorHandler!!.sendMessage(msg)
     }
@@ -29,7 +28,6 @@ class GetConfigurationActivity : Activity(), ToastMessage {
     }
 
     companion object {
-        var mErrorHandler: ErrorHandler? =
-            null
+        var mErrorHandler: ErrorHandler? = null
     }
 }

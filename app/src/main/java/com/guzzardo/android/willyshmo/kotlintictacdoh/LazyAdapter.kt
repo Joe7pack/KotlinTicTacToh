@@ -23,13 +23,13 @@ class LazyAdapter(
     private val prizeDistance: Array<String?>,
     private val prizeLocation: Array<String?>,
     private val resources: Resources
-) : BaseAdapter(), ToastMessage {
-    override fun getCount(): Int {
-        if (imageDescription != null) {
-            return imageDescription.size
-        }
+    ) : BaseAdapter(), ToastMessage {
+        override fun getCount(): Int {
+            if (imageDescription != null) {
+                return imageDescription.size
+            }
         return 0
-    }
+        }
 
     override fun getItem(position: Int): Any {
         return position
@@ -55,14 +55,8 @@ class LazyAdapter(
         }
         val text = vi?.findViewById<View>(R.id.prize_description) as TextView
         text.text = imageDescription?.get(position) ?: ""
-
-
-
-
-
         text.setBackgroundColor(Color.LTGRAY)
-        val image =
-            vi.findViewById<View>(R.id.prize_image) as ImageView
+        val image = vi.findViewById<View>(R.id.prize_image) as ImageView
         val width = imageWidth[position]?.let { Integer.valueOf(it) }
         val height = imageHeight[position]?.let { Integer.valueOf(it) }
         image.layoutParams = width?.let { height?.let { it1 -> LinearLayout.LayoutParams(it, it1) } }
@@ -82,14 +76,6 @@ class LazyAdapter(
         }
         return vi
     }
-
-    /*
-    override fun sendToastMessage(message: String) {
-        val msg = errorHandler!!.obtainMessage()
-        msg.obj = message
-        errorHandler!!.sendMessage(msg)
-    }
-    */
 
     override fun sendToastMessage(message: String?) {
         TODO("Not yet implemented")

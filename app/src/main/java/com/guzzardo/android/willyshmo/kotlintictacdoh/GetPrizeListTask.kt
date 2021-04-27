@@ -17,7 +17,6 @@ import java.util.*
  * An AsyncTask that will be used to get a list of available prizes
  */
 class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
-    //private ToastMessage mCallerActivity;
     private var mCallerActivity: FusedLocationActivity? = null
     private val applicationContext: Context? = null
     protected override fun doInBackground(vararg params: Any?): String? {
@@ -64,7 +63,6 @@ class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
                 convertStringsToBitmaps()
                 savePrizeArrays()
                 mCallerActivity!!.setPrizesLoadedAllDone()
-                //mCallerActivity.formattingPrizeData();
             } else {
                // WillyShmoApplication.prizeNames = null
             }
@@ -105,7 +103,6 @@ class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
             mPrizeUrls[x] = prizeValues[5]
             mPrizeLocations[x] = prizeValues[6]
         }
-
     }
 
     private fun parsePrizeList(prizesAvailable: String): TreeMap<String, Array<String?>> {

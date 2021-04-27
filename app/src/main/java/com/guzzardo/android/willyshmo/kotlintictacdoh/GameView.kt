@@ -93,11 +93,9 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     private var mBlinkDisplayOff = false
     private val mBlinkRect = Rect()
 
-    //private ColorBall[] mColorBall = new ColorBall[ColorBall.getMaxBalls()]; // array that holds the balls
-    private val mColorBall =
-        arrayOfNulls<ColorBall>(ColorBall.MAXBALLS) // array that holds the balls
+    private val mColorBall = arrayOfNulls<ColorBall>(ColorBall.MAXBALLS) // array that holds the balls
     var ballMoved = -1 // variable to know what ball is being dragged
-        private set
+        //private set
 
     interface ICellListener {
         fun onCellSelected()
@@ -168,12 +166,9 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     fun setGamePrize() {
         prizeLocation = -1
-        //FIXME also need to think about human vs network
-        //if (WillyShmoApplication.getPrizeNames() != null && !HUMAN_VS_HUMAN) {
         if (isNetworkAvailable && !HUMAN_VS_HUMAN) {
-//      if (WillyShmoApplication.getPrizeNames() != null) { uncomment this line to test prizes with another player
             prizeLocation = mRandom.nextInt(BoardSpaceValues.BOARDSIZE)
-            //    		mPrizeLocation = 11; //set prize to a fixed location
+            //mPrizeLocation = 11; //set prize to a fixed location
             mPrizeXBoardLocation = mPrizeXBoardLocationArray[prizeLocation]
             mPrizeYBoardLocation = mPrizeYBoardLocationArray[prizeLocation]
         }
@@ -242,29 +237,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         var landscapeLocationXPlayer2 = landscapeStartingXPlayer2
         var landscapeLocationYPlayer2 = landscapeStartingYPlayer2
         setTokenCards()
-
-//    	for (int x = 0; x < mGameTokenCard.length; x++) {
-//    		mGameTokenCard[x] = BoardSpaceValues.EMPTY;
-//    	}
-//    	
-//        for (int x = 0; x < startingGameTokenCard.length; x++) {
-//        	boolean positionFilled = false;
-//        	while (!positionFilled) {
-//        		int randomCard = mRandom.nextInt(NUMBEROFTOKENS);
-//        		if (mGameTokenCard[randomCard] == BoardSpaceValues.EMPTY) {
-//        			mGameTokenCard[randomCard] = startingGameTokenCard[x];
-//        			positionFilled = true;
-//        		}
-//        	}
-//        }
         setBoardSpaceValue(BoardSpaceValues.BOARDCENTER, mGameTokenCard[NUMBEROFTOKENS - 1])
-
-
-// initialize board to specific test values        
-//    	for (int x = 0; x < gameTokenCard.length; x++) {
-//    		gameTokenCard[x] = startingGameTokenCard[x];
-//    	} 
-//      setBoardSpaceValue(BOARDCENTER, BoardSpaceValues.CIRCLE);             
         val tokenPointLandscape = Point()
         val tokenPointPortrait = Point()
         for (x in 0..3) {
@@ -308,7 +281,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 mGameTokenCard[x],
                 mTokenColor2
             )
-            //        	colorBall[x].setDisabled(true);
         }
         if (isClientRunning) {
             sendTokensToServer()
@@ -562,16 +534,18 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         } else if (mWinDiag == 0) {
             // diagonal 0 is from (0,0) to (2,2)
             canvas.drawLine(
-                (x7 + MARGIN).toFloat(), (y7 + MARGIN).toFloat(), (
-                        x7 + s3 - 1 - MARGIN).toFloat(), (y7 + s3 - 1 - MARGIN).toFloat(), mWinPaint
+                (x7 + MARGIN).toFloat(),
+                (y7 + MARGIN).toFloat(),
+                (x7 + s3 - 1 - MARGIN).toFloat(),
+                (y7 + s3 - 1 - MARGIN).toFloat(),
+                mWinPaint
             )
         } else if (mWinDiag == 2) {
             // diagonal 0 is from (0,0) to (2,2)
             canvas.drawLine(
                 (x7 + MARGIN + mSxy).toFloat(),
                 (y7 + MARGIN).toFloat(),
-                (
-                        x7 + s3 - 1 - MARGIN).toFloat(),
+                (x7 + s3 - 1 - MARGIN).toFloat(),
                 (y7 + s3 - 1 - MARGIN - mSxy).toFloat(),
                 mWinPaint
             )
@@ -579,8 +553,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             canvas.drawLine(
                 (x7 + MARGIN + 2 * mSxy).toFloat(),
                 (y7 + MARGIN).toFloat(),
-                (
-                        x7 + s3 - 1 - MARGIN).toFloat(),
+                (x7 + s3 - 1 - MARGIN).toFloat(),
                 (y7 + s3 - 1 - MARGIN - 2 * mSxy).toFloat(),
                 mWinPaint
             )
@@ -588,8 +561,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             canvas.drawLine(
                 (x7 + MARGIN).toFloat(),
                 (y7 + MARGIN + 2 * mSxy).toFloat(),
-                (
-                        x7 + s3 - 1 - MARGIN - 2 * mSxy).toFloat(),
+                (x7 + s3 - 1 - MARGIN - 2 * mSxy).toFloat(),
                 (y7 + s3 - 1 - MARGIN).toFloat(),
                 mWinPaint
             )
@@ -607,24 +579,25 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             canvas.drawLine(
                 (x7 + MARGIN - 0 * mSxy).toFloat(),
                 (y7 + s3 - 1 - MARGIN - 1 * mSxy).toFloat(),
-                (
-                        x7 + s3 + 2 - MARGIN - 1 * mSxy).toFloat(),
+                (x7 + s3 + 2 - MARGIN - 1 * mSxy).toFloat(),
                 (y7 + MARGIN).toFloat(),
                 mWinPaint
             )
         } else if (mWinDiag == 7) {
             // diagonal 7 is from (0,4) to (20,0)
             canvas.drawLine(
-                (x7 + MARGIN).toFloat(), (y7 + s3 - 1 - MARGIN).toFloat(), (
-                        x7 + s3 - 1 - MARGIN).toFloat(), (y7 + MARGIN).toFloat(), mWinPaint
+                (x7 + MARGIN).toFloat(),
+                (y7 + s3 - 1 - MARGIN).toFloat(),
+                (x7 + s3 - 1 - MARGIN).toFloat(),
+                (y7 + MARGIN).toFloat(),
+                mWinPaint
             )
         } else if (mWinDiag == 1) {
             // diagonal 1 is from (0,2) to (10,0)
             canvas.drawLine(
                 (x7 + MARGIN - 0 * mSxy).toFloat(),
                 (y7 + s3 - 1 - MARGIN - 2 * mSxy).toFloat(),
-                (
-                        x7 + s3 + 2 - MARGIN - 2 * mSxy).toFloat(),
+                (x7 + s3 + 2 - MARGIN - 2 * mSxy).toFloat(),
                 (y7 + MARGIN).toFloat(),
                 mWinPaint
             )
@@ -633,8 +606,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             canvas.drawLine(
                 (x7 + MARGIN + 1 * mSxy).toFloat(),
                 (y7 + s3 - 1 - MARGIN - 0 * mSxy).toFloat(),
-                (
-                        x7 + s3 + 2 - MARGIN + 0 * mSxy).toFloat(),
+                (x7 + s3 + 2 - MARGIN + 0 * mSxy).toFloat(),
                 (y7 + MARGIN + 1 * mSxy).toFloat(),
                 mWinPaint
             )
@@ -643,8 +615,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             canvas.drawLine(
                 (x7 + MARGIN + 2 * mSxy).toFloat(),
                 (y7 + s3 - 1 - MARGIN - 0 * mSxy).toFloat(),
-                (
-                        x7 + s3 + 2 - MARGIN + 0 * mSxy).toFloat(),
+                (x7 + s3 + 2 - MARGIN + 0 * mSxy).toFloat(),
                 (y7 + MARGIN + 2 * mSxy).toFloat(),
                 mWinPaint
             )
@@ -768,8 +739,8 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         val rightLimit = calculateRightLimit(boardSpaceValue)
         val topLimit = calculateTopLimit(boardSpaceValue)
         val bottomLimit = calculateBottomLimit(boardSpaceValue)
-        //    	calculate leftLimit, rightLimit, topLimit and bottomLimit
-//    	if xValue < leftLimit then position is not available, similarly for the remaining directions
+        //calculate leftLimit, rightLimit, topLimit and bottomLimit
+        //if xValue < leftLimit then position is not available, similarly for the remaining directions
         for (x in boardSpaceValue.indices) {
             var leftExists = false
             var rightExists = false
@@ -829,8 +800,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     //calculate the Y offset given the cell position on the game board
     private fun calculateYValue(cellNumber: Int): Int {
         var yValue = 0
-        yValue =
-            if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
+        yValue = if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
         return yValue
     }
 
@@ -874,31 +844,23 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             mSxy = TOKENSIZE + 2
             //mOffsetX = (w - (landscapeIncrementYPlayer * 4))/2;
             mOffsetX = (w - landscapeIncrementYPlayer * 5) / 2
-
-//        	BoardLowerLimit = TOKENSIZE / 2;
             BoardLowerLimit = mOffsetY + mSxy * 5
-            //            mOffsetY = mOffsetXY; // 5;
-            //h = LANDSCAPEHEIGHT; // 222;
-
-            //landscapeComputerTokenSelectedOffsetX = w - landscapeHumanTokenSelectedOffsetX - mSxy;
             val playingBoardWidth = (mSxy + GRIDLINEWIDTH) * 5
             landscapeRightMoveXLimitPlayer1 = w / 2 + playingBoardWidth / 2
             landscapeLeftMoveXLimitPlayer2 = w / 2 - playingBoardWidth / 2
             landscapeRightMoveXLimitPlayer2 = w - mSxy
             landscapeLeftMoveXLimitPlayer1 = mSxy * 2
             landscapeStartingXPlayer2 = w - landscapeHumanTokenSelectedOffsetX - mSxy
-            mDstRect[MARGIN, MARGIN, mSxy - MARGIN - 1] =
-                mSxy - MARGIN - 1
+            mDstRect[MARGIN, MARGIN, mSxy - MARGIN - 1] = mSxy - MARGIN - 1
             setMeasuredDimension(w, h)
         } else if (modeH == MeasureSpec.EXACTLY) {
             mDisplayMode = ScreenOrientation.PORTRAIT
             mOffsetX = 0
             mOffsetX = 0
-            mOffsetX = PORTRAITOFFSETX // 5;
-            mOffsetY = PORTRAITOFFSETY // 5;
-            d = PORTRAITWIDTHHEIGHT // 300;
-            mDstRect[MARGIN, MARGIN, mSxy - MARGIN - 1] =
-                mSxy - MARGIN - 1
+            mOffsetX = PORTRAITOFFSETX
+            mOffsetY = PORTRAITOFFSETY
+            d = PORTRAITWIDTHHEIGHT
+            mDstRect[MARGIN, MARGIN, mSxy - MARGIN - 1] = mSxy - MARGIN - 1
             setMeasuredDimension(d, d)
         } else {
             setMeasuredDimension(d, d)
@@ -933,7 +895,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                     leftLimit = portraitHumanTokenSelectedOffsetX
                 }
             }
-        } else if (mDisplayMode == ScreenOrientation.PORTRAIT) { // 1 player portrait 
+        } else if (mDisplayMode == ScreenOrientation.PORTRAIT) {
             rightLimit = portraitComputerLiteralOffset
             leftLimit = portraitHumanTokenSelectedOffsetX
         }
@@ -951,8 +913,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 val radCircle =
                     Math.sqrt(((centerX - X) * (centerX - X) + (centerY - Y) * (centerY - Y)).toDouble())
                 // if the radius is smaller then 23 (radius of a ball is 22), then it must be on the ball
-//        		if (radCircle < 40) { // was 23
-                if (radCircle < mTokenRadius) { // was 23 
+                if (radCircle < mTokenRadius) {
                     ballMoved = ball.iD
                     break
                 }
@@ -975,7 +936,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             Y = event.y.toInt()
             val xPos = (X - mOffsetX) / mSxy
             val yPos = (Y - mOffsetY) / mSxy
-            //if (xPos >= 0 && xPos < 5 && yPos >= 0 and yPos < 5) {
             if (xPos in 0..4 && yPos in 0..4) {
                 val cell = xPos + 5 * yPos
                 var state = if (cell == mSelectedCell) mSelectedValue else data[cell]!!
@@ -985,7 +945,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                     "state: " + state + " mSelectedCell: " + mSelectedCell + " mSelectedValue: " + mSelectedValue + " mData[cell]: " + data[cell]
                 )
 
-                //state = state == State.EMPTY ? mCurrentPlayer : State.EMPTY;
                 if (state == State.EMPTY) state = mCurrentPlayer
                 writeToLog("ClientService", "cell calculated: $cell")
                 if (ballMoved > -1) {
@@ -1000,17 +959,11 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                             MARGIN + mOffsetY + (yPos + 1) * mSxy
                         mSelectedCell = cell
                         mSelectedValue = state
-                        writeToLog(
-                            "ClientService",
-                            "ball id: " + ballMoved + " cell calculated: " + cell
-                        )
+                        writeToLog("ClientService","ball id: " + ballMoved + " cell calculated: " + cell)
                     } else {
                         ballMoved = -1
                         stopBlink()
-                        writeToLog(
-                            "ClientService",
-                            "ball id: " + ballMoved + " cell calculated: " + cell + " space not available"
-                        )
+                        writeToLog("ClientService","ball id: " + ballMoved + " cell calculated: " + cell + " space not available")
                     }
                 }
                 if (ballMoved > -1 && !mColorBall[ballMoved]!!.isDisabled && state != State.EMPTY) {
@@ -1088,8 +1041,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 val radCircle =
                     Math.sqrt(((centerX - X) * (centerX - X) + (centerY - Y) * (centerY - Y)).toDouble())
                 // if the radius is smaller then 23 (radius of a ball is 22), then it must be on the ball
-//        		if (radCircle < 40){ // was 23 xx
-                if (radCircle < mTokenRadius) { // was 23 
+                if (radCircle < mTokenRadius) {
                     ballMoved = ball.iD
                     break
                 }
@@ -1107,7 +1059,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             }
             val xPos = (X - mOffsetX) / mSxy
             val yPos = (Y - mOffsetY) / mSxy
-            //if (xPos >= 0 && xPos < 5 && yPos >= 0 and yPos < 5) {
             if (xPos in 0..4 && yPos in 0..4) {
                 val cell = xPos + 5 * yPos
                 var state = if (cell == mSelectedCell) mSelectedValue else data[cell]!!
@@ -1249,7 +1200,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     fun selectRandomAvailableBoardSpace(): Int {
 
-//    	build array of avail cells
+        //build array of avail cells
         var numberAvailable = 0
         for (x in boardSpaceAvailableValues.indices) {
             if (boardSpaceAvailableValues[x] == true) numberAvailable++
@@ -1369,8 +1320,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     private val sharedPreferences: Unit
         private get() {
-            val settings =
-                mContext.getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
+            val settings = mContext.getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
             mTokenSize = settings.getInt(GameActivity.TOKEN_SIZE, 50)
             mTokenColor1 = settings.getInt(GameActivity.TOKEN_COLOR_1, Color.RED)
             mTokenColor2 = settings.getInt(GameActivity.TOKEN_COLOR_2, Color.BLUE)
@@ -1393,7 +1343,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         private var BoardLowerLimit = 0
         private var mDisplayMode // portrait or landscape
                 = 0
-        private const val portraitComputerLiteralOffset = 245 // was 210;
+        private const val portraitComputerLiteralOffset = 245
         private const val portraitHumanTokenSelectedOffsetX = 20
         private var landscapeRightMoveXLimitPlayer1 = 0
         private var landscapeLeftMoveXLimitPlayer2 = 0
@@ -1411,11 +1361,10 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         private const val landscapeIncrementXPlayer1 = 0
         private var landscapeIncrementYPlayer = 0
         private const val landscapeStartingXPlayer1 = 50
-        private const val landscapeStartingYPlayer1 = 25 // was 50
+        private const val landscapeStartingYPlayer1 = 25
         private const val landscapeIncrementXPlayer2 = 0
-        private var landscapeStartingXPlayer2 // = 410; // calculated dynamically in onMeasure based upon screen width
-                = 0
-        private const val landscapeStartingYPlayer2 = 25 // was 50
+        private var landscapeStartingXPlayer2 = 0
+        private const val landscapeStartingYPlayer2 = 25
         private const val MSG_BLINK = 1
         private const val MSG_BLINK_TOKEN = 2
         private const val MSG_BLINK_SQUARE = 3
@@ -1461,8 +1410,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             intArrayOf(0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4)
         private var mPrizeXBoardLocation = 0
         private var mPrizeYBoardLocation = 0
-        //val boardSpaceValues = IntArray(BoardSpaceValues.BOARDSIZE) // -1 = empty, 0 = circle, 1 = cross 2 = circleCross
-           // get() = Companion.field
         private var HUMAN_VS_HUMAN = false
         private var mClientThread: ClientThread? = null
         private var mGameActivity: GameActivity? = null

@@ -40,16 +40,6 @@ class SettingsDialogs : Activity() {
     private var mTokenColor = 0
     private var mTokenColor1 = 0
     private var mTokenColor2 = 0
-    /*
-    HandlerThread handlerThread;
-    private Looper looper;
-    private Handler mProgressHandler;
-    private static final int MAX_PROGRESS = 100;
-    private ProgressDialog mProgressDialog;
-    private int mProgress;
-    private final Handler mHandler = new Handler(Looper.getMainLooper(), (Handler.Callback) new MyHandlerCallback());
-    private static class MyHandlerCallback {  }
-    */
 
     /**
      * Initialization of the Activity after it is first created.  Must at least
@@ -93,26 +83,6 @@ class SettingsDialogs : Activity() {
             val playerNameDialog = showPlayerNameDialog(2)
             playerNameDialog.show()
         }
-
-        /*
-        handlerThread = new HandlerThread("MyHandlerThread");
-        handlerThread.start();
-        looper = handlerThread.getLooper();
-        
-        mProgressHandler =  new Handler(looper) {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                if (mProgress >= MAX_PROGRESS) {
-                    mProgressDialog.dismiss();
-                } else {
-                    mProgress++;
-                    mProgressDialog.incrementProgressBy(1);
-                    mProgressHandler.sendEmptyMessageDelayed(0, 100);
-                }
-            }
-        };
-        */
 
         /* Display a radio button group */
         var radioButton = findViewById<View>(R.id.move_mode) as Button

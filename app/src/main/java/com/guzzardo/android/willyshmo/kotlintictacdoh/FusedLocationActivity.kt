@@ -70,7 +70,6 @@ class FusedLocationActivity : Activity(), ToastMessage {
     private var pgsBar: ProgressBar? = null
     var handlerThread: HandlerThread? = null
     private var looper: Looper? = null
-    //private var looper: Looper = null
     private var looperHandler: Handler? = null
     val START_LOCATION_CHECK_ACTION = 0
     val MAIN_ACTIVITY_ACTION = 1
@@ -157,11 +156,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
                     "User agreed to make required location settings changes."
                 )
                 RESULT_CANCELED -> {
-                    writeToLog(
-                        "FusedLocationActivity",
-                        "User chose not to make required location settings changes."
-                    )
-                    //Log.i(TAG, "User chose not to make required location settings changes.");
+                    writeToLog("FusedLocationActivity", "User chose not to make required location settings changes.")
                     mRequestingLocationUpdates = false
                 }
             }
@@ -400,12 +395,9 @@ class FusedLocationActivity : Activity(), ToastMessage {
     }
 
     fun startMyThread() {
-        //progressIndex = pgsBar.getProgress();
         handlerThread = HandlerThread("MyHandlerThread")
         handlerThread!!.start()
         looper = handlerThread!!.looper
-        //looperHandler = object : Handler(looper) {
-
         looperHandler = object : Handler(looper!!) {
             override fun handleMessage(msg: Message) {
                 //TODO - consolidate this code a little better
@@ -480,7 +472,6 @@ class FusedLocationActivity : Activity(), ToastMessage {
     private fun setProgressBar(progress: Int) {
         pgsBar!!.progress = progress
         writeToLog("FusedLocationActivity", "progress bar set to: $progress")
-        //handlerThread.quit();
     }
 
     companion object {
