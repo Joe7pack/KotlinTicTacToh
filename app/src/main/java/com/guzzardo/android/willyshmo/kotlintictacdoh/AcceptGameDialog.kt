@@ -40,10 +40,6 @@ class AcceptGameDialog : DialogFragment(), ToastMessage {
             .create()
     }
 
-    fun setOpposingPlayerName(name: String?) {
-        mOpposingPlayerName = name
-    }
-
     private fun rejectGame() { //this is what the server side will see
         val hostName = WillyShmoApplication.getConfigMap("RabbitMQIpAddress") as String
         val queuePrefix = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") as String

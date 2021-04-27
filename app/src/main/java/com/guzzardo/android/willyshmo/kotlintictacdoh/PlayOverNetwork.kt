@@ -13,16 +13,6 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
 
 class PlayOverNetwork : Activity(), ToastMessage {
-    interface NetworkValues { //    	static final String domainName = "http://ww2.guzzardo.com:8081"; // for production
-        //    	static final String domainName = "http://localhost:8092";
-        //    	static final String domainName = "http://10.0.2.2:8092"; // this works ok when using the emulator but when using
-        // the G1 phone i need to use an external ip address
-        // e.g. ww2.guzzardo.com or testandroid.guzzardo.com
-        //    	static final String domainName = "http://testandroid.guzzardo.com:8082"; // for test 
-        //    	static final String domainName = "http://216.80.121.243:6999"; // for test 
-        //    	static final String domainName = "http://willyshmotest.guzzardo.com"; // for test - link up to Grails - set to port 6260       	
-        //    	static final String domainName = "http://willyshmoprod.guzzardo.com"; // for Prod - link up to Grails - set to port 6360     	
-    }
 
     private var mPlayer1Name: String? = null
 
@@ -40,13 +30,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
             addMyselfToPlayerList()
         } else {
             val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
-            webServerInterfaceUsersOnlineTask.execute(
-                this,
-                applicationContext,
-                mPlayer1Name,
-                Companion.resources,
-                Integer.valueOf(mPlayer1Id)
-            )
+            webServerInterfaceUsersOnlineTask.execute(this, applicationContext, mPlayer1Name, Companion.resources, Integer.valueOf(mPlayer1Id))
         }
         finish()
     }
@@ -59,16 +43,9 @@ class PlayOverNetwork : Activity(), ToastMessage {
         val trackingInfo = androidId + latitude + longitude
         val url =
             Companion.resources!!.getString(R.string.domainName) + "/gamePlayer/createAndroid/" + trackingInfo + "&userName="
-        val webServerInterfaceNewPlayerTask =
-            WebServerInterfaceNewPlayerTask()
+        val webServerInterfaceNewPlayerTask = WebServerInterfaceNewPlayerTask()
         val playOverNetwork = this
-        webServerInterfaceNewPlayerTask.execute(
-            playOverNetwork,
-            url,
-            mPlayer1Name,
-            applicationContext,
-            Companion.resources
-        )
+        webServerInterfaceNewPlayerTask.execute(playOverNetwork, url, mPlayer1Name, applicationContext, Companion.resources)
     }
 
     private val sharedPreferences: Unit

@@ -7,10 +7,7 @@ class CurrentLocation {
      * @param location  The new Location that you want to evaluate
      * @param currentBestLocation  The current Location fix, to which you want to compare the new one
      */
-    protected fun isBetterLocation(
-        location: Location,
-        currentBestLocation: Location?
-    ): Boolean {
+    protected fun isBetterLocation(location: Location, currentBestLocation: Location?): Boolean {
         if (currentBestLocation == null) {
             // A new location is always better than no location
             return true

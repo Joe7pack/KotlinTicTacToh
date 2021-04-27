@@ -32,7 +32,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.guzzardo.android.willyshmo.kotlintictacdoh.GameView.ICellListener
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
-import com.guzzardo.android.willyshmo.kotlintictacdoh.PrizesAvailableActivity
+import com.guzzardo.android.willyshmo.kotlintictacdoh.RabbitMQMessageConsumer.OnReceiveMessageHandler
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.getConfigMap
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
@@ -118,13 +118,11 @@ class GameActivity : Activity(), ToastMessage {
         val opponentName = if (mPlayer2Name == null) "Waiting for player to connect..." else "Waiting for " + mPlayer2Name + " to connect..."
         val hostingDescription = if (mPlayer2Name == null) "Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)" else "Hosting..."
         mGameView!!.setGamePrize()
-        return ProgressDialog.show(this@GameActivity, hostingDescription, opponentName, true, true
-        ) { finish() }
+        return ProgressDialog.show(this@GameActivity, hostingDescription, opponentName, true, true) { finish() }
     }
 
     private fun showClientWaitDialog(): ProgressDialog {
-        return ProgressDialog.show(this@GameActivity, "Connecting...", "to $mPlayer2Name", true, true
-        ) { finish() }
+        return ProgressDialog.show(this@GameActivity, "Connecting...", "to $mPlayer2Name", true, true) { finish() }
     }
 
     override fun onResume() {
@@ -537,10 +535,10 @@ class GameActivity : Activity(), ToastMessage {
 //               						computerBlockingMove = winningPosition;
 //               						break;
                                     saveHumanWinner(testMove, 0) // space cannot be used
-                                    //                					System.out.println("reset value at "+testMove+ " to unavailable(false) for "+ winningPosition);
+                                    //System.out.println("reset value at "+testMove+ " to unavailable(false) for "+ winningPosition);
                                 } else {
                                     if (spaceOkToUse != 0) saveHumanWinner(testMove, 1) //space is ok to use
-                                    //                					System.out.println("reset value at "+testMove+ " to ok to use for "+ winningPosition);
+                                    //System.out.println("reset value at "+testMove+ " to ok to use for "+ winningPosition);
                                 }
                             }
                         }
@@ -551,7 +549,7 @@ class GameActivity : Activity(), ToastMessage {
                             if (spaceAvailable == 1) {
                                 boardSpaceSelected = computerBlockingMove
                                 tokenSelected = tokenChoice
-                                //                   				System.out.println("found good move for computer at "+boardSpaceSelected);
+                                //System.out.println("found good move for computer at "+boardSpaceSelected);
                             }
                         }
                     }
@@ -561,8 +559,6 @@ class GameActivity : Activity(), ToastMessage {
             // cannot win on the next 
             // so we'll select a position that at least doesn't give the human a win and move there
             if (tokenSelected == -1) {
-//            	tokenChoice = mGameView.selectSpecificComputerToken(mPlayer2TokenChoice, false);
-//            	if (tokenChoice == -1)
                 tokenChoice = mGameView!!.selectSpecificComputerToken(mPlayer1TokenChoice, false)
                 if (tokenChoice > -1) {
                     for (x in availableValues.indices) {
@@ -578,7 +574,7 @@ class GameActivity : Activity(), ToastMessage {
                             // if human cannot win then this is a candidate move for computer
                             if (winnerFound[0] == -1 && winnerFound[1] == -1 && winnerFound[2] == -1) {
                                 //take it one step further and see if moving to this position gives the human a win in the next move,
-// if it does then try next available board position
+                                // if it does then try next available board position
                                 val humanToken = mGameView!!.selectSpecificHumanToken(mPlayer1TokenChoice)
                                 val testBoard2 = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
                                 if (humanToken > -1) {
@@ -617,7 +613,6 @@ class GameActivity : Activity(), ToastMessage {
                 if (availableSpaceCount == 2) { //we're down to our last 2 possible moves
                     //if we get here we're on the last move and we know we can't win with it.
                     //so let's see if the human could make the computer win 
-//        			System.out.println("testing with 2 possibilities available");
                     val testBoard = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
                     //copy normalizedBoard to testBoard
                     for (y in testBoard.indices) {
@@ -632,11 +627,9 @@ class GameActivity : Activity(), ToastMessage {
                                 tokenChoice = mGameView!!.selectLastComputerToken()
                             }
                             tokenSelected = tokenChoice
-                            //        					System.out.println("human choice found, moving computer token to "+trialBoardSpaceSelected2);
                         } else {
                             tokenSelected = mGameView!!.selectLastComputerToken()
                             boardSpaceSelected = trialBoardSpaceSelected1
-                            //        					System.out.println("human choice found, no winning move found for human, moving computer token to "+trialBoardSpaceSelected2);
                         }
                     } else {
                         if (tokenChoice == -1) tokenChoice = mGameView!!.selectLastComputerToken()
@@ -645,18 +638,14 @@ class GameActivity : Activity(), ToastMessage {
                         val winnerFound = checkWinningPosition(testBoard)
                         boardSpaceSelected = if (winnerFound[0] > -1 || winnerFound[1] > -1 || winnerFound[2] > -1) {
                             trialBoardSpaceSelected1
-                            //        					System.out.println("winning move found for human, moving computer token to "+trialBoardSpaceSelected1);
+                            //System.out.println("winning move found for human, moving computer token to "+trialBoardSpaceSelected1);
                         } else {
                             trialBoardSpaceSelected2
-                            //        					System.out.println("moving computer token to "+trialBoardSpaceSelected2);
+                            //System.out.println("moving computer token to "+trialBoardSpaceSelected2);
                         }
                     }
                 }
                 if (availableSpaceCount >= 3) {
-                    // 3 or more spaces still open on board
-//    				System.out.println("3 or more spaces open");
-//    				tokenChoice = mGameView.selectLastComputerToken();
-//    				tokenChoice = mGameView.selectSpecificComputerToken(mPlayer2TokenChoice, false);
                     tokenChoice = mGameView!!.selectSpecificHumanToken(mPlayer1TokenChoice)
                     if (tokenChoice > -1) {
                         val testBoard = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
@@ -702,7 +691,7 @@ class GameActivity : Activity(), ToastMessage {
                             tokenChoice = mGameView!!.selectLastComputerToken() //no choice here
                         }
                         val testBoard = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
-                        //    					System.out.println("3 or more spaces open last attempt made");
+                        //System.out.println("3 or more spaces open last attempt made");
                         for (x in availableValues.indices) {
                             for (y in testBoard.indices) {
                                 testBoard[y] = normalizedBoardPlayer2[y]
@@ -775,10 +764,7 @@ class GameActivity : Activity(), ToastMessage {
 
     private inner class MyHandlerCallback : Handler.Callback {
         override fun handleMessage(msg: Message): Boolean {
-
             writeToLog("MyHandlerCallback", "msg.what value: " + msg.what)
-
-
             if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_CLIENT) {
                 if (mHostWaitDialog != null) {
                     mHostWaitDialog!!.dismiss()
@@ -950,8 +936,6 @@ class GameActivity : Activity(), ToastMessage {
 
     //FIXME - consider highlighting the border of the enclosing rectangle around the player's name instead
     fun highlightCurrentPlayer(player: GameView.State) {
-
-//    	System.out.println("entering highlightCurrentPlayer");
         val anim: Animation = AlphaAnimation(0.0f, 1.0f)
         anim.duration = 500 //You can manage the time of the blink with this parameter
         anim.startOffset = 20
@@ -981,9 +965,7 @@ class GameActivity : Activity(), ToastMessage {
     }
 
     private fun finishTurn(makeComputerMove: Boolean, switchPlayer: Boolean, usePlayer2: Boolean) {
-
         writeToLog("finishTurn", "called with switchPLayer " + switchPlayer + " usePlayer2: " + usePlayer2)
-
         var player = mGameView!!.currentPlayer
         if (usePlayer2) { // if we're playing over a network then current player is always player 1 
             player = GameView.State.PLAYER2 // so we need to add some extra logic to test winner on player 2 over the network
@@ -1278,9 +1260,6 @@ class GameActivity : Activity(), ToastMessage {
                     if (HUMAN_VS_HUMAN || HUMAN_VS_NETWORK) {
                         player2Score += mRegularWin
                         playHumanWinSound()
-                        //            			if (HUMAN_VS_NETWORK) {
-//            				checkForPrizeWin(winnerFound[4], winnerFound[5], winnerFound[6], PrizeValue.REGULARPRIZE);
-//            			}
                     } else {
                         mWillyScore += mRegularWin
                         playWillyWinSound()
@@ -1289,9 +1268,6 @@ class GameActivity : Activity(), ToastMessage {
                     if (HUMAN_VS_HUMAN || HUMAN_VS_NETWORK) {
                         player2Score += mSuperWin
                         playHumanWinShmoSound()
-                        //            			if (HUMAN_VS_NETWORK) {
-//            				checkForPrizeWin(winnerFound[4], winnerFound[5], winnerFound[6], PrizeValue.SHMOPRIZE); 
-//            			}
                     } else {
                         mWillyScore += mSuperWin
                         playWillyWinShmoSound()
@@ -1306,7 +1282,6 @@ class GameActivity : Activity(), ToastMessage {
             }
         }
         if (winnerFound[0] != -1 || winnerFound[1] != -1 || winnerFound[2] != -1) {
-            //setFinished(player, winnerFound[0], winnerFound[1], winnerFound[2])
             if (player != null) {
                 setFinished(player, winnerFound[0], winnerFound[1], winnerFound[2])
             }
@@ -1358,10 +1333,8 @@ class GameActivity : Activity(), ToastMessage {
         text = if (player == GameView.State.EMPTY) {
             getString(R.string.tie)
         } else if (player == GameView.State.PLAYER1) {
-//            text = getString(R.string.player1_win);
             "$player1Name wins! Play Again?"
         } else {
-//            text = getString(R.string.player2_win);
             "$player2Name wins! Play Again?"
         }
         mButtonNext!!.text = text
@@ -1592,9 +1565,6 @@ class GameActivity : Activity(), ToastMessage {
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mGameStarted = false
                 while (mServerRunning) {
-                    //if (mRabbitMQServerResponseHandler!!.rabbitMQResponse == null && mMessageToClient == null)
-                        //continue
-                    //else
                     if (mRabbitMQServerResponseHandler!!.rabbitMQResponse != null) {
                         writeToLog("ServerThread", "Retrieving command: " + mRabbitMQServerResponseHandler!!.rabbitMQResponse)
                         if (mRabbitMQServerResponseHandler!!.rabbitMQResponse!!.contains("tokenList")) {
@@ -1612,13 +1582,10 @@ class GameActivity : Activity(), ToastMessage {
                             mGameStarted = false
                             mServerRunning = false
                         }
-                        mRabbitMQServerResponseHandler!!.setRabbitMQResponse(null)
+                        mRabbitMQServerResponseHandler!!.rabbitMQResponse = null // .setRabbitMQResponse(null)
                     }
                     if (mMessageToClient != null) {
                         writeToLog("ServerThread", "Server about to respond to client: $mMessageToClient")
-                        //String hostName = resources.getString(R.string.RabbitMQHostName);
-                        //String hostName = (String)WillyShmoApplication.getConfigMap("RabbitMQIpAddress");
-                        //String queuePrefix = (String)WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix");
                         val qName = mQueuePrefix + "-" + "client" + "-" + player2Id
                         SendMessageToRabbitMQTask().execute(mHostName, qName, null, mMessageToClient, this@GameActivity, Companion.resources)
                         writeToLog("ServerThread", "Server responded to client completed: $mMessageToClient queue: $qName")
@@ -1644,15 +1611,10 @@ class GameActivity : Activity(), ToastMessage {
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mServerThread = null
 
-//        		String onlineNowIndicator = "";
-//        		if (!mClient) {
-//        			onlineNowIndicator = "&onlineNow=false";
-//        		}
                 val urlData = "/gamePlayer/update/?id=" + mPlayer1Id + "&onlineNow=false&playingNow=false&opponentId=0"
                 SendMessageToWillyShmoServer().execute(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.FALSE)
                 DisposeRabbitMQTask().execute(mMessageServerConsumer, Companion.resources, this@GameActivity)
                 writeToLog("ServerThread", "server finished")
-                //            	finish(); 
             }
         }
     }
@@ -1710,9 +1672,6 @@ class GameActivity : Activity(), ToastMessage {
                 writeToLog("ClientService", "client run method entered")
                 while (mClientRunning) {
                     if (mMessageToServer != null) {
-                        //String hostName = (String)WillyShmoApplication.getConfigMap("RabbitMQIpAddress");
-                        //String queuePrefix = (String)WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix");
-                        //String hostName = resources.getString(R.string.RabbitMQHostName);
                         val qName = mQueuePrefix + "-" + "server" + "-" + player2Id
                         SendMessageToRabbitMQTask().execute(mHostName, qName, null, mMessageToServer, this@GameActivity, Companion.resources)
                         writeToLog("ClientThread", "Sending command: $mMessageToServer queue: $qName")
@@ -1745,7 +1704,7 @@ class GameActivity : Activity(), ToastMessage {
                             playerNotPlaying(mRabbitMQClientResponseHandler!!.rabbitMQResponse!!, 1)
                             mGameStarted = false
                         }
-                        mRabbitMQClientResponseHandler!!.setRabbitMQResponse(null)
+                        mRabbitMQClientResponseHandler!!.rabbitMQResponse = null // .rabbitMQResponse(null)
                     }
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
                 }
@@ -1832,21 +1791,6 @@ class GameActivity : Activity(), ToastMessage {
         SendMessageToWillyShmoServer().execute(urlData, null, this@GameActivity, Companion.resources, !start)
     }
 
-    /*
-    private Handler newNetworkGameHandlerOrig = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case ACCEPT_GAME:
-                	setGameRequestFromClient(true);
-                break;
-                case REJECT_GAME:
-                	setGameRequestFromClient(false);
-                break;
-            }
-        }
-    };
-
- */
     private val newNetworkGameHandler = Handler(Looper.getMainLooper()) { msg -> // Your code logic goes here.
         when (msg.what) {
             ACCEPT_GAME -> setGameRequestFromClient(true)
@@ -1863,7 +1807,6 @@ class GameActivity : Activity(), ToastMessage {
         mRabbitMQStartGameResponseHandler!!.rabbitMQResponse // get rid of "startGame" RabbitMQ message
         DisposeRabbitMQTask().execute(mMessageStartGameConsumer, Companion.resources, this@GameActivity)
         // "Accept Game" call back.
-
         //setGameRequestFromClient(true); //just to test error condition
         val acceptMsg = Message.obtain()
         acceptMsg.target = newNetworkGameHandler
@@ -1873,12 +1816,12 @@ class GameActivity : Activity(), ToastMessage {
         rejectMsg.what = REJECT_GAME
         try {
             AlertDialog.Builder(this@GameActivity)
-                    .setTitle(mPlayer2Name + " would like to play")
-                    .setPositiveButton("Accept") { dialog, which -> acceptMsg.sendToTarget() }
-                    .setCancelable(true)
-                    .setIcon(R.drawable.willy_shmo_small_icon)
-                    .setNegativeButton("Reject") { dialog, which -> rejectMsg.sendToTarget() }
-                    .show()
+                .setTitle(mPlayer2Name + " would like to play")
+                .setPositiveButton("Accept") { dialog, which -> acceptMsg.sendToTarget() }
+                .setCancelable(true)
+                .setIcon(R.drawable.willy_shmo_small_icon)
+                .setNegativeButton("Reject") { dialog, which -> rejectMsg.sendToTarget() }
+                .show()
         } catch (e: Exception) {
             sendToastMessage(e.message)
         }
@@ -1932,60 +1875,32 @@ class GameActivity : Activity(), ToastMessage {
     }
 
     override fun sendToastMessage(message: String?) {
-        //val toast = Toast.makeText(this, message, Toast.LENGTH_LONG)
-        //toast.show()
         runOnUiThread { Toast.makeText(this, message, Toast.LENGTH_LONG).show() }
     }
 
-    private inner class RabbitMQServerResponseHandler : RabbitMQResponseHandler {
-        override fun setRabbitMQResponse(rabbitMQResponse: String?) {
-            mRabbitMQServerResponse = rabbitMQResponse
-        }
+    private inner class RabbitMQServerResponseHandler : RabbitMQResponseHandler() { }
 
-        override fun getRabbitMQResponse(): String? {
-            return mRabbitMQServerResponse
-        }
-    }
+    private inner class RabbitMQClientResponseHandler : RabbitMQResponseHandler() { }
 
-    private inner class RabbitMQClientResponseHandler : RabbitMQResponseHandler {
-        override fun setRabbitMQResponse(rabbitMQResponse: String?) {
-            mRabbitMQClientResponse = rabbitMQResponse
-        }
-
-        override fun getRabbitMQResponse(): String? {
-            return mRabbitMQClientResponse
-        }
-    }
-
-    private inner class RabbitMQStartGameResponseHandler : RabbitMQResponseHandler {
-        override fun setRabbitMQResponse(rabbitMQResponse: String?) {
-            mRabbitMQStartGameResponse = rabbitMQResponse
-        }
-
-        override fun getRabbitMQResponse(): String {
-            return mRabbitMQStartGameResponse!!
-        }
-    }
+    private inner class RabbitMQStartGameResponseHandler : RabbitMQResponseHandler() { }
 
     private fun setUpMessageConsumer(rabbitMQMessageConsumer: RabbitMQMessageConsumer, qNameQualifier: String, rabbitMQResponseHandler: RabbitMQResponseHandler) {
-        //String hostName = (String)WillyShmoApplication.getConfigMap("RabbitMQIpAddress");
-        //String queuePrefix = (String)WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix");
-        //String hostName = resources.getString(R.string.RabbitMQHostName);
         val qName = mQueuePrefix + "-" + qNameQualifier + "-" + mPlayer1Id
         ConsumerConnectTask().execute(mHostName, rabbitMQMessageConsumer, qName, this@GameActivity, Companion.resources, "GameActivity")
         writeToLog("GameActivity", "$qNameQualifier message consumer listening on queue: $qName")
 
         // register for messages
-        rabbitMQMessageConsumer.setOnReceiveMessageHandler { message ->
-            var text = ""
-            text = String(message, StandardCharsets.UTF_8)
-            rabbitMQResponseHandler.rabbitMQResponse = text
-            writeToLog("GameActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
-        }
+        rabbitMQMessageConsumer.setOnReceiveMessageHandler(object : OnReceiveMessageHandler {
+            override fun onReceiveMessage(message: ByteArray?) {
+                var text = ""
+                text = String(message!!, StandardCharsets.UTF_8)
+                rabbitMQResponseHandler.rabbitMQResponse = text
+                writeToLog("GameActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
+            }
+        })
     }
 
     fun sendMessageToServerHost(message: String) {
-        //String hostName = resources.getString(R.string.RabbitMQHostName);
         val qName = mQueuePrefix + "-" + "server" + "-" + player2Id
         SendMessageToRabbitMQTask().execute(mHostName, qName, null, message, this@GameActivity, Companion.resources)
         writeToLog("GameActivity", "sendMessageToServerHost: $message queue: $qName")
@@ -2014,8 +1929,7 @@ class GameActivity : Activity(), ToastMessage {
     companion object {
         var errorHandler: ErrorHandler? = null
         private const val packageName = "com.guzzardo.android.willyshmo.kotlintictacdoh"
-
-        /** Start player. Must be 1 or 2. Default is 1.  */
+        /* Start player. Must be 1 or 2. Default is 1.  */
         const val EXTRA_START_PLAYER = packageName + ".GameActivity.EXTRA_START_PLAYER"
         const val START_PLAYER_HUMAN = packageName + ".GameActivity.START_PLAYER_HUMAN"
         const val PLAYER1_NAME = packageName + ".GameActivity.PLAYER1_NAME"
@@ -2053,8 +1967,6 @@ class GameActivity : Activity(), ToastMessage {
         private const val mSuperWin = 30
         private var mPlayer1Id = 0
         var player2Id: String? = null
-            //get() = Companion.field
-            //private set
         private var mGameView: GameView? = null
         private var mPlayer1Score = 0
         private var mPlayer2Score = 0
@@ -2062,20 +1974,15 @@ class GameActivity : Activity(), ToastMessage {
         private var mPlayer1NetworkScore = 0
         private var mPlayer2NetworkScore = 0
         private var mPlayer1Name: String? = null
-            //get() = PLAYER1_NAME
-            //private set
         private var mPlayer2Name: String? = null
         var moveModeTouch  = false //false = drag move mode; true = touch move mode
-            private set
         var soundMode = false //false = no sound; true = sound
-            private set
         private var HUMAN_VS_HUMAN = false
         private var HUMAN_VS_NETWORK = false
         private var mSavedCell = 0 //hack for saving cell selected when XO token is chosen as first move
         private var mButtonStartText: CharSequence? = null
         private var mServerRunning = false
         private var mClientRunning = false
-
         private var imServing = false
         private var mBallMoved = 0 //hack for correcting problem with resetting mBallId to -1 in mGameView.disableBall()
         private var resources: Resources? = null
@@ -2084,8 +1991,6 @@ class GameActivity : Activity(), ToastMessage {
         private var mChooseTokenDialog: AlertDialog? = null
         private var mNetworkOpponentPlayerName: String? = null
         private var mLastCellSelected = 0
-
-        //	private boolean mGameStartedFromPlayerList;
         private var mHostName: String? = null
         private var mQueuePrefix: String? = null
         private const val ACCEPT_GAME = 1

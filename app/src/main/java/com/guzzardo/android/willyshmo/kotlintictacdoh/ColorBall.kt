@@ -7,37 +7,17 @@ import android.graphics.Point
 import android.graphics.Rect
 import com.guzzardo.android.willyshmo.kotlintictacdoh.GameView.ScreenOrientation
 
-class ColorBall(
-    context: Context,
-    drawable: Int,
-    pointLandscape: Point,
-    pointPortrait: Point,
-    displayMode: Int,
-    type: Int,
-    color: Int
-) {
-    var bitmap // the image of the ball
-            : Bitmap
-        private set
+class ColorBall(context: Context, drawable: Int, pointLandscape: Point, pointPortrait: Point, displayMode: Int, type: Int, color: Int) {
+    var bitmap : Bitmap // the image of the ball
     private var coordX : Int = 0 // the current x coordinate at the canvas = 0
     private var coordY : Int = 0 // the current y coordinate at the canvas = 0
-    //public val MAXBALLS : Int = 8
-
-    private val startingLandscapeCoordX // the starting x coordinate at the canvas
-            : Int
-    private val startingLandscapeCoordY // the starting y coordinate at the canvas
-            : Int
-    private val startingPortraitCoordX // the starting x coordinate at the canvas
-            : Int
-    private val startingPortraitCoordY // the starting y coordinate at the canvas
-            : Int
-    private val mDisplayMode //portrait or landscape
-            : Int
-    val iD // gives every ball its own id
-            : Int
-    var type // circle, cross or circleCross token
-            : Int
-        private set
+    private val startingLandscapeCoordX : Int // the starting x coordinate at the canvas
+    private val startingLandscapeCoordY : Int // the starting y coordinate at the canvas
+    private val startingPortraitCoordX : Int // the starting x coordinate at the canvas
+    private val startingPortraitCoordY : Int // the starting y coordinate at the canvas
+    private val mDisplayMode : Int //portrait or landscape
+    val iD : Int// gives every ball its own id
+    var type : Int // circle, cross or circleCross token
     var isDisabled = false //indicates ball can no longer be moved (finalized placement on board) = false
 
     fun updateBall(context: Context?, type: Int, bitmap: Bitmap) {
