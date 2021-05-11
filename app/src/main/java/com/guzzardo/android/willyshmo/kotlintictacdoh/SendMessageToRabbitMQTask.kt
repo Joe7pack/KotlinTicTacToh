@@ -10,7 +10,6 @@ class SendMessageToRabbitMQTask : AsyncTask<Any?, Void?, Void?>() {
     private var mCallingActivity: ToastMessage? = null
     protected override fun doInBackground(vararg values: Any?): Void? {
         try {
-
             //String hostName = (String)values[0];
             val qName = values[1] as String
             //val exchangeName = values[2] as String
@@ -26,10 +25,8 @@ class SendMessageToRabbitMQTask : AsyncTask<Any?, Void?, Void?>() {
             connectionFactory.port = portNumber
             val connection = connectionFactory.newConnection()
             val channel = connection.createChannel()
-
 //			channel.exchangeDeclare(EXCHANGE_NAME, "fanout", true);
             channel.queueDeclare(qName, false, false, false, null)
-
 //			channel.basicPublish(EXCHANGE_NAME, QUEUE_NAME, null, tempstr.getBytes());
             channel.basicPublish("", qName, null, message.toByteArray())
             writeToLog("SendMessageToRabbitMQTask", "message: $message queue: $qName")

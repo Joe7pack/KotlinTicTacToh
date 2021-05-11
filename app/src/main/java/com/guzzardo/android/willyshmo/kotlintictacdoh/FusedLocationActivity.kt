@@ -104,6 +104,8 @@ class FusedLocationActivity : Activity(), ToastMessage {
             setStartLocationLookup()
             location
         }
+        writeToLog("FusedLocationActivity", "onCreate finished"
+        )
     }
 
     /**

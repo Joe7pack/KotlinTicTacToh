@@ -15,7 +15,7 @@ app:layout_constraintBottom_toBottomOf="@+id/constraintLayout"
 app:layout_constraintEnd_toEndOf="@+id/constraintLayout"
 app:layout_constraintStart_toStartOf="@+id/constraintLayout"
 app:layout_constraintTop_toTopOf="@+id/constraintLayout"/>
-    <!-- Other attributes --> />
+
 
 <View
 android:layout_width="match_parent"
@@ -24,7 +24,7 @@ android:background="@android:color/white"
 app:layout_constraintBottom_toBottomOf="@+id/constraintLayout"
 app:layout_constraintEnd_toEndOf="@+id/constraintLayout"
 app:layout_constraintStart_toStartOf="@+id/constraintLayout"/>
-    <!-- Other attributes --> />
+
 
 <TextView
 android:id="@+id/text_title"
@@ -34,15 +34,12 @@ app:layout_constraintBottom_toBottomOf="@+id/constraintLayout"
 app:layout_constraintEnd_toStartOf="@+id/imageView"
 app:layout_constraintStart_toStartOf="@+id/constraintLayout"
 tools:text="Japan"/>
-    <!-- Other attributes --> />
+
 
 <TextView
 android:id="@+id/text_like_count"
 app:layout_constraintBottom_toBottomOf="@+id/constraintLayout"
 app:layout_constraintEnd_toEndOf="@+id/constraintLayout"
 tools:text="1,287"/>
-    <!-- Other attributes --> />
 
-
-
-    </ConstraintLayout>
+</ConstraintLayout>

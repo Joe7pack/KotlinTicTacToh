@@ -79,7 +79,7 @@ class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
         val prizes = parsePrizeList(prizesAvailable)
         val userKeySet: Set<String> =
             prizes.keys // this is where the keys (userNames) gets sorted
-        val keySetIterator = userKeySet.iterator()
+        //val keySetIterator = userKeySet.iterator()
         val objectArray: Array<Any> = prizes.keys.toTypedArray()
         mPrizeNames = arrayOfNulls(objectArray.size)
         mPrizeIds = arrayOfNulls(objectArray.size)
@@ -138,8 +138,8 @@ class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
         return userTreeMap
     }
 
-    private fun convertToArray(inputString: StringBuilder): String {
-        var inputString = inputString
+    private fun convertToArray(inString: StringBuilder): String {
+        var inputString = inString
         var startValue = 0
         var start = 0
         var end = 0

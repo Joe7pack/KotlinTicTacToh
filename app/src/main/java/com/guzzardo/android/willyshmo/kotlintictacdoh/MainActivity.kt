@@ -3,11 +3,14 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
+import android.app.PendingIntent.getActivity
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.provider.Settings
 import android.util.Log
@@ -16,8 +19,11 @@ import android.view.Window
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.vending.licensing.*
@@ -61,8 +67,8 @@ class MainActivity : Activity(), ToastMessage {
         var notesArr = arrayOfNulls<Indexable>(indexableNotes.size)
         notesArr = indexableNotes.toArray(notesArr)
         FirebaseApp.initializeApp(this)
-        FirebaseAppIndex.getInstance().update(*notesArr)
-        FirebaseUserActions.getInstance().start(action)
+        FirebaseAppIndex.getInstance(this).update(*notesArr)
+        FirebaseUserActions.getInstance(this).start(action)
         Log.d("MainActivity", "onStart called at " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
     }
 
@@ -71,7 +77,7 @@ class MainActivity : Activity(), ToastMessage {
         get() = Actions.newView(mText, mUrl)
 
     public override fun onStop() {
-        FirebaseUserActions.getInstance().end(action)
+        FirebaseUserActions.getInstance(this).end(action)
         super.onStop()
     }
 
@@ -90,7 +96,7 @@ class MainActivity : Activity(), ToastMessage {
     // Called when the activity is first created.
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
+       // requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
         setContentView(R.layout.main)
         mErrorHandler = ErrorHandler()
         findViewById<View>(R.id.rules).setOnClickListener { showRules() }
@@ -110,7 +116,7 @@ class MainActivity : Activity(), ToastMessage {
         anim.startOffset = 20
         anim.repeatMode = Animation.REVERSE
         anim.repeatCount = Animation.INFINITE
-        mPrizeButton!!.setBackgroundDrawable(resources.getDrawable(R.drawable.backwithgreenborder))
+        mPrizeButton!!.setBackground(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.backwithgreenborder))
         mPrizeButton!!.startAnimation(anim)
         if (isNetworkAvailable) {
             mPrizeButton!!.visibility = View.VISIBLE
@@ -132,7 +138,7 @@ class MainActivity : Activity(), ToastMessage {
         //adRequest.addTestDevice(AdRequest.TEST_EMULATOR);             // Android emulator
         //adRequest.addTestDevice("5F310740585B99B1179370AC1B4490C4"); // My T-Mobile G1 Test Phone
         //adRequest.addTestDevice("EE90BD2A7578BC19014DE8617761F10B");  // My Samsung Note
-        mHandler = Handler()
+        mHandler = Handler(Looper.getMainLooper())
 
         // Try to use more data here. ANDROID_ID is a single point of attack.
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
@@ -215,7 +221,7 @@ class MainActivity : Activity(), ToastMessage {
         super.onPause()
     }
 
-    inner class ErrorHandler : Handler() {
+    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
@@ -227,7 +233,17 @@ class MainActivity : Activity(), ToastMessage {
         mErrorHandler!!.sendMessage(msg)
     }
 
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {}
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        writeToLog("MainActivity", "MainActivity onActivityResult")
+
+    }
+
+    private fun writeToLog(filter: String, msg: String) {
+        if ("true".equals(resources!!.getString(R.string.debug), ignoreCase = true)) {
+            Log.d(filter, msg)
+        }
+    }
+
     override fun onCreateDialog(id: Int): Dialog {
         val bRetry = id == 1
         return AlertDialog.Builder(this)
@@ -241,11 +257,7 @@ class MainActivity : Activity(), ToastMessage {
                         if (mRetry) {
                             doCheck()
                         } else {
-                            val marketIntent = Intent(
-                                Intent.ACTION_VIEW, Uri.parse(
-                                    "http://market.android.com/details?id=$packageName"
-                                )
-                            )
+                            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("http://market.android.com/details?id=$packageName"))
                             startActivity(marketIntent)
                         }
                     }
@@ -255,7 +267,8 @@ class MainActivity : Activity(), ToastMessage {
 
     private fun doCheck() {
         mCheckLicenseButton!!.isEnabled = false
-        setProgressBarIndeterminateVisibility(true)
+        //setProgressBarIndeterminateVisibility(true)
+        //setSupportProgressBarIndeterminateVisibility(true) //see requestWindowFeature call above
         mStatusText!!.setText(R.string.checking_license)
         mChecker!!.checkAccess(mLicenseCheckerCallback)
     }
@@ -263,15 +276,15 @@ class MainActivity : Activity(), ToastMessage {
     private fun displayResult(result: String) {
         mHandler!!.post {
             mStatusText!!.text = result
-            setProgressBarIndeterminateVisibility(false)
+            //setProgressBarIndeterminateVisibility(false)
             mCheckLicenseButton!!.isEnabled = true
         }
     }
 
     private fun displayDialog(showRetry: Boolean) {
         mHandler!!.post {
-            setProgressBarIndeterminateVisibility(false)
-            showDialog(if (showRetry) 1 else 0)
+            //setProgressBarIndeterminateVisibility(false)
+            //showDialog(if (showRetry) 1 else 0)
             mCheckLicenseButton!!.isEnabled = true
         }
     }
@@ -319,6 +332,7 @@ class MainActivity : Activity(), ToastMessage {
     }
 
     companion object {
+        private lateinit var mResources: Resources
         private const val mLongitude = 0.0
         private const val mLatitude = 0.0
         private const val CONNECTION_FAILURE_RESOLUTION_REQUEST = 1

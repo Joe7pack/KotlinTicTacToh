@@ -34,7 +34,7 @@ class WebServerInterfaceUsersOnlineTask :
             writeToLog("WebServerInterfaceUsersOnlineTask", "doInBackground: " + e.message)
             mCallerActivity!!.sendToastMessage(e.message)
         }
-        writeToLog("WServerInterfaceUsersOnline", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $usersOnline")
+        writeToLog("WebServerInterfaceUsersOnline", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $usersOnline")
         return usersOnline
     }
 

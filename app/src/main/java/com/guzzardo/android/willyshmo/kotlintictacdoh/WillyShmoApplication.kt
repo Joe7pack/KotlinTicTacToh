@@ -6,10 +6,7 @@ import android.graphics.Bitmap
 import android.provider.Settings
 import android.util.Log
 import androidx.multidex.MultiDexApplication
-import com.google.android.gms.common.api.GoogleApiClient
 import java.util.*
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 
 class WillyShmoApplication : MultiDexApplication() {
     override fun onCreate() {
@@ -36,9 +33,8 @@ class WillyShmoApplication : MultiDexApplication() {
         private var mResources: Resources? = null
         private var mStartMainActivity = false
         var androidId: String? = null
-//            private set
         var willyShmoApplicationContext: Context? = null
-        private var mGoogleApiClient: GoogleApiClient? = null
+        //private var mGoogleApiClient: GoogleApiClient? = null
         @JvmStatic
         var prizeNames: Array<String?>
         get() = mPrizeNames
@@ -84,9 +80,6 @@ class WillyShmoApplication : MultiDexApplication() {
             return mConfigMap!![key]
         }
 
-        fun setGoogleApiClient(googleApiClient: GoogleApiClient?) {
-            mGoogleApiClient = googleApiClient
-        }
     }
 
 }

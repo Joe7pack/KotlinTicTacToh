@@ -12,10 +12,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.fragment.app.FragmentActivity
 import java.math.BigDecimal
 
 class LazyAdapter(
-    private val activity: Activity,
+    private val activity: FragmentActivity?,
     private val imageDescription: Array<String?>,
     private val imageBitmap: Array<Bitmap?>,
     private val imageWidth: Array<String?>,
@@ -88,7 +89,7 @@ class LazyAdapter(
     inner class ErrorHandler : Handler() {
         override fun handleMessage(msg: Message) {
             Toast.makeText(
-                activity.applicationContext,
+                activity!!.applicationContext,
                 msg.obj as String,
                 Toast.LENGTH_LONG
             ).show()
@@ -99,12 +100,10 @@ class LazyAdapter(
 
     companion object {
         private var inflater: LayoutInflater? = null
-        var errorHandler: ErrorHandler? =
-            null
+        var errorHandler: ErrorHandler? = null
     }
 
     init {
-        inflater =
-            activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater = activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 }

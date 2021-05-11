@@ -16,7 +16,6 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Intent
 import android.content.res.Resources
 import android.media.MediaPlayer
@@ -30,6 +29,7 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import com.guzzardo.android.willyshmo.kotlintictacdoh.GameView.ICellListener
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.RabbitMQMessageConsumer.OnReceiveMessageHandler
@@ -37,12 +37,14 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.getConfigMap
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.util.*
-
 
 class GameActivity : Activity(), ToastMessage {
     private var mServer = false
@@ -113,15 +115,27 @@ class GameActivity : Activity(), ToastMessage {
         mQueuePrefix = getConfigMap("RabbitMQQueuePrefix")
     }
 
-    private fun showHostWaitDialog(): ProgressDialog {
+    private fun showHostWaitDialog(): AlertDialog { //ProgressDialog {
         val opponentName = if (mPlayer2Name == null) "Waiting for player to connect..." else "Waiting for " + mPlayer2Name + " to connect..."
         val hostingDescription = if (mPlayer2Name == null) "Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)" else "Hosting..."
         mGameView!!.setGamePrize()
-        return ProgressDialog.show(this@GameActivity, hostingDescription, opponentName, true, true) { finish() }
+        //return ProgressDialog.show(this@GameActivity, hostingDescription, opponentName, true, true) { finish() }
+        return AlertDialog.Builder(this@GameActivity)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setTitle(hostingDescription)
+            .setMessage(opponentName)
+            .setCancelable(true)
+            .create()
     }
 
-    private fun showClientWaitDialog(): ProgressDialog {
-        return ProgressDialog.show(this@GameActivity, "Connecting...", "to $mPlayer2Name", true, true) { finish() }
+    private fun showClientWaitDialog(): AlertDialog { //ProgressDialog {
+        //return ProgressDialog.show(this@GameActivity, "Connecting...", "to $mPlayer2Name", true, true) { finish() }
+        return AlertDialog.Builder(this@GameActivity)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setTitle("Connecting...")
+            .setMessage(mPlayer2Name)
+            .setCancelable(true)
+            .create()
     }
 
     override fun onResume() {
@@ -134,7 +148,7 @@ class GameActivity : Activity(), ToastMessage {
             mServerThread = ServerThread()
             mMessageServerConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
             mRabbitMQServerResponseHandler = RabbitMQServerResponseHandler()
-            mRabbitMQServerResponseHandler!!.rabbitMQResponse = "null"
+            mRabbitMQServerResponseHandler!!.rabbitMQResponse = "server starting"
             setUpMessageConsumer(mMessageServerConsumer!!, "server", mRabbitMQServerResponseHandler!!)
             mPlayer1Name = intent.getStringExtra(PLAYER1_NAME)
             mServerRunning = true
@@ -145,17 +159,18 @@ class GameActivity : Activity(), ToastMessage {
         mClient = java.lang.Boolean.valueOf(intent.getStringExtra(START_CLIENT))
         if (mClient && !mClientRunning) {
             mPlayer1Id = intent.getIntExtra(PLAYER1_ID, 0)
-            val clientOpponentId = intent.getStringExtra(START_CLIENT_OPPONENT_ID)
-            player2Id = clientOpponentId
+            //val clientOpponentId = intent.getStringExtra(START_CLIENT_OPPONENT_ID)
+            player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID) //clientOpponentId
             mClientThread = ClientThread()
             mMessageClientConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
             mRabbitMQClientResponseHandler = RabbitMQClientResponseHandler()
-            mRabbitMQClientResponseHandler!!.rabbitMQResponse = "null"
+            mRabbitMQClientResponseHandler!!.rabbitMQResponse = "clientStarting"
             setUpMessageConsumer(mMessageClientConsumer!!, "client", mRabbitMQClientResponseHandler!!)
             mClientThread!!.start()
             mClientRunning = true
             HUMAN_VS_NETWORK = true
             mGameView!!.setClient(mClientThread) //this is where we inform GameView to send game tokens to network opponent when the GameView is created
+            mGameView!!.setOpposingPlayerId(player2Id)
             mPlayer2Name = intent.getStringExtra(PLAYER2_NAME)
             mClientWaitDialog = showClientWaitDialog()
             mClientWaitDialog!!.show()
@@ -300,7 +315,6 @@ class GameActivity : Activity(), ToastMessage {
                     mHostWaitDialog = showHostWaitDialog()
                     mHostWaitDialog!!.show()
                 } else if (mClientRunning) { //reset values on client side
-//TODO - may want to consider moving this to a more appropriate location when a new game has actually started
                     sendNewGameToServer()
                 } else {
                     finish()
@@ -363,7 +377,6 @@ class GameActivity : Activity(), ToastMessage {
         mChooseTokenDialog!!.dismiss()
         if (HUMAN_VS_NETWORK) {
             mGameView!!.currentPlayer = GameView.State.PLAYER1
-            //    		mPlayer2TokenChoice = mPlayer1TokenChoice ==  BoardSpaceValues.CIRCLE ? BoardSpaceValues.CROSS : BoardSpaceValues.CIRCLE;
         }
         if (!(HUMAN_VS_HUMAN or HUMAN_VS_NETWORK)) { //playing against Willy
             setComputerMove()
@@ -505,7 +518,6 @@ class GameActivity : Activity(), ToastMessage {
                     }
                     //System.out.println("human winner list size: "+humanWinningHashMap.size());
                     if (humanWinningHashMap.size == 1) {
-
                         val onlyWinningPosition: Array<Any> = humanWinningHashMap.keys.toTypedArray()
                         val testMove = onlyWinningPosition[0] as Int
                         tokenSelected = tokenChoice
@@ -514,7 +526,7 @@ class GameActivity : Activity(), ToastMessage {
                         val it: Iterator<Int> = humanWinningHashMap.keys.iterator()
                         while (it.hasNext()) {
                             val winningPosition = it.next()
-                            //               				System.out.println("winning position: "+winningPosition);
+                            //System.out.println("winning position: "+winningPosition);
                             val testBoard = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
                             for (y in testBoard.indices) {
                                 testBoard[y] = normalizedBoardPlayer1[y]
@@ -528,7 +540,7 @@ class GameActivity : Activity(), ToastMessage {
                                     continue  // no point in testing against same value
                                 }
                                 val spaceOkToUse = humanWinningHashMap[testMove] as Int
-                                //                   				System.out.println("testing "+testMove+ " against winning position: "+ winningPosition);
+                                //System.out.println("testing "+testMove+ " against winning position: "+ winningPosition);
                                 // testMove = a winning move human
                                 if (testAvailableValues[testMove]) {
                                     //computerBlockingMove = winningPosition;
@@ -772,7 +784,7 @@ class GameActivity : Activity(), ToastMessage {
                 }
                 return true
             }
-            if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_HOST) {
+            if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER) {
                 val urlData = ("/gamePlayer/update/?id=" + mPlayer1Id + "&playingNow=true&opponentId=" + player2Id + "&userName=")
                 SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.FALSE)
                 mClientWaitDialog!!.dismiss()
@@ -934,18 +946,18 @@ class GameActivity : Activity(), ToastMessage {
         anim2.repeatMode = Animation.REVERSE
         anim2.repeatCount = 0
         if (player == GameView.State.PLAYER1) {
-            mPlayer1NameTextValue!!.setBackgroundDrawable(resources.getDrawable(R.drawable.backwithgreenborder))
-            mPlayer2NameTextValue!!.setBackgroundDrawable(resources.getDrawable(R.drawable.backwithwhiteborder))
+            mPlayer1NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithgreenborder, null))
+            mPlayer2NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
             mPlayer1NameTextValue!!.startAnimation(anim)
             mPlayer2NameTextValue!!.startAnimation(anim2)
         } else if (player == GameView.State.PLAYER2) {
-            mPlayer2NameTextValue!!.setBackgroundDrawable(resources.getDrawable(R.drawable.backwithgreenborder))
+            mPlayer2NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithgreenborder, null))
             mPlayer2NameTextValue!!.startAnimation(anim)
-            mPlayer1NameTextValue!!.setBackgroundDrawable(resources.getDrawable(R.drawable.backwithwhiteborder))
+            mPlayer1NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
             mPlayer1NameTextValue!!.startAnimation(anim2)
         } else {
-            mPlayer1NameTextValue!!.setBackgroundDrawable(resources.getDrawable(R.drawable.backwithwhiteborder))
-            mPlayer2NameTextValue!!.setBackgroundDrawable(resources.getDrawable(R.drawable.backwithwhiteborder))
+            mPlayer1NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
+            mPlayer2NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
             mPlayer1NameTextValue!!.startAnimation(anim2)
             mPlayer2NameTextValue!!.startAnimation(anim2)
         }
@@ -993,7 +1005,7 @@ class GameActivity : Activity(), ToastMessage {
         for (x in data.indices) {
             data[x] = boardSpaceValues[x]
             if (data[x] == GameView.BoardSpaceValues.CIRCLECROSS) {
-                data[x] = wildCardValue //BoardSpaceValues.CIRCLE;
+                data[x] = wildCardValue
             }
         }
         if (testForWinner(data, usePlayer2)) {
@@ -1518,7 +1530,8 @@ class GameActivity : Activity(), ToastMessage {
             private set
         var tokenMoved = 0
             private set
-        private var mGameStarted = false
+        //var mGameStarted = false
+
         fun setMessageToClient(newMessage: String?) {
             mMessageToClient = newMessage
         }
@@ -1666,8 +1679,8 @@ class GameActivity : Activity(), ToastMessage {
                         continue
                      else {
                         writeToLog("ClientThread", "read response: " + mRabbitMQClientResponseHandler!!.rabbitMQResponse)
-                        if (mClientWaitDialog != null) {
-                            mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_HOST)
+                        if (mClientWaitDialog != null ) { //&&  mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("clientStarting")) {
+                            mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
                         }
                         if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("moved")) {
                             parseMove(mRabbitMQClientResponseHandler!!.rabbitMQResponse!!)
@@ -1676,6 +1689,11 @@ class GameActivity : Activity(), ToastMessage {
                         }
                         if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("moveFirst")) {
                             mHandler.sendEmptyMessage(MSG_NETWORK_CLIENT_MAKE_FIRST_MOVE)
+                            /*
+                            if (mClientWaitDialog != null) {
+                                mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
+                            }
+                            */
                             mGameStarted = true
                         }
                         if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("noPlay")) {
@@ -1861,14 +1879,24 @@ class GameActivity : Activity(), ToastMessage {
     }
 
     private inner class RabbitMQServerResponseHandler : RabbitMQResponseHandler() { }
-
     private inner class RabbitMQClientResponseHandler : RabbitMQResponseHandler() { }
-
     private inner class RabbitMQStartGameResponseHandler : RabbitMQResponseHandler() { }
 
     private fun setUpMessageConsumer(rabbitMQMessageConsumer: RabbitMQMessageConsumer, qNameQualifier: String, rabbitMQResponseHandler: RabbitMQResponseHandler) {
         val qName = mQueuePrefix + "-" + qNameQualifier + "-" + mPlayer1Id
-        ConsumerConnectTask().execute(mHostName, rabbitMQMessageConsumer, qName, this@GameActivity, Companion.resources, "GameActivity")
+        //ConsumerConnectTask().execute(mHostName, rabbitMQMessageConsumer, qName, this@GameActivity, Companion.resources, "GameActivity")
+        CoroutineScope(Dispatchers.Default).launch {
+            val consumerConnectTask = ConsumerConnectTask()
+            consumerConnectTask.main(
+                    getConfigMap("RabbitMQIpAddress"),
+                    rabbitMQMessageConsumer,
+                    qName,
+                    this@GameActivity,
+                    resources,
+                    "GameActivity"
+            )
+        }
+
         writeToLog("GameActivity", "$qNameQualifier message consumer listening on queue: $qName")
 
         // register for messages
@@ -1878,6 +1906,11 @@ class GameActivity : Activity(), ToastMessage {
                 text = String(message!!, StandardCharsets.UTF_8)
                 rabbitMQResponseHandler.rabbitMQResponse = text
                 writeToLog("GameActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
+
+                if (text.equals("letsPlay")) {
+                    val intent = Intent(PlayersOnlineActivity.getContext(), PlayersOnlineActivity::class.java)
+                    PlayersOnlineActivity.getContext().stopService(intent) //.applicationContext.stopService()     . .stopService()
+                }
             }
         })
     }
@@ -1937,7 +1970,7 @@ class GameActivity : Activity(), ToastMessage {
         private const val MSG_NETWORK_SERVER_TURN = 4
         private const val MSG_NETWORK_SET_TOKEN_CHOICE = 5
         private const val DISMISS_WAIT_FOR_NEW_GAME_FROM_CLIENT = 6
-        private const val DISMISS_WAIT_FOR_NEW_GAME_FROM_HOST = 7
+        private const val DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER = 7
         private const val ACCEPT_INCOMING_GAME_REQUEST_FROM_CLIENT = 8
         private const val MSG_NETWORK_CLIENT_MAKE_FIRST_MOVE = 9
         private const val MSG_HOST_UNAVAILABLE = 10
@@ -1968,8 +2001,8 @@ class GameActivity : Activity(), ToastMessage {
         private var imServing = false
         private var mBallMoved = 0 //hack for correcting problem with resetting mBallId to -1 in mGameView.disableBall()
         private var resources: Resources? = null
-        private var mHostWaitDialog: ProgressDialog? = null
-        private var mClientWaitDialog: ProgressDialog? = null
+        private var mHostWaitDialog: AlertDialog? = null
+        private var mClientWaitDialog: AlertDialog? = null
         private var mChooseTokenDialog: AlertDialog? = null
         private var mNetworkOpponentPlayerName: String? = null
         private var mLastCellSelected = 0
@@ -1977,6 +2010,8 @@ class GameActivity : Activity(), ToastMessage {
         private var mQueuePrefix: String? = null
         private const val ACCEPT_GAME = 1
         private const val REJECT_GAME = 2
+        private var mGameStarted = false
+
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(resources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
@@ -1988,5 +2023,9 @@ class GameActivity : Activity(), ToastMessage {
             set(clientRunning) {
                 mClientRunning = clientRunning
             }
+
+        @JvmStatic
+        var isGameStarted: Boolean = false
+            get() = mGameStarted
     }
 }

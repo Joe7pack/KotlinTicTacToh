@@ -2,7 +2,7 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.content.Context
 import android.location.Location
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 
 internal object Utils {
     const val KEY_REQUESTING_LOCATION_UPDATES = "requesting_locaction_updates"
@@ -15,10 +15,7 @@ internal object Utils {
     @JvmStatic
     fun requestingLocationUpdates(context: Context?): Boolean {
         return PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean(
-                KEY_REQUESTING_LOCATION_UPDATES,
-                false
-            )
+            .getBoolean(KEY_REQUESTING_LOCATION_UPDATES, false)
     }
 
     /**
@@ -26,16 +23,10 @@ internal object Utils {
      * @param requestingLocationUpdates The location updates state.
      */
     @JvmStatic
-    fun setRequestingLocationUpdates(
-        context: Context?,
-        requestingLocationUpdates: Boolean
-    ) {
+    fun setRequestingLocationUpdates(context: Context?, requestingLocationUpdates: Boolean) {
         PreferenceManager.getDefaultSharedPreferences(context)
             .edit()
-            .putBoolean(
-                KEY_REQUESTING_LOCATION_UPDATES,
-                requestingLocationUpdates
-            )
+            .putBoolean(KEY_REQUESTING_LOCATION_UPDATES, requestingLocationUpdates)
             .apply()
     }
 

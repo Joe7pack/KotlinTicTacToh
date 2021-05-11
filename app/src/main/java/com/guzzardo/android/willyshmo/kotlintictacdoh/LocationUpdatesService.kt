@@ -1,6 +1,7 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.app.*
+import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -8,9 +9,9 @@ import android.location.Location
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import android.app.NotificationManager //.IMPORTANCE_HIGH
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
-import com.guzzardo.android.willyshmo.kotlintictacdoh.LocationUpdatesService
 import com.guzzardo.android.willyshmo.kotlintictacdoh.Utils.getLocationText
 import com.guzzardo.android.willyshmo.kotlintictacdoh.Utils.getLocationTitle
 import com.guzzardo.android.willyshmo.kotlintictacdoh.Utils.requestingLocationUpdates
@@ -46,7 +47,7 @@ class LocationUpdatesService : Service() {
     /**
      * Contains parameters used by [com.google.android.gms.location.FusedLocationProviderApi].
      */
-    private var mLocationRequest: LocationRequest? = null
+    private lateinit var mLocationRequest: LocationRequest
 
     /**
      * Provides access to the Fused Location Provider API.
@@ -56,7 +57,7 @@ class LocationUpdatesService : Service() {
     /**
      * Callback for changes in location.
      */
-    private var mLocationCallback: LocationCallback? = null
+    private lateinit var mLocationCallback: LocationCallback
     private var mServiceHandler: Handler? = null
 
     /**
@@ -111,7 +112,7 @@ class LocationUpdatesService : Service() {
         mChangingConfiguration = true
     }
 
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent): IBinder {
         // Called when a client (MainActivity in case of this sample) comes to the foreground
         // and binds with this service. The service should cease to be a foreground service
         // when that happens.
@@ -200,7 +201,7 @@ class LocationUpdatesService : Service() {
      * Returns the [NotificationCompat] used as part of the foreground service.
      */
     private val notification: Notification
-        private get() {
+        get() {
             val intent = Intent(this, LocationUpdatesService::class.java)
             val text: CharSequence = getLocationText(mLocation)
 
@@ -218,7 +219,8 @@ class LocationUpdatesService : Service() {
                 this, 0,
                 Intent(this, MainActivity::class.java), 0
             )
-            val builder = NotificationCompat.Builder(this)
+
+            val builder = NotificationCompat.Builder(this, "abcd")
                 .addAction(
                     R.drawable.ic_launcher_foreground, getString(R.string.launch_activity),
                     activityPendingIntent
@@ -230,7 +232,7 @@ class LocationUpdatesService : Service() {
                 .setContentText(text)
                 .setContentTitle(getLocationTitle(this))
                 .setOngoing(true)
-                .setPriority(Notification.PRIORITY_HIGH)
+                .setPriority(IMPORTANCE_HIGH)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setTicker(text)
                 .setWhen(System.currentTimeMillis())
@@ -276,11 +278,19 @@ class LocationUpdatesService : Service() {
      * Sets the location request parameters.
      */
     private fun createLocationRequest() {
-        mLocationRequest = LocationRequest()
-        mLocationRequest!!.interval = UPDATE_INTERVAL_IN_MILLISECONDS
-        mLocationRequest!!.fastestInterval =
-            FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
-        mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+        var locationRequest = LocationRequest.create().apply {
+            interval = 100
+            fastestInterval = 50
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            maxWaitTime= 100
+        }
+
+        mLocationRequest = locationRequest
+        //mLocationRequest = LocationRequest()
+        mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
     /**

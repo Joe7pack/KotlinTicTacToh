@@ -1,7 +1,5 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
-import android.app.Activity
-import android.app.ListFragment
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -13,15 +11,20 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.ListFragment
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.getConfigMap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-
-class PlayersOnlineActivity : Activity(), ToastMessage {
+class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     private var mUsersOnline: String? = null
     private var mRabbitMQPlayerResponse: String? = null
 
@@ -53,6 +56,8 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
             mRabbitMQPlayerResponseHandler = RabbitMQPlayerResponseHandler()
             setContentView(R.layout.players_online) //this starts up the list view
         }
+        setContext(this);
+        this.taskId
     }
 
     private inner class RabbitMQPlayerResponseHandler : RabbitMQResponseHandler() { }
@@ -74,19 +79,13 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
     class PlayersOnlineFragment : ListFragment() {
         private val mDualPane = false
         private var mCurCheckPosition = 0
-        override fun onActivityCreated(savedInstanceState: Bundle?) {
-            super.onActivityCreated(savedInstanceState)
 
-            // Populate list with our static array of titles.
-            listAdapter = ArrayAdapter(
-                activity,
-                android.R.layout.simple_list_item_activated_1, mUserNames
-            )
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
 
-            // Check to see if we have a frame in which to embed the details
-            // fragment directly in the containing UI.
-            //View detailsFrame = getActivity().findViewById(R.id.details);
-            //mDualPane = detailsFrame != null && detailsFrame.getVisibility() == View.VISIBLE;
+            // Populate list with our array of players.
+            listAdapter = ArrayAdapter(mApplicationContext!!, android.R.layout.simple_list_item_activated_1, mUserNames)
+
             if (savedInstanceState != null) {
                 // Restore last state for checked position.
                 mCurCheckPosition = savedInstanceState.getInt("curChoice", 0)
@@ -97,22 +96,6 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
                 // Make sure our UI is in the correct state.
                 showDetails(mCurCheckPosition)
             }
-        }
-
-        private fun showAcceptDialog(opponentName: String, opponentId: String) {
-            val manager = this.fragmentManager
-            val ft = manager.beginTransaction()
-            val myBundle = Bundle()
-            myBundle.putString("opponentName", opponentName)
-            myBundle.putString("opponentId", opponentId)
-            myBundle.putString("playerName", mPlayer1Name)
-            myBundle.putInt("player1Id", mPlayer1Id!!)
-            val acceptGameDialog = AcceptGameDialog()
-            //AcceptGameDialog acceptGameDialog = new AcceptGameDialog(opponentName, opponentId, mPlayer1Name, mPlayer1Id, mApplicationContext, mResources);
-            acceptGameDialog.arguments = myBundle
-            acceptGameDialog.context = mApplicationContext!!
-            acceptGameDialog.resources = mResources
-            acceptGameDialog.show(ft, "dialog")
         }
 
         override fun onResume() { //only called when at least one opponent is online to select 
@@ -132,10 +115,8 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
 
         override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
             setUpClientAndServer(position)
-            val qName =
-                getConfigMap("RabbitMQQueuePrefix") + "-" + "startGame" + "-" + mUserIds[position]
-            val messageToOpponent =
-                "letsPlay," + mPlayer1Name + "," + mPlayer1Id //mUserIds[position];
+            val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "startGame" + "-" + mUserIds[position]
+            val messageToOpponent = "letsPlay," + mPlayer1Name + "," + mPlayer1Id //mUserIds[position];
             SendMessageToRabbitMQTask().execute(
                 getConfigMap("RabbitMQIpAddress"),
                 qName,
@@ -145,6 +126,8 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
                 mResources
             )
             mSelectedPosition = position
+
+            //set a value here to indicate that only this client will send the tokenList to the opponent
         }
 
         private fun setUpClientAndServer(which: Int) {
@@ -154,10 +137,7 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
             editor.apply()
             val i = Intent(mApplicationContext, GameActivity::class.java)
             i.putExtra(GameActivity.START_SERVER, "true")
-            i.putExtra(
-                GameActivity.START_CLIENT,
-                "true"
-            ) //this will send the new game to the client
+            i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
             i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
             i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
             i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, mUserIds[which])
@@ -178,8 +158,7 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
             val users = parseUserList(mUsersOnline)
             val usersClone = users.clone() as TreeMap<String, HashMap<String, String>>
             //we're creating a clone because removing an entry from the original TreeMap causes a problem for the iterator
-            val userKeySet: Set<String> =
-                usersClone.keys // this is where the keys (userNames) gets sorted
+            val userKeySet: Set<String> = usersClone.keys // this is where the keys (userNames) gets sorted
             val keySetIterator = userKeySet.iterator()
             while (keySetIterator.hasNext()) {
                 val key = keySetIterator.next()
@@ -248,13 +227,19 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
     }
 
     companion object {
+        private lateinit  var appContext: Context
+        fun setContext(con: Context) {
+            appContext=con
+        }
+        fun getContext() : Context {
+            return appContext
+        }
         private lateinit var mUserNames: Array<String?>
         private lateinit var mUserIds: Array<String?>
         private var mPlayer1Id: Int? = null
         private var mPlayer1Name: String? = null
         private var mApplicationContext: Context? = null
         var errorHandler: ErrorHandler? = null
-        //private var mResources: Resources? = null
         private lateinit var mResources: Resources
         private var mPlayersOnlineActivity: PlayersOnlineActivity? = null
         private var mSelectedPosition = -1
@@ -266,26 +251,47 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
             rabbitMQResponseHandler: RabbitMQResponseHandler?
         ) {
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + mPlayer1Id
-            ConsumerConnectTask().execute(
-                getConfigMap("RabbitMQIpAddress"),
-                rabbitMQMessageConsumer,
-                qName,
-                mPlayersOnlineActivity,
-                mResources,
-                "fromPlayersOnlineActivity"
-            )
-            writeToLog(
-                "PlayersOnlineActivity",
-                "$qNameQualifier message consumer listening on queue: $qName"
-            )
+
+            CoroutineScope( Dispatchers.Default).launch {
+                val consumerConnectTask = ConsumerConnectTask()
+                consumerConnectTask.main(
+                    getConfigMap("RabbitMQIpAddress"),
+                    rabbitMQMessageConsumer,
+                    qName,
+                    mPlayersOnlineActivity,
+                    mResources,
+                    "fromPlayersOnlineActivity"
+                )
+            }
+            writeToLog("PlayersOnlineActivity", "$qNameQualifier message consumer listening on queue: $qName")
 
             // register for messages
-            rabbitMQMessageConsumer!!.setOnReceiveMessageHandler(object : RabbitMQMessageConsumer.OnReceiveMessageHandler {
+            rabbitMQMessageConsumer!!.setOnReceiveMessageHandler(object: RabbitMQMessageConsumer.OnReceiveMessageHandler {
                 override fun onReceiveMessage(message: ByteArray?) {
-                    var text = ""
-                    text = String(message!!, StandardCharsets.UTF_8)
+                    var text = String(message!!, StandardCharsets.UTF_8)
                     rabbitMQResponseHandler!!.rabbitMQResponse = text
-                    writeToLog("GameActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
+                    writeToLog("PlayersOnlineActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
+                    if (text.startsWith("letsPlay")) {
+                        var playString = text.toString()
+                        var playStringArray = playString.split(",")
+                        var opposingPlayerId = ""
+                        var opposingPlayerName = ""
+                        if (playStringArray.size == 3) {
+                            opposingPlayerId = playStringArray.get(2)
+                            opposingPlayerName = playStringArray.get(1)
+                            val i = Intent(mApplicationContext, GameActivity::class.java)
+                            i.putExtra(GameActivity.START_SERVER, "true")
+                            //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
+                            i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
+                            i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
+                            i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID,opposingPlayerId)
+                            i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
+                            i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
+                            writeToLog("PlayersOnlineActivity", "starting client and server from new player: " + opposingPlayerName)
+                            startActivity(appContext, i, null)
+                        }
+                        writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $text")
+                    }
                 }
             })
         }
@@ -293,8 +299,7 @@ class PlayersOnlineActivity : Activity(), ToastMessage {
         private fun startGame() {
             setUpMessageConsumer(mMessageConsumer, "startGame", mRabbitMQPlayerResponseHandler)
             mSelectedPosition = -1
-            mRabbitMQPlayerResponseHandler!!.rabbitMQResponse =
-                "null" // get rid of any old game requests
+            mRabbitMQPlayerResponseHandler!!.rabbitMQResponse = "null" // get rid of any old game requests
         }
 
         private fun writeToLog(filter: String, msg: String) {

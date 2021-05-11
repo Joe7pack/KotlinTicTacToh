@@ -19,11 +19,13 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.res.ResourcesCompat
 import com.guzzardo.android.willyshmo.kotlintictacdoh.ColorBall.Companion.setTokenColor
 import com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity.ClientThread
 import com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity.Companion.moveModeTouch
@@ -54,7 +56,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     private var mViewDisabled = false
     private val mContext: Context
-    private val mHandler = Handler(MyHandler())
+    private val mHandler = Handler(Looper.getMainLooper(), MyHandler())
     private val mSrcRect = Rect()
     private val mDstRect = Rect()
     private val mTakenRect = Rect()
@@ -282,13 +284,18 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 mTokenColor2
             )
         }
-        if (isClientRunning) {
+        if (isClientRunning) { // && GameActivity.isGameStarted) { //mOpposingPlayerId != GameActivity.player2Id) { //
+            GameActivity.START_CLIENT_OPPONENT_ID
             sendTokensToServer()
         }
+
+        var gameStarted = GameActivity.isGameStarted
+        var player2 = GameActivity.player2Id
+        writeToLog("GameView", "Game started: $gameStarted Opposing player ID: $mOpposingPlayerId GameActivity.player2Id: $player2")
     }
 
     fun updatePlayerToken(id: Int, tokenType: Int) {
-        var bitmap: Bitmap? = null
+        var bitmap: Bitmap? //= null
         if (id < 4) {
             bitmap = mBmpCirclePlayer1
             //resource = R.drawable.lib_circlered;
@@ -310,7 +317,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             }
         }
         val ball = mColorBall[id]
-        ball!!.updateBall(mContext, tokenType, bitmap!!)
+        ball!!.updateBall(tokenType, bitmap!!)
     }
 
     fun sendTokensToServer() {
@@ -390,7 +397,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     }
 
     private val tokenToDrawCenter: Bitmap?
-        private get() {
+        get() {
             var tokenToDraw = mBmpCircleCenter
             if (boardSpaceValues[BoardSpaceValues.BOARDCENTER] == BoardSpaceValues.CROSS) tokenToDraw =
                 mBmpCrossCenter else if (boardSpaceValues[BoardSpaceValues.BOARDCENTER] == BoardSpaceValues.CIRCLECROSS) tokenToDraw =
@@ -416,7 +423,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         val s3 = mSxy * 5
         val x7 = mOffsetX
         val y7 = mOffsetY
-        var tokenToDraw: Bitmap? = null
+        var tokenToDraw: Bitmap? //= null
         run {
             var i = 0
             var k = mSxy
@@ -514,12 +521,12 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             y += mSxy
         }
         if (mWinRow >= 0) {
-            val y = y7 + mWinRow * mSxy + mSxy / 2
+            val a = y7 + mWinRow * mSxy + mSxy / 2
             canvas.drawLine(
                 (x7 + MARGIN).toFloat(),
-                y.toFloat(),
+                a.toFloat(),
                 (x7 + s3 - 1 - MARGIN).toFloat(),
-                y.toFloat(),
+                a.toFloat(),
                 mWinPaint
             )
         } else if (mWinCol >= 0) {
@@ -799,8 +806,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     //calculate the Y offset given the cell position on the game board
     private fun calculateYValue(cellNumber: Int): Int {
-        var yValue = 0
-        yValue = if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
+        var yValue = if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
         return yValue
     }
 
@@ -1199,7 +1205,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     }
 
     fun selectRandomAvailableBoardSpace(): Int {
-
         //build array of avail cells
         var numberAvailable = 0
         for (x in boardSpaceAvailableValues.indices) {
@@ -1224,7 +1229,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         mSelectedCell = -1
         mSelectedValue = State.EMPTY
         if (!mBlinkRect.isEmpty) {
-            invalidate(mBlinkRect)
+            invalidate()
         }
         mBlinkDisplayOff = false
         mBlinkRect.setEmpty()
@@ -1249,7 +1254,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             if (msg.what == MSG_BLINK) {
                 if (mSelectedCell >= 0 && mSelectedValue != State.EMPTY) {
                     mBlinkDisplayOff = !mBlinkDisplayOff
-                    invalidate(mBlinkRect)
+                    invalidate()
                     if (!mHandler.hasMessages(MSG_BLINK)) {
                         mHandler.sendEmptyMessageDelayed(MSG_BLINK, FPS_MS)
                     }
@@ -1258,7 +1263,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             }
             if (msg.what == MSG_BLINK_TOKEN) {
                 mBlinkDisplayOff = !mBlinkDisplayOff
-                invalidate(mBlinkRect)
+                invalidate()
                 if (!mHandler.hasMessages(MSG_BLINK_TOKEN)) {
                     mHandler.sendEmptyMessageDelayed(MSG_BLINK_TOKEN, FPS_MS)
                 }
@@ -1266,7 +1271,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             }
             if (msg.what == MSG_BLINK_SQUARE) {
                 mBlinkDisplayOff = !mBlinkDisplayOff
-                invalidate(mBlinkRect)
+                invalidate()
                 if (!mHandler.hasMessages(MSG_BLINK_SQUARE)) {
                     mHandler.sendEmptyMessageDelayed(MSG_BLINK_SQUARE, FPS_MS)
                 }
@@ -1278,15 +1283,11 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     private fun getResBitmap(bmpResId: Int): Bitmap? {
         val opts = BitmapFactory.Options()
-        opts.inDither = false
         opts.inMutable = true
-        val res = resources
-        var bmp = BitmapFactory.decodeResource(res, bmpResId, opts)
+        var bmp = BitmapFactory.decodeResource(resources, bmpResId, opts)
         if (bmp == null && isInEditMode) {
-            // BitmapFactory.decodeResource doesn't work from the rendering
-            // library in Eclipse's Graphical Layout Editor. Use this workaround instead.
-            val d = res.getDrawable(bmpResId)
-            val w = d.intrinsicWidth
+            val d = ResourcesCompat.getDrawable(resources, bmpResId, null)
+            val w = d!!.intrinsicWidth
             val h = d.intrinsicHeight
             bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             val c = Canvas(bmp)
@@ -1311,15 +1312,19 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         mClientThread = clientThread
     }
 
+    fun setOpposingPlayerId(playerId: String?) {
+        mOpposingPlayerId = playerId
+    }
+
     private val isClientRunning: Boolean
-        private get() = GameActivity.isClientRunning
+        get() = GameActivity.isClientRunning
 
     fun setGameActivity(gameActivity: GameActivity?) {
         mGameActivity = gameActivity
     }
 
     private val sharedPreferences: Unit
-        private get() {
+        get() {
             val settings = mContext.getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
             mTokenSize = settings.getInt(GameActivity.TOKEN_SIZE, 50)
             mTokenColor1 = settings.getInt(GameActivity.TOKEN_COLOR_1, Color.RED)
@@ -1330,19 +1335,17 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         const val FPS_MS = (1000 / 2).toLong()
 
         //constants related to gameBoard drawing:
-        private const val MARGIN = 5 // was 4 was 2 // was 4 // had set it to zero for some reason?
-        private const val GRIDLINEWIDTH = 4 // was 5
+        private const val MARGIN = 5
+        private const val GRIDLINEWIDTH = 4
 
         //TODO - calculate these 3 values in onMeasure
-        private var TOKENSIZE // bitmap pixel size of X or O on board
-                = 0
+        private var TOKENSIZE = 0 // bitmap pixel size of X or O on board
         private var mTokenRadius = 40
         private const val PORTRAITOFFSETX = 5 // X offset to board grid in portrait mode
         private const val PORTRAITOFFSETY = 5
         private const val PORTRAITWIDTHHEIGHT = 300 // portrait width and height of view square
         private var BoardLowerLimit = 0
-        private var mDisplayMode // portrait or landscape
-                = 0
+        private var mDisplayMode = 0 // portrait or landscape
         private const val portraitComputerLiteralOffset = 245
         private const val portraitHumanTokenSelectedOffsetX = 20
         private var landscapeRightMoveXLimitPlayer1 = 0
@@ -1404,15 +1407,14 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         private var mSxy = 0
         var prizeLocation = -1
             private set
-        private val mPrizeXBoardLocationArray =
-            intArrayOf(0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
-        private val mPrizeYBoardLocationArray =
-            intArrayOf(0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4)
+        private val mPrizeXBoardLocationArray = intArrayOf(0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
+        private val mPrizeYBoardLocationArray = intArrayOf(0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4)
         private var mPrizeXBoardLocation = 0
         private var mPrizeYBoardLocation = 0
         private var HUMAN_VS_HUMAN = false
         private var mClientThread: ClientThread? = null
         private var mGameActivity: GameActivity? = null
+        private var mOpposingPlayerId: String? = null
         private var mPrevSelectedBall = 0 //save value for touch selection
         private var mPrevSelectedCell = 0 //save value for touch selection
 
@@ -1448,9 +1450,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         mBmpCircleCrossCenter = getResBitmap(R.drawable.lib_circlecrossgreen)
         mBmpAvailableMove = getResBitmap(R.drawable.allowed_move)
         mBmpTakenMove = getResBitmap(R.drawable.taken_move)
-        if (mBmpCrossPlayer1 != null) {
-            mSrcRect[0, 0, mBmpCrossPlayer1.width - 1] = mBmpCrossPlayer1.height - 1
-        }
+        mSrcRect[0, 0, mBmpCrossPlayer1.width - 1] = mBmpCrossPlayer1.height - 1
         if (mBmpAvailableMove != null) {
             mTakenRect[0, 0, mBmpAvailableMove.width - 1] = mBmpAvailableMove.height - 1
         }

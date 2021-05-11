@@ -1,7 +1,5 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
-import android.app.Activity
-import android.app.ListFragment
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -14,16 +12,18 @@ import android.view.View
 import android.view.Window
 import android.widget.ListView
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.ListFragment
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 
-class PrizesAvailableActivity : Activity(), ToastMessage {
+class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        this.ErrorHandler()
         mResources = resources
-        errorHandler =
-            ErrorHandler()
-        val customTitleSupported =
-            requestWindowFeature(Window.FEATURE_CUSTOM_TITLE)
+        errorHandler = ErrorHandler()
+        val customTitleSupported = requestWindowFeature(Window.FEATURE_CUSTOM_TITLE)
         try {
             setContentView(R.layout.prize_frame)
             if (customTitleSupported) {
@@ -42,10 +42,9 @@ class PrizesAvailableActivity : Activity(), ToastMessage {
     class PrizesAvailableFragment : ListFragment() {
         var mDualPane = false
         var mCurCheckPosition = 0
-        override fun onActivityCreated(savedInstanceState: Bundle?) {
-            super.onActivityCreated(savedInstanceState)
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
 
-            /* uncomment this when we figure out why getActivity is of the wrong type */
             val adapter = LazyAdapter(
                 activity,
                 WillyShmoApplication.prizeNames,

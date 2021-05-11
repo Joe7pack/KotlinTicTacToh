@@ -20,8 +20,7 @@ class SendMessageToWillyShmoServer :
         var result: String? = null
         var errorAt: String? = null
         try {
-            var myURL: URL? = null
-            myURL = if (urlToEncode == null) {
+            var myURL = if (urlToEncode == null) {
                 URL(url)
             } else {
                 val encodedUrl = URLEncoder.encode(urlToEncode, "UTF-8")
@@ -29,8 +28,7 @@ class SendMessageToWillyShmoServer :
             }
             errorAt = "openConnection"
             val ucon = myURL.openConnection()
-            /* Define InputStreams to read 
-			 * from the URLConnection. */
+            /* Define InputStreams to read from the URLConnection. */
             errorAt = "getInputStream"
             `is` = ucon.getInputStream()
             errorAt = "bufferedInputStream"

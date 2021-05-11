@@ -52,8 +52,6 @@
         </intent-filter>
     </activity>
 
-
-
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.FusedLocationActivity"
         android:parentActivityName=".SplashScreen"
@@ -90,8 +88,6 @@
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity"
         android:noHistory="true"
         android:screenOrientation="landscape" />
-
-    <!-- Dialog samples -->
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.SettingsDialogs"
         android:label="@string/settings"
@@ -115,8 +111,8 @@
         android:screenOrientation="landscape"
         android:theme="@style/WillyListTheme" />
 
-    <activity
-        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.GetConfigurationActivity" />
+    <!--activity
+        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.GetConfigurationActivity" /-->
 
     <meta-data
         android:name="com.google.android.gms.ads.APPLICATION_ID"

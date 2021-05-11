@@ -2,6 +2,7 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.content.res.Resources
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 //import com.guzzardo.android.willyshmo.kotlintictacdoh.ToastMessage.sendToastMessage
 import com.rabbitmq.client.QueueingConsumer.Delivery
@@ -40,11 +41,11 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
         mOnReceiveMessageHandler = handler
     }
 
-    private val mMessageHandler = Handler()
+    private val mMessageHandler = Handler(Looper.getMainLooper())
 
     // Create runnable for posting back to main thread
     val mReturnMessage = Runnable { mOnReceiveMessageHandler!!.onReceiveMessage(mLastMessage) }
-    private val mConsumeHandler = Handler()
+    private val mConsumeHandler = Handler(Looper.getMainLooper())
     val mConsumeRunner = Runnable { consume() }
 
     /**

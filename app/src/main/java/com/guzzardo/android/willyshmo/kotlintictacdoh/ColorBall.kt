@@ -20,7 +20,7 @@ class ColorBall(context: Context, drawable: Int, pointLandscape: Point, pointPor
     var type : Int // circle, cross or circleCross token
     var isDisabled = false //indicates ball can no longer be moved (finalized placement on board) = false
 
-    fun updateBall(context: Context?, type: Int, bitmap: Bitmap) {
+    fun updateBall(type: Int, bitmap: Bitmap) {
         this.type = type
         this.bitmap = bitmap
         resetPosition(mDisplayMode)

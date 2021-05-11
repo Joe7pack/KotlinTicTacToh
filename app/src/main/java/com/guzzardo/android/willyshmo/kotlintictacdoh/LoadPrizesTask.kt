@@ -35,24 +35,11 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
     var mCurrentLocation: Location? = null
     var mPlayErrorMessage: String? = null
     override fun doInBackground(vararg params: Any?): Int? {
-        mCallerActivity =
-            params[0] as SplashScreen
+        mCallerActivity = params[0] as SplashScreen
         mApplicationContext = params[1] as Context
         mResources = params[2] as Resources
         WillyShmoApplication.callerActivity = mCallerActivity
-        writeToLog(
-            "LoadPrizesTask",
-            "doInBackground called  at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                .format(Date())
-        )
-        /*
-        mGoogleApiClient = GoogleApiClient.Builder(mApplicationContext!!)
-            .addApi(LocationServices.API)
-            .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this)
-            .build()
-
-        */
+        writeToLog("LoadPrizesTask", "doInBackground called  at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
         val api = GoogleApiAvailability.getInstance()
         val isPlayAvailable = api.isGooglePlayServicesAvailable(mApplicationContext)
         when (isPlayAvailable) {
@@ -84,12 +71,8 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
             try {
                 writeToLog(
                     "LoadPrizesTask",
-                    "isPlayAvailable successful, about to connect at: " + SimpleDateFormat(
-                        "yyyy-MM-dd HH:mm:ss"
-                    ).format(Date())
+                    "isPlayAvailable successful, about to connect at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
                 )
-                //mGoogleApiClient.connect()
-                //WillyShmoApplication.setGoogleApiClient(mGoogleApiClient)
                 WillyShmoApplication.setMainStarted(true)
             } catch (e: Exception) {
                 mCallerActivity!!.sendToastMessage(e.message)
@@ -97,8 +80,7 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
         }
         writeToLog(
             "LoadPrizesTask",
-            "doInBackground completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                .format(Date())
+            "doInBackground completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
         )
         return Integer.valueOf(0)
     }
@@ -112,13 +94,9 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
                     "onPostExecute called play error: $mPlayErrorMessage"
                 )
             } else {
-                //mCallerActivity.startWaitForPrizesPopup();
-                //mCallerActivity.setAsyncMessage2();
                 writeToLog(
                     "LoadPrizesTask",
-                    "onPostExecute called, waiting for prizes to load from server at: " + SimpleDateFormat(
-                        "yyyy-MM-dd HH:mm:ss"
-                    ).format(Date())
+                    "onPostExecute called, waiting for prizes to load from server at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
                 )
             }
         } catch (e: Exception) {
@@ -130,8 +108,7 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
         }
         writeToLog(
             "LoadPrizesTask",
-            "onPostExecute completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                .format(Date())
+            "onPostExecute completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
         )
     }
 
@@ -154,8 +131,7 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
         }
         writeToLog(
             "LoadPrizesTask",
-            "onConnected completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                .format(Date())
+            "onConnected completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
         )
     }
 
@@ -187,10 +163,7 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
         if (connectionResult.hasResolution()) {
             try {
                 // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(
-                    mCallerActivity,
-                    CONNECTION_FAILURE_RESOLUTION_REQUEST
-                )
+                connectionResult.startResolutionForResult(mCallerActivity, CONNECTION_FAILURE_RESOLUTION_REQUEST)
                 /*
                  * Thrown if Google Play services canceled the original
                  * PendingIntent
@@ -214,47 +187,27 @@ class LoadPrizesTask : AsyncTask<Any?, Void?, Int>(),
         writeToLog("LoadPrizesTask", "onActivityResult called")
     }
 
-    override fun onStatusChanged(
-        status: String,
-        value: Int,
-        bundle: Bundle
-    ) {
-        writeToLog(
-            "LoadPrizesTask",
-            "onStatusChanged called status: $status"
-        )
+    override fun onStatusChanged(status: String, value: Int, bundle: Bundle) {
+        writeToLog("LoadPrizesTask","onStatusChanged called status: $status")
     }
 
     override fun onProviderDisabled(status: String) {
-        writeToLog(
-            "LoadPrizesTask",
-            "onProviderDisabled called status: $status"
-        )
+        writeToLog("LoadPrizesTask","onProviderDisabled called status: $status")
     }
 
     override fun onProviderEnabled(status: String) {
-        writeToLog(
-            "LoadPrizesTask",
-            "onProviderEnabled called status: $status"
-        )
+        writeToLog("LoadPrizesTask","onProviderEnabled called status: $status")
     }
 
     override fun onLocationChanged(location: Location) {
-        writeToLog(
-            "LoadPrizesTask",
-            "onLocationChanged called, new location latitude: " + location.latitude + " longitude: " + location.longitude
-        )
+        writeToLog("LoadPrizesTask","onLocationChanged called, new location latitude: " + location.latitude + " longitude: " + location.longitude)
     }
 
     companion object {
         private var mResources: Resources? = null
         private const val CONNECTION_FAILURE_RESOLUTION_REQUEST = 1
         private fun writeToLog(filter: String, msg: String) {
-            if ("true".equals(
-                    mResources!!.getString(R.string.debug),
-                    ignoreCase = true
-                )
-            ) {
+            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
             }
         }

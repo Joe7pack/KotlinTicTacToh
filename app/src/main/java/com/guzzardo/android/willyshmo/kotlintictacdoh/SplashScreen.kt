@@ -5,32 +5,28 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.callerActivity
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.willyShmoApplicationContext
 import android.app.Activity
-import com.guzzardo.android.willyshmo.kotlintictacdoh.ToastMessage
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.TextView
-import com.guzzardo.android.willyshmo.kotlintictacdoh.R
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
-import com.google.android.gms.ads.initialization.InitializationStatus
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication
 import android.content.Intent
-import com.guzzardo.android.willyshmo.kotlintictacdoh.FusedLocationActivity
-import com.guzzardo.android.willyshmo.kotlintictacdoh.GetConfigurationValuesFromDB
 import android.view.MotionEvent
 import android.widget.Toast
-import android.content.DialogInterface
 import android.content.res.Resources
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesUtil
+import com.google.android.gms.common.GooglePlayServicesUtil.getErrorDialog
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlinx.coroutines.*
 
-//import static com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.companion; . .Companion.getWillyShmoApplicationContext;
 /*
 Splash screen starts:
 
@@ -40,16 +36,19 @@ FusedLocationActivity then calls GetPrizeListTask via an async call
 GetPrizeListTask then calls MainActivity which displays the screen showing the load prizes button
 LoadPrizesTask is no longer used
 */
+
 class SplashScreen : Activity(), ToastMessage {
     protected var mActive = true
     var MSG_KEY = "message key"
+
+    lateinit var mCallerActivity: Activity //= null //= super.getCallingActivity()
 
     /**
      * perform the action in `handleMessage` when the thread calls
      * `mHandler.sendMessage(msg)`
      */
-    @SuppressLint("HandlerLeak")
-    private val mHandler: Handler = object : Handler() {
+    //@SuppressLint("HandlerLeak")
+    private val mHandler: Handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             val bundle = msg.data
             val string = bundle.getString(MSG_KEY)
@@ -57,18 +56,6 @@ class SplashScreen : Activity(), ToastMessage {
             myTextView.text = string
         }
     }
-    private val mMessageSender = Runnable {
-        val msg = mHandler.obtainMessage()
-        val bundle = Bundle()
-        bundle.putString(MSG_KEY, currentTime)
-        msg.data = bundle
-        mHandler.sendMessage(msg)
-    }
-    private val currentTime: String
-        private get() {
-            val dateFormat = SimpleDateFormat("HH:mm:ss MM/dd/yyyy", Locale.US)
-            return dateFormat.format(Date())
-        }
 
     /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,23 +69,20 @@ class SplashScreen : Activity(), ToastMessage {
         }
         latitude = 0.0
         longitude = 0.0
-        callerActivity = this@SplashScreen
+        mCallerActivity = this
         willyShmoApplicationContext = this.applicationContext
-        //WillyShmoApplication.Companion.setPrizeNames(null);
-        if (mPrizesAvailable) {
-            //new LoadPrizesTask().execute(SplashScreen.this, getApplicationContext(), getResources());
-            //mSkipWaitCheck = true;
-        }
-
         val willyShmoApplicationContext = willyShmoApplicationContext
         val myIntent = Intent(willyShmoApplicationContext, FusedLocationActivity::class.java)
         startActivity(myIntent)
+        writeToLog("SplashScreen", "onCreate finished")
     }
 
     public override fun onStart() {
         super.onStart()
-        val getConfigurationValuesFromDB = GetConfigurationValuesFromDB()
-        getConfigurationValuesFromDB.execute(this, applicationContext, resources)
+        CoroutineScope( Dispatchers.Default).launch {
+            val getConfigurationValuesFromDB = GetConfigurationValuesFromDB()
+            getConfigurationValuesFromDB.main(mCallerActivity as ToastMessage, resources)
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -108,7 +92,7 @@ class SplashScreen : Activity(), ToastMessage {
         return true
     }
 
-    inner class ErrorHandler : Handler() {
+    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
@@ -129,7 +113,7 @@ class SplashScreen : Activity(), ToastMessage {
         }
     }
 
-    fun createGooglePlayErrorDialog(isPlayAvailable: Int, playErrorMessage: String?): AlertDialog {
+    private fun createGooglePlayErrorDialog(isPlayAvailable: Int, playErrorMessage: String?): AlertDialog {
         return AlertDialog.Builder(this@SplashScreen)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.google_play_service_error)
@@ -145,7 +129,8 @@ class SplashScreen : Activity(), ToastMessage {
     }
 
     private fun callGooglePlayServicesUtil(isPlayAvailable: Int) {
-        GooglePlayServicesUtil.getErrorDialog(isPlayAvailable, this@SplashScreen, 99)
+        //GooglePlayServicesUtil.getErrorDialog(isPlayAvailable, this@SplashScreen, 99)
+        GoogleApiAvailability.getInstance().getErrorDialog(this, isPlayAvailable, 777)
     }
 
     private fun setSplashActive(active: Boolean) {
@@ -166,9 +151,12 @@ class SplashScreen : Activity(), ToastMessage {
     }
 
     companion object {
-        private const val mSkipWaitCheck = false
-        private const val mSplashTime = 2500
         var mErrorHandler: ErrorHandler? = null
         private var mResources: Resources? = null
+
+        private fun writeToLog(filter: String, msg: String) {
+            if ("true".equals(mResources?.getString(R.string.debug), ignoreCase = true))
+            { Log.d(filter, msg) }
+        }
     }
 }

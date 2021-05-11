@@ -6,12 +6,19 @@ import android.os.Handler
 import android.os.Message
 import android.widget.Toast
 
+//this class is no longer used
+
 class GetConfigurationActivity : Activity(), ToastMessage {
     /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val getConfigurationValuesFromDB = GetConfigurationValuesFromDB()
-        getConfigurationValuesFromDB.execute(this, applicationContext, resources)
+        //val getConfigurationValuesFromDB = GetConfigurationValuesFromDB()
+        //getConfigurationValuesFromDB.execute(this, applicationContext, resources)
+
+        //getConfigurationValuesFromDB.main(this, applicationContext, resources)
+
+
+
     }
 
     override fun sendToastMessage(message: String?) {
