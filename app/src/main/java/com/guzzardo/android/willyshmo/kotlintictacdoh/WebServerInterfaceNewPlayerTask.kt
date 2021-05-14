@@ -2,64 +2,68 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.content.Context
 import android.content.res.Resources
-import android.os.AsyncTask
 import android.util.Log
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.converseWithWebServer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONException
 import org.json.JSONObject
 
-class WebServerInterfaceNewPlayerTask : AsyncTask<Any?, Void?, Int?>() {
-    private var mCallerActivity: PlayOverNetwork? = null
-    private var mApplicationContext: Context? = null
+class WebServerInterfaceNewPlayerTask {
+    private var mCallerActivity: Context? = null
+    private lateinit var mToastMessage: ToastMessage //? = mCallerActivity as ToastMessage
     private var mPlayer1Name: String? = null
-    protected override fun doInBackground(vararg params: Any?): Int? {
-        var player1Id = 0
-        mCallerActivity = params[0] as PlayOverNetwork
-        val url = params[1] as String
-        mPlayer1Name = params[2] as String
-        mApplicationContext = params[3] as Context
-        mResources = params[4] as Resources
+    private var mPlayer1Id: Int? = null
+
+    fun main(callerActivity: Context, url: String, player1Name: String?, resources: Resources) = runBlocking {
+        mCallerActivity = callerActivity
+        mToastMessage = callerActivity as ToastMessage
+        mPlayer1Name = player1Name
+        mResources = resources
         writeToLog("WebServerInterfaceNewPlayerTask", "doInBackground called")
         try {
-            val newUser = converseWithWebServer(url, mPlayer1Name, mCallerActivity, mResources!!) ?: return null
-            player1Id = getNewUserId(newUser)
+            val newUser = converseWithWebServer(url, mPlayer1Name, mToastMessage, mResources!!)
+            mPlayer1Id = getNewUserId(newUser)
         } catch (e: Exception) {
-//			System.out.println(e.getMessage());
             writeToLog("WebServerInterfaceNewPlayerTask", "doInBackground exception called " + e.message)
-            mCallerActivity!!.sendToastMessage(e.message)
+            mToastMessage!!.sendToastMessage(e.message)
         }
-        return player1Id
+        findOtherPlayersCurrentlyOnline()
     }
 
-    override fun onPostExecute(player1Id: Int?) {
+    private fun findOtherPlayersCurrentlyOnline() {
         try {
-            writeToLog("WebServerInterfaceNewPlayerTask", "onPostExecute called player1Id $player1Id")
-            if (player1Id == null) {
+            writeToLog("WebServerInterfaceNewPlayerTask", "onPostExecute called player1Id: $mPlayer1Id")
+            if (mPlayer1Id == null) {
                 return
             }
-            val settings = mApplicationContext!!.getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+            val settings = mCallerActivity!!.getSharedPreferences(UserPreferences.PREFS_NAME, 0)
             val editor = settings.edit()
-            editor.putInt(GameActivity.PLAYER1_ID, player1Id)
+            editor.putInt(GameActivity.PLAYER1_ID, mPlayer1Id!!)
             // Commit the edits!
             editor.apply()
-            val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
-            webServerInterfaceUsersOnlineTask.execute(mCallerActivity, mApplicationContext, mPlayer1Name, mResources, player1Id)
+            CoroutineScope( Dispatchers.Default).launch {
+                val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
+                webServerInterfaceUsersOnlineTask.main(mCallerActivity, mPlayer1Name, mResources, mPlayer1Id!!)
+            }
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceNewPlayerTask", "onPostExecute exception called " + e.message)
-            mCallerActivity!!.sendToastMessage(e.message)
+            mToastMessage!!.sendToastMessage(e.message)
         }
     }
 
-    private fun getNewUserId(newUser: String): Int {
+    private fun getNewUserId(newUser: String?): Int {
         try {
             val jsonObject = JSONObject(newUser)
             val userObject = jsonObject.getJSONObject("User")
             val userId = userObject.getString("id")
-            if (null != userId) return userId.toInt()
+            return userId.toInt()
         } catch (e: JSONException) {
             writeToLog("WebServerInterfaceNewPlayerTask", "getNewUserId exception called " + e.message)
-            mCallerActivity!!.sendToastMessage(e.message)
+            mToastMessage!!.sendToastMessage(e.message)
         }
         return 0
     }

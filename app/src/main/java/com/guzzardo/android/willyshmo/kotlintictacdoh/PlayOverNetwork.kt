@@ -11,14 +11,18 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferenc
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PlayOverNetwork : Activity(), ToastMessage {
 
     private var mPlayer1Name: String? = null
+    private lateinit var mCallerActivity: PlayOverNetwork
 
-    /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mCallerActivity = this
         errorHandler = ErrorHandler()
         Companion.resources = resources
         sharedPreferences
@@ -29,8 +33,10 @@ class PlayOverNetwork : Activity(), ToastMessage {
             setSharedPreferences()
             addMyselfToPlayerList()
         } else {
-            val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
-            webServerInterfaceUsersOnlineTask.execute(this, applicationContext, mPlayer1Name, Companion.resources, Integer.valueOf(mPlayer1Id))
+            CoroutineScope( Dispatchers.Default).launch {
+                val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
+                webServerInterfaceUsersOnlineTask.main(mCallerActivity, mPlayer1Name, resources, Integer.valueOf(mPlayer1Id))
+            }
         }
         finish()
     }
@@ -41,15 +47,18 @@ class PlayOverNetwork : Activity(), ToastMessage {
         val latitude = "&latitude=$latitude"
         val longitude = "&longitude=$longitude"
         val trackingInfo = androidId + latitude + longitude
-        val url =
-            Companion.resources!!.getString(R.string.domainName) + "/gamePlayer/createAndroid/" + trackingInfo + "&userName="
-        val webServerInterfaceNewPlayerTask = WebServerInterfaceNewPlayerTask()
-        val playOverNetwork = this
-        webServerInterfaceNewPlayerTask.execute(playOverNetwork, url, mPlayer1Name, applicationContext, Companion.resources)
+        val url = Companion.resources!!.getString(R.string.domainName) + "/gamePlayer/createAndroid/" + trackingInfo + "&userName="
+        //val webServerInterfaceNewPlayerTask = WebServerInterfaceNewPlayerTask()
+        val playOverNetwork = mCallerActivity //this
+
+        CoroutineScope( Dispatchers.Default).launch {
+            val webServerInterfaceNewPlayerTask =  WebServerInterfaceNewPlayerTask()
+            webServerInterfaceNewPlayerTask.main(mCallerActivity as Context, url, mPlayer1Name, resources)
+        }
     }
 
     private val sharedPreferences: Unit
-        private get() {
+        get() {
             val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
             mPlayer1Id = settings.getInt(GameActivity.PLAYER1_ID, 0)
             mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, null)
@@ -113,7 +122,6 @@ class PlayOverNetwork : Activity(), ToastMessage {
     companion object {
         private var mPlayer1Id = 0
         private var resources: Resources? = null
-        var errorHandler: ErrorHandler? =
-            null
+        var errorHandler: ErrorHandler? = null
     }
 }

@@ -11,8 +11,8 @@ android {
         applicationId "com.guzzardo.android.willyshmo.kotlintictacdoh"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 3
-        versionName "1.2"
+        versionCode 4
+        versionName "1.3"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -21,10 +21,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            versionNameSuffix '01.02'  //alwways bump this up by 1 for release
+            versionNameSuffix '01.04'  //alwways bump this up by 1 for release
 
             //The version seen in the Play Store is the concatenation of the versionName and versionNameSuffix
-            // In this particular case it will be displayed as Current Version 1.201.02
+            // In this particular case it will be displayed as Current Version 1.301.04
         }
     }
     compileOptions {

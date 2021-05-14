@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
@@ -26,7 +27,7 @@ import java.util.*
 
 class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     private var mUsersOnline: String? = null
-    private var mRabbitMQPlayerResponse: String? = null
+    //private var mRabbitMQPlayerResponse: String? = null
 
     //TODO - consider saving mUserNames and mUserIds in savedInstanceState and changing AndroidManifest.PlayersOnlineActivity 
     // android:noHistory to false so that we can restore prior list when user presses back button in GameActivity
@@ -154,7 +155,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
     //we're creating a clone because removing an entry from the original TreeMap causes a problem for the iterator
     private val playersOnline: Unit
-        private get() {
+        get() {
             val users = parseUserList(mUsersOnline)
             val usersClone = users.clone() as TreeMap<String, HashMap<String, String>>
             //we're creating a clone because removing an entry from the original TreeMap causes a problem for the iterator
@@ -198,7 +199,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     }
 
     private val sharedPreferences: Unit
-        private get() {
+        get() {
             val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
             mUsersOnline = settings.getString("ga_users_online", null)
             mPlayer1Id = settings.getInt(GameActivity.PLAYER1_ID, 0)
@@ -214,7 +215,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     /**
      * A simple utility Handler to display an error message as a Toast popup
      */
-    inner class ErrorHandler : Handler() {
+    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
@@ -268,12 +269,12 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             // register for messages
             rabbitMQMessageConsumer!!.setOnReceiveMessageHandler(object: RabbitMQMessageConsumer.OnReceiveMessageHandler {
                 override fun onReceiveMessage(message: ByteArray?) {
-                    var text = String(message!!, StandardCharsets.UTF_8)
+                    val text = String(message!!, StandardCharsets.UTF_8)
                     rabbitMQResponseHandler!!.rabbitMQResponse = text
                     writeToLog("PlayersOnlineActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
                     if (text.startsWith("letsPlay")) {
-                        var playString = text.toString()
-                        var playStringArray = playString.split(",")
+                        val playString = text.toString()
+                        val playStringArray = playString.split(",")
                         var opposingPlayerId = ""
                         var opposingPlayerName = ""
                         if (playStringArray.size == 3) {
@@ -303,7 +304,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         }
 
         private fun writeToLog(filter: String, msg: String) {
-            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
+            if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
             }
         }

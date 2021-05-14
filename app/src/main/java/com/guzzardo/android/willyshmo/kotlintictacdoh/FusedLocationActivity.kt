@@ -18,14 +18,17 @@ import androidx.core.app.ActivityCompat
 import androidx.multidex.BuildConfig
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
-import com.guzzardo.android.willyshmo.kotlintictacdoh.FusedLocationActivity
 import com.guzzardo.android.willyshmo.kotlintictacdoh.PermissionUtil.PermissionAskListener
 import com.guzzardo.android.willyshmo.kotlintictacdoh.PermissionUtil.checkPermission
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.willyShmoApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class FusedLocationActivity : Activity(), ToastMessage {
+    private lateinit var mCallerActivity: FusedLocationActivity
     /**
      * Provides access to the Fused Location Provider API.
      */
@@ -82,6 +85,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.splash_with_guidelines)
+        mCallerActivity = this
         pgsBar = findViewById<View>(R.id.progressBar) as ProgressBar
         pgsBar!!.progress = 10
 
@@ -218,7 +222,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
     // for ActivityCompat#requestPermissions for more details.
     // return;
     private val location: Unit
-        private get() {
+        get() {
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -248,8 +252,10 @@ class FusedLocationActivity : Activity(), ToastMessage {
                     }
                 }
             setStartLocationLookupCompleted()
-            val getPrizeListTask = GetPrizeListTask()
-            getPrizeListTask.execute(this, resources, "true")
+            CoroutineScope( Dispatchers.Default).launch {
+                val getPrizeListTask = GetPrizeListTask()
+                getPrizeListTask.main(mCallerActivity, resources, "true")
+            }
         }
 
     public override fun onResume() {
@@ -297,22 +303,12 @@ class FusedLocationActivity : Activity(), ToastMessage {
 
     private fun requestPermissions() {
         val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-
+            this, Manifest.permission.ACCESS_COARSE_LOCATION)
         // Provide an additional rationale to the user. This would happen if the user denied the
         // request previously, but didn't check the "Don't ask again" checkbox.
         if (shouldProvideRationale) {
-            writeToLog(
-                "FusedLocationActivity",
-                "Displaying permission rationale to provide additional context."
-            )
-            //Log.i(TAG, "Displaying permission rationale to provide additional context.");
-            showSnackbar(
-                R.string.permission_rationale,
-                android.R.string.ok
-            ) { // Request permission
+            writeToLog("FusedLocationActivity", "Displaying permission rationale to provide additional context.")
+            showSnackbar(R.string.permission_rationale, android.R.string.ok) { // Request permission
                 ActivityCompat.requestPermissions(
                     this@FusedLocationActivity, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                     MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION
@@ -320,7 +316,6 @@ class FusedLocationActivity : Activity(), ToastMessage {
             }
         } else {
             writeToLog("FusedLocationActivity", "Requesting permission.")
-            //Log.i(TAG, "Requesting permission");
             // Request permission. It's possible this can be auto answered if device policy
             // sets the permission in a given state or the user denied the permission
             // previously and checked "Never ask again".
@@ -335,11 +330,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
     /**
      * Callback received when a permissions request has been completed.
      */
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         try {
             writeToLog(
                 "FusedLocationActivity",
@@ -352,7 +343,15 @@ class FusedLocationActivity : Activity(), ToastMessage {
                 )
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     location
+                    writeToLog(
+                        "FusedLocationActivity",
+                        "location permission granted: " + requestCode + ", grantResults[0] = " + grantResults[0]
+                    )
                 } else {
+                    writeToLog(
+                        "FusedLocationActivity",
+                        "location permission DENIED! " + requestCode + ", grantResults[0] = " + grantResults[0]
+                    )
                     // Permission denied.
 
                     // Notify the user via a SnackBar that they have rejected a core permission for the
@@ -384,7 +383,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
         }
     }
 
-    class ErrorHandler : Handler() {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(willyShmoApplicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
@@ -411,8 +410,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
                         setProgressBar(30)
                     }
                     START_GET_PRIZES_FROM_SERVER -> {
-                        //most of the waiting is here
-                        setProgressBar(40)
+                        setProgressBar(40) //most of the waiting is here
                     }
                     FORMATTING_PRIZE_DATA -> {
                         setProgressBar(60)

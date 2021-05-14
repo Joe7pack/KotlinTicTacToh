@@ -3,7 +3,7 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
-import android.os.AsyncTask
+//import android.os.AsyncTask
 import android.util.Log
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.converseWithWebServer
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
@@ -14,57 +14,56 @@ import java.lang.Boolean.FALSE
 /**
  * An AsyncTask that will be used to find other players currently online
  */
-class WebServerInterfaceUsersOnlineTask :
-    AsyncTask<Any?, Void?, String?>() {
-    private var mCallerActivity: PlayOverNetwork? = null
-    private var applicationContext: Context? = null
+class WebServerInterfaceUsersOnlineTask {
+    private var mCallerActivity: Context? = null
+    private var mToastMessage: ToastMessage? = null
     private var mPlayer1Name: String? = null
     private var mPlayer1Id: Int? = null
-    protected override fun doInBackground(vararg params: Any?): String? {
-        var usersOnline: String? = null
-        mCallerActivity = params[0] as PlayOverNetwork
-        applicationContext = params[1] as Context
-        mPlayer1Name = params[2] as String
-        mResources = params[3] as Resources
-        mPlayer1Id = params[4] as Int
+    private var mUsersOnline: String? = null
+
+    fun main(callerActivity: Context?, player1Name: String?, resources: Resources?, player1Id: Int) {
+        mCallerActivity = callerActivity
+        mPlayer1Name =  player1Name
+        mResources = resources
+        mPlayer1Id = player1Id
         val url = mResources!!.getString(R.string.domainName) + "/gamePlayer/listUsers"
         try {
-            usersOnline = converseWithWebServer(url,null, mCallerActivity, mResources!!)
+            mUsersOnline = converseWithWebServer(url,null, mCallerActivity as ToastMessage, mResources!!)
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceUsersOnlineTask", "doInBackground: " + e.message)
-            mCallerActivity!!.sendToastMessage(e.message)
+            mToastMessage!!.sendToastMessage(e.message)
         }
-        writeToLog("WebServerInterfaceUsersOnline", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $usersOnline")
-        return usersOnline
+        writeToLog("WebServerInterfaceUsersOnline", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $mUsersOnline")
+        setPlayingNow()
     }
 
-    override fun onPostExecute(usersOnline: String?) {
+     private fun setPlayingNow() {
         try {
-            writeToLog("WebServerInterfaceUsersOnlineTask","onPostExecute called usersOnline: $usersOnline")
+            if (mUsersOnline == null) {
+                return
+            }
+            writeToLog("WebServerInterfaceUsersOnlineTask","setPlayingNow called usersOnline: $mUsersOnline")
             val androidId = "&deviceId=$androidId"
             val latitude = "&latitude=$latitude"
             val longitude = "&longitude=$longitude"
             val trackingInfo = androidId + latitude + longitude
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&opponentId=0&userName="
             SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, mCallerActivity, mResources, FALSE)
-            if (usersOnline == null) {
-                return
-            }
-            val settings = applicationContext!!.getSharedPreferences(MainActivity.UserPreferences.PREFS_NAME,0)
+            val settings = mCallerActivity!!.getSharedPreferences(MainActivity.UserPreferences.PREFS_NAME,0)
             val editor = settings.edit()
-            editor.putString("ga_users_online", usersOnline)
+            editor.putString("ga_users_online", mUsersOnline)
             // Commit the edits!
             editor.apply()
             val i = Intent(mCallerActivity, PlayersOnlineActivity::class.java)
             i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_DEBUG_LOG_RESOLUTION or Intent.FLAG_FROM_BACKGROUND)
-            applicationContext!!.startActivity(i) // control is picked up in onCreate method 	        
+            mCallerActivity!!.startActivity(i) // control is picked up in onCreate method
         } catch (e: Exception) {
             writeToLog(
                 "WebServerInterfaceUsersOnlineTask",
                 "onPostExecute exception called " + e.message
             )
-            mCallerActivity!!.sendToastMessage(e.message)
+            mToastMessage!!.sendToastMessage(e.message)
         }
     }
 

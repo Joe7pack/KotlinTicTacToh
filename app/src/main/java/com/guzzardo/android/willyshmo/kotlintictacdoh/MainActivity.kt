@@ -110,7 +110,7 @@ class MainActivity : Activity(), ToastMessage {
         mCheckLicenseButton = findViewById<View>(R.id.check_license_button) as Button
         mCheckLicenseButton!!.setOnClickListener { doCheck() }
 
-        // FIXME - set animation for Prizes button only if we are connected to the network
+        //FIXME - set animation for Prizes button only if we are connected to the network
         val anim: Animation = AlphaAnimation(0.0f, 1.0f)
         anim.duration = 500 //You can manage the time of the blink with this parameter
         anim.startOffset = 20
@@ -183,8 +183,7 @@ class MainActivity : Activity(), ToastMessage {
         val i = Intent(this, SettingsDialogs::class.java)
         i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
         i.putExtra(GameActivity.PLAYER2_NAME, mPlayer2Name)
-        //FIXME - why startActivityForResult?
-        startActivityForResult(i, 1)
+        startActivity(i)
     }
 
     private fun showPrizes() {

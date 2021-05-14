@@ -5,81 +5,71 @@ import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.util.Log
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.converseWithWebServer
+import kotlinx.coroutines.runBlocking
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * An AsyncTask that will be used to get a list of available prizes
- */
-class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
-    private var mCallerActivity: FusedLocationActivity? = null
-    private val applicationContext: Context? = null
-    protected override fun doInBackground(vararg params: Any?): String? {
-        var prizesAvailable: String? = null
-        //mCallerActivity = (ToastMessage)params[0];
-        mCallerActivity = params[0] as FusedLocationActivity
-        //    	applicationContext = (Context)params[1]; 
-        mResources = params[1] as Resources
-        //mStartMainActivity = Boolean.valueOf(params[2] as String)
-        val string1 = params[2] as String
-        mStartMainActivity = string1.toBoolean()
-        writeToLog("GetPrizeListTask","doInBackground called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-        )
+// An AsyncTask that will be used to get a list of available prizes
+
+class GetPrizeListTask {
+    private lateinit var mCallerActivity: FusedLocationActivity
+    //private var applicationContext: Context? = null
+    private var mPrizesAvailable: String? = null
+
+    fun main(callerActivity: FusedLocationActivity, resources: Resources, startMainActivity: String) = runBlocking {
+        //var prizesAvailable: String? = null
+        mCallerActivity = callerActivity
+        mResources = resources
+        mStartMainActivity = startMainActivity.toBoolean()
+        writeToLog("GetPrizeListTask","main() called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
         val longitude = WillyShmoApplication.longitude
         val latitude = WillyShmoApplication.latitude
-        mCallerActivity!!.setGettingPrizesCalled()
+        mCallerActivity.setGettingPrizesCalled()
         val url = mResources!!.getString(R.string.domainName) + "/prize/getPrizesByDistance/?longitude=" + longitude + "&latitude=" + latitude
         try {
-            prizesAvailable = converseWithWebServer(url, null, mCallerActivity, mResources!!)
-            mCallerActivity!!.setPrizesRetrievedFromServer()
+            mPrizesAvailable = converseWithWebServer(url, null, mCallerActivity, mResources!!)
+            mCallerActivity.setPrizesRetrievedFromServer()
         } catch (e: Exception) {
             writeToLog("GetPrizeListTask", "doInBackground: " + e.message)
-            mCallerActivity!!.sendToastMessage("Playing without host server")
+            mCallerActivity.sendToastMessage("Playing without host server")
         }
-        writeToLog("GetPrizeListTask", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $prizesAvailable")
-        return prizesAvailable
+        writeToLog("GetPrizeListTask", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $mPrizesAvailable")
+        postExecute()
     }
 
-    override fun onPostExecute(prizesAvailable: String?) {
+    private fun postExecute() {
         try {
-            writeToLog("GetPrizeListTask","onPostExecute called usersOnline: $prizesAvailable")
+            writeToLog("GetPrizeListTask","onPostExecute called usersOnline: $mPrizesAvailable")
             writeToLog("GetPrizeListTask", "onPostExecute called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
-            mCallerActivity!!.prizeLoadInProgress()
+            mCallerActivity.prizeLoadInProgress()
             if (mStartMainActivity) {
-                //mCallerActivity.setMainActivityCalled();
                 val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
                 val myIntent = Intent(willyShmoApplicationContext, MainActivity::class.java)
-                mCallerActivity!!.startActivity(myIntent)
-                mCallerActivity!!.finish()
+                mCallerActivity.startActivity(myIntent)
+                mCallerActivity.finish()
             }
-            if (prizesAvailable != null && prizesAvailable.length > 20) {
-                getPrizesAvailable(prizesAvailable)
-                mCallerActivity!!.setPrizesLoadIntoObjects()
+            if (mPrizesAvailable != null && mPrizesAvailable!!.length > 20) {
+                getPrizesAvailable()
+                mCallerActivity.setPrizesLoadIntoObjects()
                 convertStringsToBitmaps()
                 savePrizeArrays()
-                mCallerActivity!!.setPrizesLoadedAllDone()
-            } else {
-               // WillyShmoApplication.prizeNames = null
+                mCallerActivity.setPrizesLoadedAllDone()
             }
         } catch (e: Exception) {
             writeToLog("GetPrizeListTask", "onPostExecute exception called " + e.message)
-            mCallerActivity!!.sendToastMessage(e.message)
+            mCallerActivity.sendToastMessage(e.message)
         }
         writeToLog("GetPrizeListTask", "onPostExecute completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
         )
     }
 
-    private fun getPrizesAvailable(prizesAvailable: String) {
-        //mCallerActivity.formattingPrizeData();
-        val prizes = parsePrizeList(prizesAvailable)
-        val userKeySet: Set<String> =
-            prizes.keys // this is where the keys (userNames) gets sorted
-        //val keySetIterator = userKeySet.iterator()
+    private fun getPrizesAvailable() {
+        val prizes = parsePrizeList()
+        val userKeySet: Set<String> = prizes.keys // this is where the keys (userNames) gets sorted
         val objectArray: Array<Any> = prizes.keys.toTypedArray()
         mPrizeNames = arrayOfNulls(objectArray.size)
         mPrizeIds = arrayOfNulls(objectArray.size)
@@ -105,10 +95,10 @@ class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
         }
     }
 
-    private fun parsePrizeList(prizesAvailable: String): TreeMap<String, Array<String?>> {
+    private fun parsePrizeList(): TreeMap<String, Array<String?>> {
         val userTreeMap = TreeMap<String, Array<String?>>()
         try {
-            val convertedPrizesAvailable = convertToArray(StringBuilder(prizesAvailable))
+            val convertedPrizesAvailable = convertToArray(StringBuilder(mPrizesAvailable))
             val jsonObject = JSONObject(convertedPrizesAvailable)
             val prizeArray = jsonObject.getJSONArray("PrizeList")
             for (x in 0 until prizeArray.length()) {
@@ -126,14 +116,14 @@ class GetPrizeListTask : AsyncTask<Any?, Void?, String?>() {
                 prizeArrayValues[1] = image
                 prizeArrayValues[2] = Integer.toString(imageWidth)
                 prizeArrayValues[3] = Integer.toString(imageHeight)
-                prizeArrayValues[4] = java.lang.Double.toString(distance)
+                prizeArrayValues[4] = distance.toString()
                 prizeArrayValues[5] = prizeUrl
                 prizeArrayValues[6] = location
                 userTreeMap[prizeName] = prizeArrayValues
             }
         } catch (e: JSONException) {
             writeToLog("GetPrizeListTask", "PrizeList: " + e.message)
-            mCallerActivity!!.sendToastMessage(e.message)
+            mCallerActivity.sendToastMessage(e.message)
         }
         return userTreeMap
     }
