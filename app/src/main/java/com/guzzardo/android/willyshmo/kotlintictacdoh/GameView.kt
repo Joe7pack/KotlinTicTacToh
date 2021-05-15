@@ -31,6 +31,7 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity.ClientThread
 import com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity.Companion.moveModeTouch
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.isNetworkAvailable
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.prizesAreAvailable
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -168,7 +169,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     fun setGamePrize() {
         prizeLocation = -1
-        if (isNetworkAvailable && !HUMAN_VS_HUMAN) {
+        if (isNetworkAvailable && prizesAreAvailable) {
             prizeLocation = mRandom.nextInt(BoardSpaceValues.BOARDSIZE)
             //mPrizeLocation = 11; //set prize to a fixed location
             mPrizeXBoardLocation = mPrizeXBoardLocationArray[prizeLocation]

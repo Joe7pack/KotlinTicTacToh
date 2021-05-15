@@ -29,6 +29,7 @@ class WillyShmoApplication : MultiDexApplication() {
         var longitude = 0.0
         var latitude = 0.0
         private var mNetworkAvailable = false
+        private var mPrizesAvailable = false
         var callerActivity: ToastMessage? = null
         private var mResources: Resources? = null
         private var mStartMainActivity = false
@@ -59,6 +60,13 @@ class WillyShmoApplication : MultiDexApplication() {
         set(networkAvailable) {
             mNetworkAvailable = networkAvailable
             writeToLog("WillyShmoApplication","setNetworkAvailable(): $mNetworkAvailable")
+        }
+
+        var prizesAreAvailable: Boolean
+        get() = mPrizesAvailable
+        set(prizesAvailable) {
+            mPrizesAvailable = prizesAvailable
+            writeToLog("WillyShmoApplication","setPrizesAvailable(): $mPrizesAvailable")
         }
 
         fun setMainStarted(startMainActivity: Boolean) {

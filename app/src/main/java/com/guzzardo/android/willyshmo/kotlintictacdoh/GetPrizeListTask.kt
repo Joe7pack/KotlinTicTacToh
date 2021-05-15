@@ -13,18 +13,17 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-// An AsyncTask that will be used to get a list of available prizes
+// A Coroutine task (formerly an AsyncTask task, since deprecated) that will be used to get a list of available prizes
 
 class GetPrizeListTask {
     private lateinit var mCallerActivity: FusedLocationActivity
     //private var applicationContext: Context? = null
     private var mPrizesAvailable: String? = null
 
-    fun main(callerActivity: FusedLocationActivity, resources: Resources, startMainActivity: String) = runBlocking {
-        //var prizesAvailable: String? = null
+    fun main(callerActivity: FusedLocationActivity, resources: Resources, startMainActivity: Boolean) = runBlocking {
         mCallerActivity = callerActivity
         mResources = resources
-        mStartMainActivity = startMainActivity.toBoolean()
+        mStartMainActivity = startMainActivity //.toBoolean()
         writeToLog("GetPrizeListTask","main() called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
         val longitude = WillyShmoApplication.longitude
         val latitude = WillyShmoApplication.latitude
@@ -38,36 +37,39 @@ class GetPrizeListTask {
             mCallerActivity.sendToastMessage("Playing without host server")
         }
         writeToLog("GetPrizeListTask", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $mPrizesAvailable")
-        postExecute()
+        processRetrievedPrizeList()
     }
 
-    private fun postExecute() {
+    private fun processRetrievedPrizeList() {
         try {
-            writeToLog("GetPrizeListTask","onPostExecute called usersOnline: $mPrizesAvailable")
-            writeToLog("GetPrizeListTask", "onPostExecute called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+            writeToLog("GetPrizeListTask","processRetrievedPrizeList prizes available: $mPrizesAvailable")
+            writeToLog("GetPrizeListTask", "processRetrievedPrizeList called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
             mCallerActivity.prizeLoadInProgress()
+
             if (mStartMainActivity) {
                 val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
                 val myIntent = Intent(willyShmoApplicationContext, MainActivity::class.java)
+                WillyShmoApplication.prizesAreAvailable = true
                 mCallerActivity.startActivity(myIntent)
                 mCallerActivity.finish()
             }
+
             if (mPrizesAvailable != null && mPrizesAvailable!!.length > 20) {
-                getPrizesAvailable()
+                loadPrizesIntoArrays()
                 mCallerActivity.setPrizesLoadIntoObjects()
                 convertStringsToBitmaps()
                 savePrizeArrays()
                 mCallerActivity.setPrizesLoadedAllDone()
             }
         } catch (e: Exception) {
-            writeToLog("GetPrizeListTask", "onPostExecute exception called " + e.message)
+            writeToLog("GetPrizeListTask", "processRetrievedPrizeList exception called " + e.message)
             mCallerActivity.sendToastMessage(e.message)
         }
-        writeToLog("GetPrizeListTask", "onPostExecute completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+        writeToLog("GetPrizeListTask", "processRetrievedPrizeList completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
         )
     }
 
-    private fun getPrizesAvailable() {
+    private fun loadPrizesIntoArrays() {
         val prizes = parsePrizeList()
         val userKeySet: Set<String> = prizes.keys // this is where the keys (userNames) gets sorted
         val objectArray: Array<Any> = prizes.keys.toTypedArray()
@@ -168,7 +170,7 @@ class GetPrizeListTask {
     }
 
     private fun savePrizeArrays() {
-        if (WillyShmoApplication.isNetworkAvailable) {
+        if (WillyShmoApplication.prizesAreAvailable) {
             WillyShmoApplication.prizeIds = mPrizeIds
             WillyShmoApplication.prizeNames = mPrizeNames
             WillyShmoApplication.bitmapImages = mBitmapImages

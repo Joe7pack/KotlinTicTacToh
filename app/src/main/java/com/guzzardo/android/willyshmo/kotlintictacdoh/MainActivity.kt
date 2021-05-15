@@ -3,7 +3,6 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
-import android.app.PendingIntent.getActivity
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Resources
@@ -15,15 +14,12 @@ import android.os.Message
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.view.Window
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.Button
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.res.ResourcesCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.vending.licensing.*
@@ -34,10 +30,7 @@ import com.google.firebase.appindexing.FirebaseUserActions
 import com.google.firebase.appindexing.Indexable
 import com.google.firebase.appindexing.builders.Actions
 import com.google.firebase.appindexing.builders.Indexables
-import com.guzzardo.android.willyshmo.kotlintictacdoh.PrizesAvailableActivity
-import com.guzzardo.android.willyshmo.kotlintictacdoh.SettingsDialogs
-import com.guzzardo.android.willyshmo.kotlintictacdoh.TwoPlayerActivity
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.isNetworkAvailable
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.prizesAreAvailable
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -118,7 +111,7 @@ class MainActivity : Activity(), ToastMessage {
         anim.repeatCount = Animation.INFINITE
         mPrizeButton!!.setBackground(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.backwithgreenborder))
         mPrizeButton!!.startAnimation(anim)
-        if (isNetworkAvailable) {
+        if (prizesAreAvailable) {
             mPrizeButton!!.visibility = View.VISIBLE
         } else {
             mPrizeButton!!.visibility = View.GONE

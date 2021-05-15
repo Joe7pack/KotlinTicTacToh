@@ -239,23 +239,25 @@ class FusedLocationActivity : Activity(), ToastMessage {
                 writeToLog("FusedLocationActivity", "Permission not granted")
             }
             mFusedLocationClient!!.lastLocation
-                .addOnSuccessListener(this) { location -> // Got last known location. In some rare situations this can be null.
+                .addOnSuccessListener(this) { location -> // Got last known location. Will always be null when called from emulator.
                     if (location != null) {
                         myLatitude = location.latitude
                         myLongitude = location.longitude
-                        writeToLog(
-                            "FusedLocationActivity",
-                            "My latitude: $myLatitude my Longitude: $myLongitude"
-                        )
+                        writeToLog("FusedLocationActivity", "My latitude: $myLatitude my Longitude: $myLongitude")
                         latitude = myLatitude
                         longitude = myLongitude
+                        CoroutineScope( Dispatchers.Default).launch {
+                            val getPrizeListTask = GetPrizeListTask()
+                            getPrizeListTask.main(mCallerActivity, resources,true)
+                        }
+                    } else {
+                        val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
+                        val myIntent = Intent(willyShmoApplicationContext, MainActivity::class.java)
+                        startActivity(myIntent)
+                        finish()
                     }
                 }
             setStartLocationLookupCompleted()
-            CoroutineScope( Dispatchers.Default).launch {
-                val getPrizeListTask = GetPrizeListTask()
-                getPrizeListTask.main(mCallerActivity, resources, "true")
-            }
         }
 
     public override fun onResume() {
@@ -268,9 +270,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
         //stopLocationUpdates();
     }
 
-    /**
-     * Stores activity data in the Bundle.
-     */
+    // Stores activity data in the Bundle.
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
         savedInstanceState.putBoolean(KEY_REQUESTING_LOCATION_UPDATES, mRequestingLocationUpdates!!)
         savedInstanceState.putParcelable(KEY_LOCATION, mCurrentLocation)

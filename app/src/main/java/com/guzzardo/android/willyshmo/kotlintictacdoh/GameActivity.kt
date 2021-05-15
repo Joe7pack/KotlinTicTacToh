@@ -1896,9 +1896,7 @@ class GameActivity : Activity(), ToastMessage {
                     "GameActivity"
             )
         }
-
         writeToLog("GameActivity", "$qNameQualifier message consumer listening on queue: $qName")
-
         // register for messages
         rabbitMQMessageConsumer.setOnReceiveMessageHandler(object : OnReceiveMessageHandler {
             override fun onReceiveMessage(message: ByteArray?) {
@@ -1906,10 +1904,9 @@ class GameActivity : Activity(), ToastMessage {
                 text = String(message!!, StandardCharsets.UTF_8)
                 rabbitMQResponseHandler.rabbitMQResponse = text
                 writeToLog("GameActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
-
-                if (text.equals("letsPlay")) {
+                if (text.startsWith("letsPlay")) {
                     val intent = Intent(PlayersOnlineActivity.getContext(), PlayersOnlineActivity::class.java)
-                    PlayersOnlineActivity.getContext().stopService(intent) //.applicationContext.stopService()     . .stopService()
+                    PlayersOnlineActivity.getContext().stopService(intent)
                 }
             }
         })
