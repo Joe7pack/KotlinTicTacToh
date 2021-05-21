@@ -53,8 +53,7 @@ class TwoPlayerActivity : Activity() {
             startGame(2)
             //              finish();
         }
-        mButtonPlayOverNetwork =
-            findViewById<View>(R.id.play_over_network) as Button
+        mButtonPlayOverNetwork = findViewById<View>(R.id.play_over_network) as Button
         mButtonPlayOverNetwork!!.setOnClickListener { playOverNetwork() }
         if (WillyShmoApplication.isNetworkAvailable) {
             mButtonPlayOverNetwork!!.visibility = View.VISIBLE
@@ -111,19 +110,7 @@ class TwoPlayerActivity : Activity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        //        String player1Name = getIntent().getStringExtra(GameActivity.PLAYER1_NAME);
-//        if (player1Name != null)
-//        	mPlayer1Name = player1Name;
-//        
-//        String player2Name = getIntent().getStringExtra(GameActivity.PLAYER2_NAME);
-//        if (player2Name != null)
-//        	mPlayer2Name = player2Name;
-    }
-
     companion object {
-        var errorHandler: ErrorHandler? =
-            null
+        var errorHandler: ErrorHandler? = null
     }
 }
