@@ -11,7 +11,7 @@ android {
         applicationId "com.guzzardo.android.willyshmo.kotlintictacdoh"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 6  //must increment versionCode before building bundle for deployment to Google Play Store
+        versionCode 7  //must increment versionCode before building bundle for deployment to Google Play Store
         versionName "1.3"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -21,10 +21,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            versionNameSuffix '01.05'  //alwways bump this up by 1 for release
+            versionNameSuffix '01.06'  //alwways bump this up by 1 for release
 
             //The version as seen in the Play Store is the concatenation of the versionName and versionNameSuffix.
-            // In this particular case it will be displayed as Current Version 1.301.05
+            // In this particular case it will be displayed as Current Version 1.301.06
             // The versionCode is not displayed on the PlayStore listing page but it must be incremented nonetheless
         }
     }

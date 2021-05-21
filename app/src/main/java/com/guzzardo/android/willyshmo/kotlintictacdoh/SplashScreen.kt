@@ -61,7 +61,6 @@ class SplashScreen : Activity(), ToastMessage {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MobileAds.initialize(this) { }
-        mResources = resources
         mErrorHandler = ErrorHandler()
         var mPrizesAvailable = false
         if ("true".equals(mResources?.getString(R.string.prizesAvailable), ignoreCase = true)) {

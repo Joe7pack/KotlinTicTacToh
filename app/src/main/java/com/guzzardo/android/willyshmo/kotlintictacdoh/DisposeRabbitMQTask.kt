@@ -1,23 +1,25 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
+import android.app.Activity
 import android.content.res.Resources
 import android.os.AsyncTask
 import android.util.Log
 
-class DisposeRabbitMQTask : AsyncTask<Any?, Void?, Void?>() {
-    var mActivity: ToastMessage? = null
-    protected override fun doInBackground(vararg values: Any?): Void? {
+class DisposeRabbitMQTask {
+    private lateinit var mCallerActivity: ToastMessage
+    fun main(rabbitMQMessageConsumer: RabbitMQMessageConsumer?, resources: Resources, activity: ToastMessage) {
+        mCallerActivity = activity
         try {
-            val rabbitMQMessageConsumer = values[0] as RabbitMQMessageConsumer
-            mResources = values[1] as Resources
-            mActivity = values[2] as ToastMessage
-            //rabbitMQMessageConsumer.setConsumeRunning(false);
-            rabbitMQMessageConsumer.dispose()
+            mResources = resources
+            writeToLog("DisposeRabbitMQTask", "about to call rabbitMQMessageConsumer?.dispose()")
+            rabbitMQMessageConsumer?.dispose()
+            //FIXME - maybe add some logic here to get rid of any old messages in Queue?
         } catch (e: Exception) {
             writeToLog("DisposeRabbitMQTask", e.message)
-            mActivity!!.sendToastMessage(e.message)
+            activity.sendToastMessage(e.message)
+        } finally {
+            writeToLog("DisposeRabbitMQTask", "main function all done!")
         }
-        return null
     }
 
     companion object {

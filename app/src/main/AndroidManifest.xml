@@ -100,10 +100,10 @@
         android:theme="@style/WillyListTheme" >
     </activity>
     <activity
-        android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.PlayersOnlineActivity"
+        android:name=".PlayersOnlineActivity"
         android:label="@string/select_player"
         android:noHistory="true"
-        android:screenOrientation="landscape" />
+        android:screenOrientation="landscape"/>
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.PrizesAvailableActivity"
         android:label="@string/show_prizes"

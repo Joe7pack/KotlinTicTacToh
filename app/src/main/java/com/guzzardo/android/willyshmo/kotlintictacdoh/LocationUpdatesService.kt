@@ -9,7 +9,7 @@ import android.location.Location
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import android.app.NotificationManager //.IMPORTANCE_HIGH
+import android.app.NotificationManager
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import com.guzzardo.android.willyshmo.kotlintictacdoh.Utils.getLocationText
@@ -17,8 +17,6 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.Utils.getLocationTitle
 import com.guzzardo.android.willyshmo.kotlintictacdoh.Utils.requestingLocationUpdates
 import com.guzzardo.android.willyshmo.kotlintictacdoh.Utils.setRequestingLocationUpdates
 
-//import android.support.annotation.NonNull;
-//import android.support.v4.app.NotificationCompat;
 /**
  * A bound and started service that is promoted to a foreground service when location updates have
  * been requested and all clients unbind.
@@ -44,25 +42,17 @@ class LocationUpdatesService : Service() {
     private var mChangingConfiguration = false
     private var mNotificationManager: NotificationManager? = null
 
-    /**
-     * Contains parameters used by [com.google.android.gms.location.FusedLocationProviderApi].
-     */
+    // Contains parameters used by [com.google.android.gms.location.FusedLocationProviderApi].
     private lateinit var mLocationRequest: LocationRequest
 
-    /**
-     * Provides access to the Fused Location Provider API.
-     */
+    // Provides access to the Fused Location Provider API.
     private var mFusedLocationClient: FusedLocationProviderClient? = null
 
-    /**
-     * Callback for changes in location.
-     */
+    // Callback for changes in location.
     private lateinit var mLocationCallback: LocationCallback
     private var mServiceHandler: Handler? = null
 
-    /**
-     * The current location.
-     */
+    // The current location.
     private var mLocation: Location? = null
     override fun onCreate() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -190,16 +180,8 @@ class LocationUpdatesService : Service() {
             setRequestingLocationUpdates(this, true)
             Log.e(TAG, "Lost location permission. Could not remove updates. $unlikely")
         }
-    }// Channel ID// Extra to help us figure out if we arrived in onStartCommand via the notification or not.
+    }
 
-    // The PendingIntent that leads to a call to onStartCommand() in this service.
-
-    // The PendingIntent to launch activity.
-
-    // Set the Channel ID for Android O.
-    /**
-     * Returns the [NotificationCompat] used as part of the foreground service.
-     */
     private val notification: Notification
         get() {
             val intent = Intent(this, LocationUpdatesService::class.java)
@@ -243,6 +225,7 @@ class LocationUpdatesService : Service() {
             }
             return builder.build()
         }
+
     private val lastLocation: Unit
         get() {
             try {
@@ -274,9 +257,7 @@ class LocationUpdatesService : Service() {
         }
     }
 
-    /**
-     * Sets the location request parameters.
-     */
+    // Sets the location request parameters.
     private fun createLocationRequest() {
 
         var locationRequest = LocationRequest.create().apply {
@@ -287,7 +268,6 @@ class LocationUpdatesService : Service() {
         }
 
         mLocationRequest = locationRequest
-        //mLocationRequest = LocationRequest()
         mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS
         mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -302,15 +282,9 @@ class LocationUpdatesService : Service() {
             get() = this@LocationUpdatesService
     }
 
-    /**
-     * Returns true if this is a foreground service.
-     *
-     * @param context The [Context].
-     */
+    // Returns true if this is a foreground service.
     fun serviceIsRunningInForeground(context: Context): Boolean {
-        val manager = context.getSystemService(
-            ACTIVITY_SERVICE
-        ) as ActivityManager
+        val manager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
         for (service in manager.getRunningServices(Int.MAX_VALUE)) {
             if (javaClass.name == service.service.className) {
                 if (service.foreground) {
@@ -326,30 +300,21 @@ class LocationUpdatesService : Service() {
             "com.google.android.gms.location.sample.locationupdatesforegroundservice"
         private val TAG = LocationUpdatesService::class.java.simpleName
 
-        /**
-         * The name of the channel for notifications.
-         */
+        // The name of the channel for notifications.
         private const val CHANNEL_ID = "channel_01"
         const val ACTION_BROADCAST = PACKAGE_NAME + ".broadcast"
         const val EXTRA_LOCATION = PACKAGE_NAME + ".location"
         private const val EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
                 ".started_from_notification"
 
-        /**
-         * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-         */
+        // The desired interval for location updates. Inexact. Updates may be more or less frequent.
         private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
 
-        /**
-         * The fastest rate for active location updates. Updates will never be more frequent
-         * than this value.
-         */
+        // The fastest rate for active location updates. Updates will never be more frequent than this value.
         private const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2
 
-        /**
-         * The identifier for the notification displayed for the foreground service.
-         */
+        // The identifier for the notification displayed for the foreground service.
         private const val NOTIFICATION_ID = 12345678
     }
 }

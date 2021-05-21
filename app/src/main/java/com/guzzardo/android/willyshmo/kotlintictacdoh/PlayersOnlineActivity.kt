@@ -1,5 +1,6 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -13,6 +14,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.ListFragment
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
@@ -27,15 +29,10 @@ import java.util.*
 
 class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     private var mUsersOnline: String? = null
-    //private var mRabbitMQPlayerResponse: String? = null
 
-    //TODO - consider saving mUserNames and mUserIds in savedInstanceState and changing AndroidManifest.PlayersOnlineActivity 
-    // android:noHistory to false so that we can restore prior list when user presses back button in GameActivity
-    // This will make replaying simpler since the user will see the prior list of users online when leaving a game instead of 
-    // being sent back to the 2 Players screen.
-    // The downside is that this list will become increasingly inaccurate as other players enter and leave the online list.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mSavedInstanceState = savedInstanceState
         mResources = resources
         errorHandler = ErrorHandler()
         mApplicationContext = applicationContext
@@ -58,18 +55,26 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             setContentView(R.layout.players_online) //this starts up the list view
         }
         setContext(this);
-        this.taskId
+        //this.taskId
+        writeToLog("PlayersOnlineActivity", "onCreate taskId: $taskId")
     }
 
     private inner class RabbitMQPlayerResponseHandler : RabbitMQResponseHandler() { }
 
-    public override fun onPause() {
+    public override fun onPause() { //pause this Activity
         super.onPause()
+        writeToLog("PlayersOnlineActivity", "onPause called from Main Activity")
         if (mSelectedPosition == -1) {
-            val urlData =
-                "/gamePlayer/update/?id=" + mPlayer1Id + "&onlineNow=false&opponentId=0&userName="
+            val urlData = "/gamePlayer/update/?id=" + mPlayer1Id + "&onlineNow=false&opponentId=0&userName="
             SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, this, mResources, false)
+            writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false")
         }
+        GameActivity.isClientRunning = false
+        //finish()
+    }
+
+    public override fun onStop() {
+        super.onStop()
     }
 
     /**
@@ -104,9 +109,13 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             startGame()
         }
 
-        override fun onPause() {
+        public override fun onPause() { // pause the PlayersOnlineFragment
             super.onPause()
-            DisposeRabbitMQTask().execute(mMessageConsumer, mResources, mPlayersOnlineActivity)
+            writeToLog("PlayersOnlineActivity", "onPause called from PlayersOnlineFragment to dispose of RabbitMQTask")
+            CoroutineScope(Dispatchers.Default).launch {
+                val disposeRabbitMQTask = DisposeRabbitMQTask()
+                disposeRabbitMQTask.main(mMessageConsumer, mResources, mPlayersOnlineActivity as ToastMessage)
+            }
         }
 
         override fun onSaveInstanceState(outState: Bundle) {
@@ -118,17 +127,11 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             setUpClientAndServer(position)
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "startGame" + "-" + mUserIds[position]
             val messageToOpponent = "letsPlay," + mPlayer1Name + "," + mPlayer1Id //mUserIds[position];
-            SendMessageToRabbitMQTask().execute(
-                getConfigMap("RabbitMQIpAddress"),
-                qName,
-                null,
-                messageToOpponent,
-                mPlayersOnlineActivity,
-                mResources
-            )
+            CoroutineScope( Dispatchers.Default).launch {
+                val sendMessageToRabbitMQTask = SendMessageToRabbitMQTask()
+                sendMessageToRabbitMQTask.main(getConfigMap("RabbitMQIpAddress"), qName,  messageToOpponent, mPlayersOnlineActivity as ToastMessage, mResources)
+            }
             mSelectedPosition = position
-
-            //set a value here to indicate that only this client will send the tokenList to the opponent
         }
 
         private fun setUpClientAndServer(which: Int) {
@@ -228,13 +231,15 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     }
 
     companion object {
+        private var mSavedInstanceState: Bundle? = null
         private lateinit  var appContext: Context
-        fun setContext(con: Context) {
-            appContext=con
+        fun setContext(context: Context) {
+            appContext = context
         }
-        fun getContext() : Context {
+        fun getContext(): Context {
             return appContext
         }
+
         private lateinit var mUserNames: Array<String?>
         private lateinit var mUserIds: Array<String?>
         private var mPlayer1Id: Int? = null
@@ -246,14 +251,11 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var mSelectedPosition = -1
         private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mRabbitMQPlayerResponseHandler: RabbitMQPlayerResponseHandler? = null
-        private fun setUpMessageConsumer(
-            rabbitMQMessageConsumer: RabbitMQMessageConsumer?,
-            qNameQualifier: String,
-            rabbitMQResponseHandler: RabbitMQResponseHandler?
-        ) {
+
+        private fun setUpMessageConsumer(rabbitMQMessageConsumer: RabbitMQMessageConsumer?, qNameQualifier: String, rabbitMQResponseHandler: RabbitMQResponseHandler?) {
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + mPlayer1Id
 
-            CoroutineScope( Dispatchers.Default).launch {
+            CoroutineScope(Dispatchers.Default).launch {
                 val consumerConnectTask = ConsumerConnectTask()
                 consumerConnectTask.main(
                     getConfigMap("RabbitMQIpAddress"),
@@ -285,7 +287,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                             //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
                             i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
                             i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-                            i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID,opposingPlayerId)
+                            i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, opposingPlayerId)
                             i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
                             i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
                             writeToLog("PlayersOnlineActivity", "starting client and server from new player: " + opposingPlayerName)

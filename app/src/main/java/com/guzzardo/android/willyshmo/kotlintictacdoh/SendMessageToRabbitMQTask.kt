@@ -1,21 +1,17 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.content.res.Resources
-import android.os.AsyncTask
 import android.util.Log
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.getConfigMap
 import com.rabbitmq.client.ConnectionFactory
+import kotlinx.coroutines.*
 
-class SendMessageToRabbitMQTask : AsyncTask<Any?, Void?, Void?>() {
+class SendMessageToRabbitMQTask {
     private var mCallingActivity: ToastMessage? = null
-    protected override fun doInBackground(vararg values: Any?): Void? {
+    fun main(mHostName: String?, qName: String, message: String, callerActivity: ToastMessage, resources: Resources?) = runBlocking {
         try {
-            //String hostName = (String)values[0];
-            val qName = values[1] as String
-            //val exchangeName = values[2] as String
-            val message = values[3] as String
-            mCallingActivity = values[4] as ToastMessage
-            mResources = values[5] as Resources
+            mCallingActivity = callerActivity
+            mResources = resources
             val connectionFactory = ConnectionFactory()
             connectionFactory.host = getConfigMap("RabbitMQIpAddress")
             connectionFactory.username = getConfigMap("RabbitMQUser")
@@ -37,7 +33,6 @@ class SendMessageToRabbitMQTask : AsyncTask<Any?, Void?, Void?>() {
             //Log.e("SendMessageToRabbitMQTask", e.getMessage());
             mCallingActivity!!.sendToastMessage(e.message)
         }
-        return null
     }
 
     companion object {

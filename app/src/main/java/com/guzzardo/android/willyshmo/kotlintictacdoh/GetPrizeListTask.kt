@@ -133,11 +133,11 @@ class GetPrizeListTask {
     private fun convertToArray(inString: StringBuilder): String {
         var inputString = inString
         var startValue = 0
-        var start = 0
-        var end = 0
+        //var start = 0
+        //var end = 0
         val replaceString = "\"prize:"
-        start = inputString.indexOf(replaceString, startValue)
-        end = inputString.indexOf("{", start + 1)
+        var start = inputString.indexOf(replaceString, startValue)
+        var end = inputString.indexOf("{", start + 1)
         inputString = inputString.replace(start - 1, end, "[")
         startValue = end
         for (x in end until inputString.length) {
