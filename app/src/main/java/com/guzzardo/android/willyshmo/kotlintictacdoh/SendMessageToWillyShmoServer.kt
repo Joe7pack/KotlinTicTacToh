@@ -1,26 +1,26 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.content.res.Resources
-import android.os.AsyncTask
 import android.util.Log
+import kotlinx.coroutines.runBlocking
 import java.io.*
 import java.net.URL
 import java.net.URLEncoder
 
-class SendMessageToWillyShmoServer :
-    AsyncTask<Any?, Void?, String?>() {
-    protected override fun doInBackground(vararg params: Any?): String? {
-        val urlToEncode = params[1] as String?
-        mCallerActivity = params[2] as ToastMessage
-        mResources = params[3] as Resources
-        mFinishActivity = params[4] as Boolean
-        val url = mResources!!.getString(R.string.domainName) +params[0] as String
+class SendMessageToWillyShmoServer {
+    private lateinit var mCallerActivity: ToastMessage
+
+    fun main(urlData: String, urlToEncode: String?, callerActivity: ToastMessage,  resources: Resources, finishActivity: Boolean)  = runBlocking {
+        mCallerActivity = callerActivity
+        mResources = resources
+        mFinishActivity = finishActivity
+        val url = mResources!!.getString(R.string.domainName) + urlData
         var bis: BufferedInputStream? = null
         var `is`: InputStream? = null
         var result: String? = null
         var errorAt: String? = null
         try {
-            var myURL = if (urlToEncode == null) {
+            val myURL = if (urlToEncode == null) {
                 URL(url)
             } else {
                 val encodedUrl = URLEncoder.encode(urlToEncode, "UTF-8")
@@ -38,29 +38,26 @@ class SendMessageToWillyShmoServer :
             /* Convert the Bytes read to a String. */
         } catch (e: Exception) {
             writeToLog("SendMessageToWillyShmoServer","error: " + e.message + " error at: " + errorAt)
-            mCallerActivity!!.sendToastMessage("Sorry, Willy Shmo server is not available now. Please try again later")
+            mCallerActivity.sendToastMessage("Sorry, Willy Shmo server is not available now. Please try again later")
         } finally {
             try {
                 bis!!.close()
                 `is`!!.close()
             } catch (e: Exception) {
                 //nothing to do here
-                writeToLog(
-                    "SendMessageToWillyShmoServer",
-                    "finally error: " + e.message
-                )
+                writeToLog("SendMessageToWillyShmoServer", "finally error: " + e.message)
             }
         }
-        return result
+        onPostExecute(finishActivity)
     }
 
-    override fun onPostExecute(res: String?) {
+    fun onPostExecute(finishActivity: Boolean) {
         try {
-            if (mFinishActivity!!) {
-                mCallerActivity!!.finish()
+            if (finishActivity) {
+                mCallerActivity.finish()
             }
         } catch (e: Exception) {
-            mCallerActivity!!.sendToastMessage(e.message)
+            mCallerActivity.sendToastMessage(e.message)
         }
     }
 
@@ -77,7 +74,7 @@ class SendMessageToWillyShmoServer :
              */
          val reader = BufferedReader(InputStreamReader(`is`))
          val sb = StringBuilder()
-         var line: String? = null
+         var line: String?
          try {
              while (reader.readLine().also { line = it } != null) {
                  sb.append(""" $line """.trimIndent())

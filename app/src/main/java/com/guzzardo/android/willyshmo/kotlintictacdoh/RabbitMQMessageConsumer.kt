@@ -16,11 +16,9 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
     var channel: Channel? = null
     var connection: Connection? = null
     private val mExchangeType = "fanout"
-    var queue //The Queue name for this consumer
-            : String? = null
+    var queue: String? = null //The Queue name for this consumer
     var consumer: QueueingConsumer? = null
     private var mConsumeRunning = false
-    //private var mResources: Resources
     private var mResources = resources
     private lateinit var mLastMessage: ByteArray //last message to post back
 

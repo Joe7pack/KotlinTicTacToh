@@ -9,6 +9,9 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.convers
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.Boolean.FALSE
 
 /**
@@ -21,14 +24,14 @@ class WebServerInterfaceUsersOnlineTask {
     private var mPlayer1Id: Int? = null
     private var mUsersOnline: String? = null
 
-    fun main(callerActivity: Context?, player1Name: String?, resources: Resources?, player1Id: Int) {
+    fun main(callerActivity: Context?, player1Name: String?, resources: Resources, player1Id: Int) {
         mCallerActivity = callerActivity
         mPlayer1Name =  player1Name
         mResources = resources
         mPlayer1Id = player1Id
-        val url = mResources!!.getString(R.string.domainName) + "/gamePlayer/listUsers"
+        val url = mResources.getString(R.string.domainName) + "/gamePlayer/listUsers"
         try {
-            mUsersOnline = converseWithWebServer(url,null, mCallerActivity as ToastMessage, mResources!!)
+            mUsersOnline = converseWithWebServer(url,null, mCallerActivity as ToastMessage, mResources)
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceUsersOnlineTask", "doInBackground: " + e.message)
             mToastMessage!!.sendToastMessage(e.message)
@@ -48,7 +51,10 @@ class WebServerInterfaceUsersOnlineTask {
             val longitude = "&longitude=$longitude"
             val trackingInfo = androidId + latitude + longitude
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&opponentId=0&userName="
-            SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, mCallerActivity, mResources, FALSE)
+            CoroutineScope( Dispatchers.Default).launch {
+                val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+                sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, mCallerActivity as ToastMessage, mResources, FALSE)
+            }
             val settings = mCallerActivity!!.getSharedPreferences(MainActivity.UserPreferences.PREFS_NAME,0)
             val editor = settings.edit()
             editor.putString("ga_users_online", mUsersOnline)
@@ -68,9 +74,9 @@ class WebServerInterfaceUsersOnlineTask {
     }
 
     companion object {
-        private var mResources: Resources? = null
+        private lateinit var mResources: Resources
         private fun writeToLog(filter: String, msg: String) {
-            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
+            if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
             }
         }

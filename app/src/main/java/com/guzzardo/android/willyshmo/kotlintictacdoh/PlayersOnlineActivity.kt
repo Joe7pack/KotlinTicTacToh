@@ -61,16 +61,18 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
     private inner class RabbitMQPlayerResponseHandler : RabbitMQResponseHandler() { }
 
-    public override fun onPause() { //pause this Activity
+    public override fun onPause() {
         super.onPause()
         writeToLog("PlayersOnlineActivity", "onPause called from Main Activity")
         if (mSelectedPosition == -1) {
             val urlData = "/gamePlayer/update/?id=" + mPlayer1Id + "&onlineNow=false&opponentId=0&userName="
-            SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, this, mResources, false)
+            CoroutineScope( Dispatchers.Default).launch {
+                val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+                sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, mPlayersOnlineActivity as ToastMessage, mResources, false)
+            }
             writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false")
         }
         GameActivity.isClientRunning = false
-        //finish()
     }
 
     public override fun onStop() {

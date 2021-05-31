@@ -23,13 +23,13 @@ class WebServerInterfaceNewPlayerTask {
         mToastMessage = callerActivity as ToastMessage
         mPlayer1Name = player1Name
         mResources = resources
-        writeToLog("WebServerInterfaceNewPlayerTask", "doInBackground called")
+        writeToLog("WebServerInterfaceNewPlayerTask", "main function called")
         try {
-            val newUser = converseWithWebServer(url, mPlayer1Name, mToastMessage, mResources!!)
+            val newUser = converseWithWebServer(url, mPlayer1Name, mToastMessage, mResources)
             mPlayer1Id = getNewUserId(newUser)
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceNewPlayerTask", "doInBackground exception called " + e.message)
-            mToastMessage!!.sendToastMessage(e.message)
+            mToastMessage.sendToastMessage(e.message)
         }
         findOtherPlayersCurrentlyOnline()
     }
@@ -51,7 +51,7 @@ class WebServerInterfaceNewPlayerTask {
             }
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceNewPlayerTask", "onPostExecute exception called " + e.message)
-            mToastMessage!!.sendToastMessage(e.message)
+            mToastMessage.sendToastMessage(e.message)
         }
     }
 
@@ -63,15 +63,15 @@ class WebServerInterfaceNewPlayerTask {
             return userId.toInt()
         } catch (e: JSONException) {
             writeToLog("WebServerInterfaceNewPlayerTask", "getNewUserId exception called " + e.message)
-            mToastMessage!!.sendToastMessage(e.message)
+            mToastMessage.sendToastMessage(e.message)
         }
         return 0
     }
 
     companion object {
-        private var mResources: Resources? = null
+        private lateinit var mResources: Resources
         private fun writeToLog(filter: String, msg: String) {
-            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
+            if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
             }
         }

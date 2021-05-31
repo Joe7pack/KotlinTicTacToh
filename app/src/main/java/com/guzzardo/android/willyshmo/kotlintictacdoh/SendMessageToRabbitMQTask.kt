@@ -25,7 +25,7 @@ class SendMessageToRabbitMQTask {
             channel.queueDeclare(qName, false, false, false, null)
 //			channel.basicPublish(EXCHANGE_NAME, QUEUE_NAME, null, tempstr.getBytes());
             channel.basicPublish("", qName, null, message.toByteArray())
-            writeToLog("SendMessageToRabbitMQTask", "message: $message queue: $qName")
+            writeToLog("SendMessageToRabbitMQTask", "message: $message to queue: $qName")
             channel.close()
             connection.close()
         } catch (e: Exception) {

@@ -4,11 +4,13 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.guzzardo.android.willyshmo.kotlintictacdoh.PlayersOnlineActivity.Companion.getContext
 import com.guzzardo.android.willyshmo.kotlintictacdoh.TwoPlayerActivity
 
 /*
@@ -103,10 +105,9 @@ class TwoPlayerActivity : Activity() {
         errorHandler!!.sendMessage(msg)
     }
 
-    inner class ErrorHandler : Handler() {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG)
-                .show()
+            Toast.makeText(getContext(), msg.obj as String, Toast.LENGTH_LONG).show()
         }
     }
 

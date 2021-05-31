@@ -6,6 +6,7 @@ import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
@@ -93,7 +94,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
         }
     }
 
-    inner class ErrorHandler : Handler() {
+    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }

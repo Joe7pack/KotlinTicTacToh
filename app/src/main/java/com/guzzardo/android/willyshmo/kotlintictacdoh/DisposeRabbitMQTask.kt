@@ -1,8 +1,6 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
-import android.app.Activity
 import android.content.res.Resources
-import android.os.AsyncTask
 import android.util.Log
 
 class DisposeRabbitMQTask {

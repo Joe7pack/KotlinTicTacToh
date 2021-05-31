@@ -7,6 +7,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.view.LayoutInflater
 import android.view.View
@@ -23,70 +24,63 @@ class LazyAdapter(
     private val imageHeight: Array<String?>,
     private val prizeDistance: Array<String?>,
     private val prizeLocation: Array<String?>,
-    private val resources: Resources
-    ) : BaseAdapter(), ToastMessage {
+    private val resources: Resources) : BaseAdapter(), ToastMessage {
+
         override fun getCount(): Int {
-            if (imageDescription != null) {
-                return imageDescription.size
+            return imageDescription.size
+        }
+
+        override fun getItem(position: Int): Any {
+            return position
+        }
+
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            var vi = convertView
+            try {
+                if (convertView == null) {
+                    vi = inflater!!.inflate(R.layout.prizes, null)
+                }
+            } catch (e: Exception) {
+                sendToastMessage("Lazy adapter inflater error: " + e.message)
+                //System.out.println("convert View: " + e.getMessage());
             }
-        return 0
-        }
-
-    override fun getItem(position: Int): Any {
-        return position
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getView(
-        position: Int,
-        convertView: View?,
-        parent: ViewGroup
-    ): View {
-        var vi = convertView
-        try {
-            if (convertView == null) {
-                vi = inflater!!.inflate(R.layout.prizes, null)
+            val text = vi?.findViewById<View>(R.id.prize_description) as TextView
+            text.text = imageDescription.get(position) ?: ""
+            text.setBackgroundColor(Color.LTGRAY)
+            val image = vi.findViewById<View>(R.id.prize_image) as ImageView
+            val width = imageWidth[position]?.let { Integer.valueOf(it) }
+            val height = imageHeight[position]?.let { Integer.valueOf(it) }
+            image.layoutParams = width?.let { height?.let { it1 -> LinearLayout.LayoutParams(it, it1) } }
+            image.setImageBitmap(imageBitmap[position])
+            val textDistance = vi.findViewById<View>(R.id.prize_distance) as TextView
+            if (prizeLocation[position] == "1") {
+                val distance = prizeDistance[position]
+                var decimal = BigDecimal(distance)
+                decimal = decimal.setScale(2, BigDecimal.ROUND_UP)
+                textDistance.text = decimal.toString()
+            } else if (prizeLocation[position] == "0") {
+                textDistance.text = resources.getString(R.string.not_applicable)
+            } else if (prizeLocation[position] == "2") {
+                textDistance.text = resources.getString(R.string.multiple_locations)
+            } else {
+                textDistance.text = "???"
             }
-        } catch (e: Exception) {
-            sendToastMessage("Lazy adapter inflater error: " + e.message)
-            //			System.out.println("convert View: " + e.getMessage());
+            return vi
         }
-        val text = vi?.findViewById<View>(R.id.prize_description) as TextView
-        text.text = imageDescription?.get(position) ?: ""
-        text.setBackgroundColor(Color.LTGRAY)
-        val image = vi.findViewById<View>(R.id.prize_image) as ImageView
-        val width = imageWidth[position]?.let { Integer.valueOf(it) }
-        val height = imageHeight[position]?.let { Integer.valueOf(it) }
-        image.layoutParams = width?.let { height?.let { it1 -> LinearLayout.LayoutParams(it, it1) } }
-        image.setImageBitmap(imageBitmap[position])
-        val textDistance = vi.findViewById<View>(R.id.prize_distance) as TextView
-        if (prizeLocation[position] == "1") {
-            val distance = prizeDistance[position]
-            var decimal = BigDecimal(distance)
-            decimal = decimal.setScale(2, BigDecimal.ROUND_UP)
-            textDistance.text = decimal.toString()
-        } else if (prizeLocation[position] == "0") {
-            textDistance.text = resources.getString(R.string.not_applicable)
-        } else if (prizeLocation[position] == "2") {
-            textDistance.text = resources.getString(R.string.multiple_locations)
-        } else {
-            textDistance.text = "???"
+
+        override fun sendToastMessage(message: String?) {
+            TODO("Not yet implemented")
         }
-        return vi
-    }
 
-    override fun sendToastMessage(message: String?) {
-        TODO("Not yet implemented")
-    }
+        override fun finish() {
+            // TODO Auto-generated method stub
+        }
 
-    override fun finish() {
-        // TODO Auto-generated method stub
-    }
-
-    inner class ErrorHandler : Handler() {
+    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(
                 activity!!.applicationContext,

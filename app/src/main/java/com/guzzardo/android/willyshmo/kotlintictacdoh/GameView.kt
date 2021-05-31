@@ -38,9 +38,7 @@ import org.json.JSONObject
 import java.util.*
 
 class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
-    enum class State(  // xo token 
-        val value: Int
-    ) {
+    enum class State(val value: Int) {
         UNKNOWN(-3), WIN(-2), EMPTY(0), PLAYER1(1), PLAYER2(2), PLAYERBOTH(3);
 
         companion object {
@@ -82,7 +80,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     private val mRandom = Random()
     private var mCellListener: ICellListener? = null
 
-    /** Contains one of [State.EMPTY], [State.PLAYER1] or [State.PLAYER2].  */
+    /** Contains one of [State.EMPTY], [State.PLAYER1] or [State.PLAYER2] or [State.PLAYERBOTH] where PlayerBoth = XO card.  */
     val data = arrayOfNulls<State>(BoardSpaceValues.BOARDSIZE)
     val boardSpaceAvailableValues = BooleanArray(BoardSpaceValues.BOARDSIZE) // false = not available
     val boardSpaceValues = IntArray(BoardSpaceValues.BOARDSIZE) // -1 = empty, 0 = circle, 1 = cross 2 = circleCross
@@ -286,13 +284,12 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             )
         }
         if (isClientRunning) { // && GameActivity.isGameStarted) { //mOpposingPlayerId != GameActivity.player2Id) { //
-            GameActivity.START_CLIENT_OPPONENT_ID
             sendTokensToServer()
         }
 
-        var gameStarted = GameActivity.isGameStarted
-        var player2 = GameActivity.player2Id
-        writeToLog("GameView", "Game started: $gameStarted Opposing player ID: $mOpposingPlayerId GameActivity.player2Id: $player2")
+        val gameStarted = GameActivity.isGameStarted
+        val player2 = GameActivity.player2Id
+        writeToLog("GameView", "Game started: $gameStarted Opposing player ID: GameActivity.player2Id: $player2")
     }
 
     fun updatePlayerToken(id: Int, tokenType: Int) {
@@ -424,7 +421,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         val s3 = mSxy * 5
         val x7 = mOffsetX
         val y7 = mOffsetY
-        var tokenToDraw: Bitmap? //= null
+        val tokenToDraw: Bitmap? //= null
         run {
             var i = 0
             var k = mSxy
@@ -807,7 +804,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     //calculate the Y offset given the cell position on the game board
     private fun calculateYValue(cellNumber: Int): Int {
-        var yValue = if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
+        val yValue = if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
         return yValue
     }
 
@@ -1407,7 +1404,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         )
         private var mSxy = 0
         var prizeLocation = -1
-            private set
         private val mPrizeXBoardLocationArray = intArrayOf(0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
         private val mPrizeYBoardLocationArray = intArrayOf(0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4)
         private var mPrizeXBoardLocation = 0

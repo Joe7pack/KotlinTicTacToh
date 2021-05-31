@@ -117,11 +117,10 @@ class GameActivity : Activity(), ToastMessage {
         writeToLog("GameActivity", "onCreate() Completed")
     }
 
-    private fun showHostWaitDialog(): AlertDialog { //ProgressDialog {
+    private fun showHostWaitDialog(): AlertDialog {
         val opponentName = if (mPlayer2Name == null) "Waiting for player to connect..." else "Waiting for " + mPlayer2Name + " to connect..."
         val hostingDescription = if (mPlayer2Name == null) "Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)" else "Hosting..."
         mGameView!!.setGamePrize()
-        //return ProgressDialog.show(this@GameActivity, hostingDescription, opponentName, true, true) { finish() }
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(hostingDescription)
@@ -130,8 +129,7 @@ class GameActivity : Activity(), ToastMessage {
             .create()
     }
 
-    private fun showClientWaitDialog(): AlertDialog { //ProgressDialog {
-        //return ProgressDialog.show(this@GameActivity, "Connecting...", "to $mPlayer2Name", true, true) { finish() }
+    private fun showClientWaitDialog(): AlertDialog {
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle("Connecting...")
@@ -173,7 +171,7 @@ class GameActivity : Activity(), ToastMessage {
             mClientRunning = true
             HUMAN_VS_NETWORK = true
             mGameView!!.setClient(mClientThread) //this is where we inform GameView to send game tokens to network opponent when the GameView is created
-            mGameView!!.setOpposingPlayerId(player2Id)
+            //mGameView!!.setOpposingPlayerId(player2Id)
             mPlayer2Name = intent.getStringExtra(PLAYER2_NAME)
             mClientWaitDialog = showClientWaitDialog()
             mClientWaitDialog!!.show()
@@ -184,15 +182,18 @@ class GameActivity : Activity(), ToastMessage {
             mPlayer1NetworkScore = mPlayer2NetworkScore
             mPlayer2Name = null
             displayScores()
-            mHostWaitDialog = showHostWaitDialog()
-            mHostWaitDialog!!.show()
+            //mHostWaitDialog = showHostWaitDialog()
+            //mHostWaitDialog!!.show()
             val androidId = "&deviceId=" + androidId
             val latitude = "&latitude=" + latitude
             val longitude = "&longitude=" + longitude
             val trackingInfo = androidId + latitude + longitude
             val urlData = ("/gamePlayer/update/?onlineNow=true&playingNow=false&opponentId=0" + trackingInfo + "&id="
                     + mPlayer1Id + "&userName=")
-            SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
+            CoroutineScope( Dispatchers.Default).launch {
+                val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+                sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
+            }
             writeToLog("GameActivity", "onResume - we are serving but we're not a client")
             return
         }
@@ -791,7 +792,10 @@ class GameActivity : Activity(), ToastMessage {
             }
             if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER) {
                 val urlData = ("/gamePlayer/update/?id=" + mPlayer1Id + "&playingNow=true&opponentId=" + player2Id + "&userName=")
-                SendMessageToWillyShmoServer().execute(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.FALSE)
+                CoroutineScope( Dispatchers.Default).launch {
+                    val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+                    sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
+                }
                 mClientWaitDialog!!.dismiss()
                 writeToLog("MyHandlerCallback", "client wait dialog dismissed")
                 mClientWaitDialog = null
@@ -809,13 +813,10 @@ class GameActivity : Activity(), ToastMessage {
                 }
                 return true
             }
-            if (msg.what == MSG_HOST_UNAVAILABLE) {
-                displayHostNotAvailableAlert()
-            }
             if (msg.what == MSG_NETWORK_SERVER_REFUSED_GAME) {
                 displayServerRefusedGameAlert(mNetworkOpponentPlayerName)
             }
-            if (msg.what == MSG_NETWORK_SERVER_LEFT_GAME) {
+            if (msg.what == MSG_NETWORK_SERVER_LEFT_GAME) { // && isGameStarted) { //isGameStarted only set on server side not on client side!
                 displayOpponentLeftGameAlert("server", mPlayer2Name)
                 mPlayer2Name = null
             }
@@ -1363,7 +1364,6 @@ class GameActivity : Activity(), ToastMessage {
             soundFinishMove.setOnCompletionListener { mp -> mp.release() }
             soundFinishMove.start()
         }
-        soundFinishMove = null
     }
 
     private fun playHumanMoveSound() {
@@ -1375,7 +1375,6 @@ class GameActivity : Activity(), ToastMessage {
             soundHumanMove.setOnCompletionListener { mp -> mp.release() }
             soundHumanMove.start()
         }
-        soundHumanMove = null
     }
 
     private fun playComputerMoveSound() {
@@ -1387,7 +1386,6 @@ class GameActivity : Activity(), ToastMessage {
             soundComputerMove.setOnCompletionListener { mp -> mp.release() }
             soundComputerMove.start()
         }
-        soundComputerMove = null
     }
 
     private fun playHumanWinSound() {
@@ -1399,7 +1397,6 @@ class GameActivity : Activity(), ToastMessage {
             soundHumanWin.setOnCompletionListener { mp -> mp.release() }
             soundHumanWin.start()
         }
-        soundHumanWin = null
     }
 
     private fun playHumanWinShmoSound() {
@@ -1411,7 +1408,6 @@ class GameActivity : Activity(), ToastMessage {
             soundHumanWinShmo.setOnCompletionListener { mp -> mp.release() }
             soundHumanWinShmo.start()
         }
-        soundHumanWinShmo = null
     }
 
     private fun playWillyWinSound() {
@@ -1423,7 +1419,6 @@ class GameActivity : Activity(), ToastMessage {
             soundWillyWin.setOnCompletionListener { mp -> mp.release() }
             soundWillyWin.start()
         }
-        soundWillyWin = null
     }
 
     private fun playWillyWinShmoSound() {
@@ -1435,7 +1430,6 @@ class GameActivity : Activity(), ToastMessage {
             soundWillyWinShmo.setOnCompletionListener { mp -> mp.release() }
             soundWillyWinShmo.start()
         }
-        soundWillyWinShmo = null
     }
 
     private fun editScore(score: Int): String {
@@ -1508,7 +1502,7 @@ class GameActivity : Activity(), ToastMessage {
         mPlayer1Score = savedInstanceState.getInt("ga_player1_score")
         mPlayer2Score = savedInstanceState.getInt("ga_player2_score")
         mWillyScore = savedInstanceState.getInt("ga_willy_score")
-        var workString = savedInstanceState.getString("ga_button")
+        val workString = savedInstanceState.getString("ga_button")
         mButtonNext!!.text = workString
         if (!mButtonNext!!.text.toString().endsWith("Play Again?")) {
             mButtonNext!!.isEnabled = false
@@ -1581,7 +1575,7 @@ class GameActivity : Activity(), ToastMessage {
                             parseLine(mRabbitMQServerResponseHandler!!.rabbitMQResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_SERVER_TURN)
                         }
-                        if (mRabbitMQServerResponseHandler!!.rabbitMQResponse!!.startsWith("leftGame") && mGameStarted) {
+                        if (mRabbitMQServerResponseHandler!!.rabbitMQResponse!!.startsWith("leftGame") && isGameStarted) {
                             playerNotPlaying("client", mRabbitMQServerResponseHandler!!.rabbitMQResponse!!, 1)
                             mGameStarted = false
                             //mServerRunning = false
@@ -1598,7 +1592,7 @@ class GameActivity : Activity(), ToastMessage {
                                 messageToBeSent!!, this@GameActivity as ToastMessage, Companion.resources)
                         }
                         writeToLog("ServerThread", "Server responded to client completed: messageToBeSent queue: $qName")
-                        if (messageToBeSent!!.startsWith("leftGame") || messageToBeSent!!.startsWith("noPlay")) {
+                        if (messageToBeSent!!.startsWith("leftGame") || messageToBeSent.startsWith("noPlay")) {
                             mServerRunning = false
                             imServing = false
                         }
@@ -1621,7 +1615,10 @@ class GameActivity : Activity(), ToastMessage {
                 mServerThread = null
 
                 val urlData = "/gamePlayer/update/?id=" + mPlayer1Id + "&onlineNow=false&playingNow=false&opponentId=0"
-                SendMessageToWillyShmoServer().execute(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.FALSE)
+                CoroutineScope( Dispatchers.Default).launch {
+                    val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+                    sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
+                }
                 writeToLog("ServerThread", "Server about to call DisposeRabbitMQTask()")
                 CoroutineScope(Dispatchers.Default).launch {
                     val disposeRabbitMQTask = DisposeRabbitMQTask()
@@ -1725,7 +1722,7 @@ class GameActivity : Activity(), ToastMessage {
                             playerNotPlaying("server", mRabbitMQClientResponseHandler!!.rabbitMQResponse!!, 0)
                             mGameStarted = false
                         }
-                        if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("leftGame") && mGameStarted) {
+                        if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("leftGame")) { // && mGameStarted) {
                             playerNotPlaying("server", mRabbitMQClientResponseHandler!!.rabbitMQResponse!!, 1)
                             mGameStarted = false
                         }
@@ -1739,7 +1736,10 @@ class GameActivity : Activity(), ToastMessage {
                 sendToastMessage(e.message)
             } finally {
                 val urlData = "/gamePlayer/update/?id=" + mPlayer1Id + "&playingNow=false&onlineNow=false&opponentId=0"
-                SendMessageToWillyShmoServer().execute(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.FALSE)
+                CoroutineScope( Dispatchers.Default).launch {
+                    val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+                    sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
+                }
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mClientRunning = false
@@ -1781,8 +1781,7 @@ class GameActivity : Activity(), ToastMessage {
                 val tokenIntValue = tokenId.toInt()
                 val tokenIntType = tokenType.toInt()
                 if (tokenIntValue < 8) {
-                    var resultValue = -1
-                    resultValue = if (tokenIntValue > 3) {
+                    var resultValue = if (tokenIntValue > 3) {
                         tokenIntValue - 4
                     } else {
                         tokenIntValue + 4
@@ -1817,10 +1816,23 @@ class GameActivity : Activity(), ToastMessage {
         }
 
         //TODO - replace GameActivity.this with a static reference to getContext() set at class instantiation
-        SendMessageToWillyShmoServer().execute(urlData, null, this@GameActivity, Companion.resources, !start)
+        CoroutineScope( Dispatchers.Default).launch {
+            val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+            sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, !start)
+        }
     }
 
-    private val newNetworkGameHandler = Handler(Looper.getMainLooper()) { msg -> // Your code logic goes here.
+    private val newNetworkGameHandler = object: Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            writeToLog("newNetworkGameHandler", "msg.what: $msg.what " + msg.what)
+            when (msg.what) {
+                ACCEPT_GAME -> setGameRequestFromClient(true)
+                REJECT_GAME -> setGameRequestFromClient(false)
+            }
+        }
+    }
+
+    private val newNetworkGameHandler2 = Handler(Looper.getMainLooper()) { msg -> // Your code logic goes here.
         when (msg.what) {
             ACCEPT_GAME -> setGameRequestFromClient(true)
             REJECT_GAME -> setGameRequestFromClient(false)
@@ -1833,6 +1845,19 @@ class GameActivity : Activity(), ToastMessage {
             writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() GameActivity is null!!!")
             return
         }
+        if (!mServerRunning) { //see if this gets rid of error when getting a tokenList after we've gotten a leftGame message
+            writeToLog("GameActivity", "mServerRunning is false in acceptIncomingGameRequestFromClient(), gonna return...")
+            return
+        }
+        if (!imServing) { //see if this gets rid of error when getting a tokenList after we've gotten a leftGame message
+            writeToLog("GameActivity", "imServing is false in acceptIncomingGameRequestFromClient(), not gonna return this time")
+           // return
+        }
+        if (mServerThread == null) { //see if this gets rid of error when getting a tokenList after we've gotten a leftGame message
+            writeToLog("GameActivity", "mServerThread is null in acceptIncomingGameRequestFromClient(), gonna return...")
+            return
+        }
+
         val acceptMsg = Message.obtain()
         acceptMsg.target = newNetworkGameHandler
         acceptMsg.what = ACCEPT_GAME
@@ -1846,18 +1871,6 @@ class GameActivity : Activity(), ToastMessage {
                 .setCancelable(true)
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setNegativeButton("Reject") { dialog, which -> rejectMsg.sendToTarget() }
-                .show()
-        } catch (e: Exception) {
-            sendToastMessage(e.message)
-        }
-    }
-
-    private fun displayHostNotAvailableAlert() {
-        try {
-            AlertDialog.Builder(this@GameActivity)
-                .setTitle(mPlayer2Name + " client side has left the game")
-                .setNeutralButton("OK") { dialog, which -> finish() }
-                .setIcon(R.drawable.willy_shmo_small_icon)
                 .show()
         } catch (e: Exception) {
             sendToastMessage(e.message)
@@ -1890,10 +1903,13 @@ class GameActivity : Activity(), ToastMessage {
 
     private fun updateWebServerScore() {
         val urlData = "/gamePlayer/updateGamesPlayed/?id=" + mPlayer1Id + "&score=" + mPlayer1NetworkScore
-        SendMessageToWillyShmoServer().execute(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.FALSE)
+        CoroutineScope( Dispatchers.Default).launch {
+            val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+            sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
+        }
     }
 
-    inner class ErrorHandler : Handler() {
+    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
@@ -2025,7 +2041,7 @@ class GameActivity : Activity(), ToastMessage {
         private var mClientRunning = false
         private var imServing = false
         private var mBallMoved = 0 //hack for correcting problem with resetting mBallId to -1 in mGameView.disableBall()
-        private var resources: Resources? = null
+        private lateinit var resources: Resources
         private var mHostWaitDialog: AlertDialog? = null
         private var mClientWaitDialog: AlertDialog? = null
         private var mChooseTokenDialog: AlertDialog? = null
@@ -2038,7 +2054,7 @@ class GameActivity : Activity(), ToastMessage {
         private var mGameStarted = false
 
         private fun writeToLog(filter: String, msg: String) {
-            if ("true".equals(resources!!.getString(R.string.debug), ignoreCase = true)) {
+            if ("true".equals(resources.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
             }
         }

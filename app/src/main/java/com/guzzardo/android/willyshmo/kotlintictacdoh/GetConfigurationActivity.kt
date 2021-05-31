@@ -3,6 +3,7 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.widget.Toast
 
@@ -27,7 +28,7 @@ class GetConfigurationActivity : Activity(), ToastMessage {
         mErrorHandler!!.sendMessage(msg)
     }
 
-    inner class ErrorHandler : Handler() {
+    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG)
                 .show()
