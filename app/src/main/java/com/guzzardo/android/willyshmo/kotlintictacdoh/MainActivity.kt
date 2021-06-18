@@ -3,6 +3,7 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Resources
@@ -50,6 +51,7 @@ class MainActivity : Activity(), ToastMessage {
     private var mHandler: Handler? = null
     public override fun onStart() {
         super.onStart()
+        mApplicationContext = applicationContext
         val indexableNotes = ArrayList<Indexable>()
         val noteToIndex = Indexables.noteDigitalDocumentBuilder()
             .setName("Joes name Note")
@@ -213,9 +215,9 @@ class MainActivity : Activity(), ToastMessage {
         super.onPause()
     }
 
-    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
+            Toast.makeText(mApplicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -324,6 +326,7 @@ class MainActivity : Activity(), ToastMessage {
     }
 
     companion object {
+        private var mApplicationContext: Context? = null
         private lateinit var mResources: Resources
         private const val mLongitude = 0.0
         private const val mLatitude = 0.0

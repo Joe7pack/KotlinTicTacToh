@@ -24,6 +24,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mCallerActivity = this
+        mApplicationContext = applicationContext
         errorHandler = ErrorHandler()
         Companion.resources = resources
         sharedPreferences
@@ -49,9 +50,6 @@ class PlayOverNetwork : Activity(), ToastMessage {
         val longitude = "&longitude=$longitude"
         val trackingInfo = androidId + latitude + longitude
         val url = Companion.resources!!.getString(R.string.domainName) + "/gamePlayer/createAndroid/" + trackingInfo + "&userName="
-        //val webServerInterfaceNewPlayerTask = WebServerInterfaceNewPlayerTask()
-        val playOverNetwork = mCallerActivity //this
-
         CoroutineScope( Dispatchers.Default).launch {
             val webServerInterfaceNewPlayerTask =  WebServerInterfaceNewPlayerTask()
             webServerInterfaceNewPlayerTask.main(mCallerActivity as Context, url, mPlayer1Name, resources)
@@ -70,7 +68,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
         val editor = settings.edit()
         editor.putString(GameActivity.PLAYER1_NAME, mPlayer1Name)
         // Commit the edits!
-        editor.commit()
+        editor.apply()
     }
 
     override fun onPause() {
@@ -107,10 +105,9 @@ class PlayOverNetwork : Activity(), ToastMessage {
         mPlayer1Id = savedInstanceState.getInt("gn_player1_Id")
     }
 
-    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG)
-                .show()
+            Toast.makeText(mApplicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -121,6 +118,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
     }
 
     companion object {
+        private var mApplicationContext: Context? = null
         private var mPlayer1Id = 0
         private var resources: Resources? = null
         var errorHandler: ErrorHandler? = null

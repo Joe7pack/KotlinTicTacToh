@@ -20,8 +20,7 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferenc
 class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        this.ErrorHandler()
+        mApplicationContext = applicationContext
         mResources = resources
         errorHandler = ErrorHandler()
         val customTitleSupported = requestWindowFeature(Window.FEATURE_CUSTOM_TITLE)
@@ -94,9 +93,9 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
         }
     }
 
-    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
+            Toast.makeText(mApplicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -107,6 +106,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
     }
 
     companion object {
+        private var mApplicationContext: Context? = null
         var errorHandler: ErrorHandler? = null
         private var mResources: Resources? = null
         private fun writeToLog(filter: String, msg: String) {

@@ -37,10 +37,10 @@ class WebServerInterfaceUsersOnlineTask {
             mToastMessage!!.sendToastMessage(e.message)
         }
         writeToLog("WebServerInterfaceUsersOnline", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $mUsersOnline")
-        setPlayingNow()
+        setOnlineNow()
     }
 
-     private fun setPlayingNow() {
+     private fun setOnlineNow() {
         try {
             if (mUsersOnline == null) {
                 return
@@ -50,7 +50,7 @@ class WebServerInterfaceUsersOnlineTask {
             val latitude = "&latitude=$latitude"
             val longitude = "&longitude=$longitude"
             val trackingInfo = androidId + latitude + longitude
-            val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&opponentId=0&userName="
+            val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&playingNow=false&opponentId=0&userName="
             CoroutineScope( Dispatchers.Default).launch {
                 val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
                 sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, mCallerActivity as ToastMessage, mResources, FALSE)

@@ -67,7 +67,7 @@ object WebServerInterface {
          */
         val reader = BufferedReader(InputStreamReader(`is`))
         val sb = StringBuilder()
-        var line: String? = null
+        var line: String
         try {
             while (reader.readLine().also { line = it } != null) {
                 sb.append(""" $line """.trimIndent())

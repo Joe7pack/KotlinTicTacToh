@@ -337,7 +337,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             mGameActivity!!.sendMessageToServerHost(tokenListString)
             setViewDisabled(true)
             mGameActivity!!.highlightCurrentPlayer(State.PLAYER2)
-            mClientThread!!.setGameStarted(true)
         } catch (e: JSONException) {
             mGameActivity!!.sendToastMessage(e.message)
         }
@@ -998,7 +997,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 if (ballMoved == ball.iD) {
                     continue
                 }
-                writeToLog("ClientService", "ball reset: $x")
+                //writeToLog("ClientService", "ball reset: $x")
                 ball.resetPosition(mDisplayMode)
             }
             invalidate()
@@ -1058,7 +1057,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 if (ballMoved == ball.iD) {
                     continue
                 }
-                writeToLog("ClientService", "ball reset: $x")
+                //writeToLog("ClientService", "ball reset: $x")
                 ball.resetPosition(mDisplayMode)
             }
             val xPos = (X - mOffsetX) / mSxy

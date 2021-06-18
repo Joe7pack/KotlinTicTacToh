@@ -6,6 +6,7 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.willyShmoApplicationContext
 import android.app.Activity
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.widget.TextView
 import com.google.android.gms.ads.MobileAds
@@ -60,6 +61,7 @@ class SplashScreen : Activity(), ToastMessage {
     /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mApplicationContext = applicationContext
         MobileAds.initialize(this) { }
         mErrorHandler = ErrorHandler()
         var mPrizesAvailable = false
@@ -91,9 +93,9 @@ class SplashScreen : Activity(), ToastMessage {
         return true
     }
 
-    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
+            Toast.makeText(mApplicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -150,6 +152,7 @@ class SplashScreen : Activity(), ToastMessage {
     }
 
     companion object {
+        private var mApplicationContext: Context? = null
         var mErrorHandler: ErrorHandler? = null
         private var mResources: Resources? = null
 

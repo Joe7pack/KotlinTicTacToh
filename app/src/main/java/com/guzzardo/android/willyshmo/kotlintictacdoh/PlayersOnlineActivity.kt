@@ -1,6 +1,5 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -14,7 +13,6 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.ListFragment
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
@@ -66,7 +64,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         writeToLog("PlayersOnlineActivity", "onPause called from Main Activity")
         if (mSelectedPosition == -1) {
             val urlData = "/gamePlayer/update/?id=" + mPlayer1Id + "&onlineNow=false&opponentId=0&userName="
-            CoroutineScope( Dispatchers.Default).launch {
+            CoroutineScope(Dispatchers.Default).launch {
                 val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
                 sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, mPlayersOnlineActivity as ToastMessage, mResources, false)
             }
@@ -111,7 +109,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             startGame()
         }
 
-        public override fun onPause() { // pause the PlayersOnlineFragment
+        override fun onPause() { // pause the PlayersOnlineFragment
             super.onPause()
             writeToLog("PlayersOnlineActivity", "onPause called from PlayersOnlineFragment to dispose of RabbitMQTask")
             CoroutineScope(Dispatchers.Default).launch {
@@ -129,9 +127,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             setUpClientAndServer(position)
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "startGame" + "-" + mUserIds[position]
             val messageToOpponent = "letsPlay," + mPlayer1Name + "," + mPlayer1Id //mUserIds[position];
-            CoroutineScope( Dispatchers.Default).launch {
+            CoroutineScope(Dispatchers.Default).launch {
                 val sendMessageToRabbitMQTask = SendMessageToRabbitMQTask()
-                sendMessageToRabbitMQTask.main(getConfigMap("RabbitMQIpAddress"), qName,  messageToOpponent, mPlayersOnlineActivity as ToastMessage, mResources)
+                sendMessageToRabbitMQTask.main(getConfigMap("RabbitMQIpAddress"), qName, messageToOpponent, mPlayersOnlineActivity as ToastMessage, mResources)
             }
             mSelectedPosition = position
         }
@@ -150,6 +148,10 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             i.putExtra(GameActivity.PLAYER2_NAME, mUserNames[which])
             i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
             writeToLog("PlayersOnlineActivity", "starting client and server")
+
+            val item = GameActivity.ParcelItems(123456789, "Dr. Strangelove")
+            i.putExtra(GameActivity.PARCELABLE_VALUES, item)
+
             startActivity(i)
         }
 
@@ -162,9 +164,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     private val playersOnline: Unit
         get() {
             val users = parseUserList(mUsersOnline)
-            val usersClone = users.clone() as TreeMap<String, HashMap<String, String>>
+            val usersClone = users.clone() as TreeMap<*, *>
             //we're creating a clone because removing an entry from the original TreeMap causes a problem for the iterator
-            val userKeySet: Set<String> = usersClone.keys // this is where the keys (userNames) gets sorted
+            val userKeySet: MutableSet<out Any> = usersClone.keys // this is where the keys (userNames) gets sorted
             val keySetIterator = userKeySet.iterator()
             while (keySetIterator.hasNext()) {
                 val key = keySetIterator.next()
@@ -220,9 +222,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     /**
      * A simple utility Handler to display an error message as a Toast popup
      */
-    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            Toast.makeText(applicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
+            Toast.makeText(mApplicationContext, msg.obj as String, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -279,11 +281,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                     if (text.startsWith("letsPlay")) {
                         val playString = text.toString()
                         val playStringArray = playString.split(",")
-                        var opposingPlayerId = ""
-                        var opposingPlayerName = ""
                         if (playStringArray.size == 3) {
-                            opposingPlayerId = playStringArray.get(2)
-                            opposingPlayerName = playStringArray.get(1)
+                            val opposingPlayerId = playStringArray.get(2)
+                            val opposingPlayerName = playStringArray.get(1)
                             val i = Intent(mApplicationContext, GameActivity::class.java)
                             i.putExtra(GameActivity.START_SERVER, "true")
                             //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
