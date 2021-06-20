@@ -31,6 +31,7 @@ import com.google.firebase.appindexing.FirebaseUserActions
 import com.google.firebase.appindexing.Indexable
 import com.google.firebase.appindexing.builders.Actions
 import com.google.firebase.appindexing.builders.Indexables
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.isNetworkAvailable
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.prizesAreAvailable
 import java.text.SimpleDateFormat
 import java.util.*
@@ -67,8 +68,7 @@ class MainActivity : Activity(), ToastMessage {
         Log.d("MainActivity", "onStart called at " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
     }
 
-    // After
-    val action: Action
+    private val action: Action
         get() = Actions.newView(mText, mUrl)
 
     public override fun onStop() {
@@ -104,8 +104,6 @@ class MainActivity : Activity(), ToastMessage {
         mStatusText = findViewById<View>(R.id.status_text) as TextView
         mCheckLicenseButton = findViewById<View>(R.id.check_license_button) as Button
         mCheckLicenseButton!!.setOnClickListener { doCheck() }
-
-        //FIXME - set animation for Prizes button only if we are connected to the network
         val anim: Animation = AlphaAnimation(0.0f, 1.0f)
         anim.duration = 500 //You can manage the time of the blink with this parameter
         anim.startOffset = 20
@@ -113,7 +111,7 @@ class MainActivity : Activity(), ToastMessage {
         anim.repeatCount = Animation.INFINITE
         mPrizeButton!!.setBackground(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.backwithgreenborder))
         mPrizeButton!!.startAnimation(anim)
-        if (prizesAreAvailable) {
+        if (isNetworkAvailable && prizesAreAvailable) {
             mPrizeButton!!.visibility = View.VISIBLE
         } else {
             mPrizeButton!!.visibility = View.GONE

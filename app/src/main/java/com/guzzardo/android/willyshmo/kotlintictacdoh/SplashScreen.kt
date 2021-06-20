@@ -72,6 +72,7 @@ class SplashScreen : Activity(), ToastMessage {
         longitude = 0.0
         mCallerActivity = this
         willyShmoApplicationContext = this.applicationContext
+        WillyShmoApplication.prizesAreAvailable = false
         val willyShmoApplicationContext = willyShmoApplicationContext
         val myIntent = Intent(willyShmoApplicationContext, FusedLocationActivity::class.java)
         startActivity(myIntent)

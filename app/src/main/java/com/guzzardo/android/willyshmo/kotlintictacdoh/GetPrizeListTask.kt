@@ -1,6 +1,5 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
-import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -20,10 +19,9 @@ class GetPrizeListTask {
     //private var applicationContext: Context? = null
     private var mPrizesAvailable: String? = null
 
-    fun main(callerActivity: FusedLocationActivity, resources: Resources, startMainActivity: Boolean) = runBlocking {
+    fun main(callerActivity: FusedLocationActivity, resources: Resources) = runBlocking {
         mCallerActivity = callerActivity
         mResources = resources
-        mStartMainActivity = startMainActivity //.toBoolean()
         writeToLog("GetPrizeListTask","main() called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
         val longitude = WillyShmoApplication.longitude
         val latitude = WillyShmoApplication.latitude
@@ -36,8 +34,14 @@ class GetPrizeListTask {
             writeToLog("GetPrizeListTask", "doInBackground: " + e.message)
             mCallerActivity.sendToastMessage("Playing without host server")
         }
-        writeToLog("GetPrizeListTask", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $mPrizesAvailable")
-        processRetrievedPrizeList()
+        writeToLog("GetPrizeListTask", "Prizes available: $mPrizesAvailable")
+        if (mPrizesAvailable != null && mPrizesAvailable!!.length > 20) {
+            processRetrievedPrizeList()
+        }
+        val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
+        val myIntent = Intent(willyShmoApplicationContext, MainActivity::class.java)
+        mCallerActivity.startActivity(myIntent)
+        mCallerActivity.finish()
     }
 
     private fun processRetrievedPrizeList() {
@@ -45,25 +49,17 @@ class GetPrizeListTask {
             writeToLog("GetPrizeListTask","processRetrievedPrizeList prizes available: $mPrizesAvailable")
             writeToLog("GetPrizeListTask", "processRetrievedPrizeList called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
             mCallerActivity.prizeLoadInProgress()
-
-            if (mStartMainActivity) {
-                val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
-                val myIntent = Intent(willyShmoApplicationContext, MainActivity::class.java)
-                WillyShmoApplication.prizesAreAvailable = true
-                mCallerActivity.startActivity(myIntent)
-                mCallerActivity.finish()
-            }
-
             if (mPrizesAvailable != null && mPrizesAvailable!!.length > 20) {
                 loadPrizesIntoArrays()
                 mCallerActivity.setPrizesLoadIntoObjects()
                 convertStringsToBitmaps()
                 savePrizeArrays()
                 mCallerActivity.setPrizesLoadedAllDone()
+                WillyShmoApplication.prizesAreAvailable = true
             }
         } catch (e: Exception) {
             writeToLog("GetPrizeListTask", "processRetrievedPrizeList exception called " + e.message)
-            mCallerActivity.sendToastMessage(e.message)
+            mCallerActivity.sendToastMessage("processRetrievedPrizeList exception called $e.message")
         }
         writeToLog("GetPrizeListTask", "processRetrievedPrizeList completed at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
         )
@@ -83,8 +79,8 @@ class GetPrizeListTask {
         mPrizeUrls = arrayOfNulls(objectArray.size)
         mPrizeLocations = arrayOfNulls(objectArray.size)
         for (x in objectArray.indices) {
-            mPrizeNames.set(x, objectArray[x] as String)
-            val prizeValues: Array<String?>? = prizes.get(objectArray[x])
+            mPrizeNames[x] = objectArray[x] as String
+            val prizeValues: Array<String?>? = prizes[objectArray[x]]
             mPrizeIds[x] = prizeValues!![0]
             val workString = prizeValues[1]?.let { StringBuilder(it) }
             val newImage = workString?.substring(1, workString.length - 1)
@@ -114,10 +110,10 @@ class GetPrizeListTask {
                 val imageWidth = prize.getInt("imageWidth")
                 val imageHeight = prize.getInt("imageHeight")
                 val prizeArrayValues = arrayOfNulls<String>(7)
-                prizeArrayValues[0] = Integer.toString(prizeId)
+                prizeArrayValues[0] = prizeId.toString()
                 prizeArrayValues[1] = image
-                prizeArrayValues[2] = Integer.toString(imageWidth)
-                prizeArrayValues[3] = Integer.toString(imageHeight)
+                prizeArrayValues[2] = imageWidth.toString()
+                prizeArrayValues[3] = imageHeight.toString()
                 prizeArrayValues[4] = distance.toString()
                 prizeArrayValues[5] = prizeUrl
                 prizeArrayValues[6] = location
@@ -170,16 +166,14 @@ class GetPrizeListTask {
     }
 
     private fun savePrizeArrays() {
-        if (WillyShmoApplication.prizesAreAvailable) {
-            WillyShmoApplication.prizeIds = mPrizeIds
-            WillyShmoApplication.prizeNames = mPrizeNames
-            WillyShmoApplication.bitmapImages = mBitmapImages
-            WillyShmoApplication.imageWidths = mPrizeImageWidths
-            WillyShmoApplication.imageHeights = mPrizeImageHeights
-            WillyShmoApplication.prizeDistances = mPrizeDistances
-            WillyShmoApplication.prizeUrls = mPrizeUrls
-            WillyShmoApplication.prizeLocations = mPrizeLocations
-        }
+        WillyShmoApplication.prizeIds = mPrizeIds
+        WillyShmoApplication.prizeNames = mPrizeNames
+        WillyShmoApplication.bitmapImages = mBitmapImages
+        WillyShmoApplication.imageWidths = mPrizeImageWidths
+        WillyShmoApplication.imageHeights = mPrizeImageHeights
+        WillyShmoApplication.prizeDistances = mPrizeDistances
+        WillyShmoApplication.prizeUrls = mPrizeUrls
+        WillyShmoApplication.prizeLocations = mPrizeLocations
     }
 
     companion object {
@@ -193,7 +187,6 @@ class GetPrizeListTask {
         private lateinit var mPrizeIds: Array<String?>
         private lateinit var mPrizeDistances: Array<String?>
         private lateinit var mBitmapImages: Array<Bitmap?>
-        private var mStartMainActivity = false
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)

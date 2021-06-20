@@ -15,7 +15,6 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.ListFragment
-import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 
 class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +29,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
                 window.setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.prizes_title)
             }
         } catch (e: Exception) {
-            sendToastMessage(e.message)
+            sendToastMessage("PrizesAvailableActivity onCreate error: $e.message")
         }
     }
 
@@ -39,24 +38,27 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
      * user can pick.  Upon picking an item, it takes care of displaying the
      * data to the user as appropriate based on the currrent UI layout.
      */
-    class PrizesAvailableFragment : ListFragment() {
+    class PrizesAvailableFragment : ListFragment(), ToastMessage {
         var mDualPane = false
         var mCurCheckPosition = 0
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-
-            val adapter = LazyAdapter(
-                activity,
-                WillyShmoApplication.prizeNames,
-                WillyShmoApplication.bitmapImages,
-                WillyShmoApplication.imageWidths,
-                WillyShmoApplication.imageHeights,
-                WillyShmoApplication.prizeDistances,
-                WillyShmoApplication.prizeLocations,
-                mResources!!
-            )
-            listAdapter = adapter
-
+            try {
+                listAdapter = PrizeListAdapter(
+                    activity,
+                    WillyShmoApplication.prizeNames,
+                    WillyShmoApplication.bitmapImages,
+                    WillyShmoApplication.imageWidths,
+                    WillyShmoApplication.imageHeights,
+                    WillyShmoApplication.prizeDistances,
+                    WillyShmoApplication.prizeLocations,
+                    mResources!!
+                )
+            }
+            catch(e: Exception) {
+                sendToastMessage("error constructing PrizeListAdapter: $e.message")
+                writeToLog("PrizesAvailableActivity", "error constructing PrizeListAdapter: $e.message")
+            }
             // Check to see if we have a frame in which to embed the details
             // fragment directly in the containing UI.
             //View detailsFrame = getActivity().findViewById(R.id.details);
@@ -91,6 +93,15 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
         private fun showDetails(index: Int) {
             mCurCheckPosition = index
         }
+
+        override fun sendToastMessage(message: String?) {
+            val msg = errorHandler!!.obtainMessage()
+            msg.obj = message
+            errorHandler!!.sendMessage(msg)
+        }
+
+        override fun finish() {
+        }
     }
 
     class ErrorHandler : Handler(Looper.getMainLooper()) {
@@ -110,8 +121,8 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
         var errorHandler: ErrorHandler? = null
         private var mResources: Resources? = null
         private fun writeToLog(filter: String, msg: String) {
-            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)
-            ) { Log.d(filter, msg) }
+            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
+                Log.d(filter, msg) }
         }
     }
 }

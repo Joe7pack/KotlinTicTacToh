@@ -38,7 +38,7 @@ class SendMessageToWillyShmoServer {
             /* Convert the Bytes read to a String. */
         } catch (e: Exception) {
             writeToLog("SendMessageToWillyShmoServer","error: " + e.message + " error at: " + errorAt)
-            mCallerActivity.sendToastMessage("Sorry, Willy Shmo server is not available now. Please try again later")
+            mCallerActivity.sendToastMessage("SendMessageToWillyShmoServer error at $errorAt")
         } finally {
             try {
                 bis!!.close()

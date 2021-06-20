@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +17,8 @@ import android.widget.*
 import androidx.fragment.app.FragmentActivity
 import java.math.BigDecimal
 
-class LazyAdapter(
-    private val activity: FragmentActivity?,
+class PrizeListAdapter(
+    activity: FragmentActivity?,
     private val imageDescription: Array<String?>,
     private val imageBitmap: Array<Bitmap?>,
     private val imageWidth: Array<String?>,
@@ -45,45 +46,52 @@ class LazyAdapter(
                     vi = inflater!!.inflate(R.layout.prizes, null)
                 }
             } catch (e: Exception) {
-                sendToastMessage("Lazy adapter inflater error: " + e.message)
-                //System.out.println("convert View: " + e.getMessage());
+                sendToastMessage("PrizeListAdapter inflater error: " + e.message) //this won't work since we never set mApplicationContext!
+                writeToLog("PrizeListAdapter", "getView: $e.message")
             }
-            val text = vi?.findViewById<View>(R.id.prize_description) as TextView
-            text.text = imageDescription.get(position) ?: ""
-            text.setBackgroundColor(Color.LTGRAY)
+            val prizeDescription = vi?.findViewById<View>(R.id.prize_description) as TextView
+            prizeDescription.text = imageDescription[position] ?: ""
+            prizeDescription.setBackgroundColor(Color.LTGRAY)
             val image = vi.findViewById<View>(R.id.prize_image) as ImageView
             val width = imageWidth[position]?.let { Integer.valueOf(it) }
             val height = imageHeight[position]?.let { Integer.valueOf(it) }
             image.layoutParams = width?.let { height?.let { it1 -> LinearLayout.LayoutParams(it, it1) } }
             image.setImageBitmap(imageBitmap[position])
             val textDistance = vi.findViewById<View>(R.id.prize_distance) as TextView
-            if (prizeLocation[position] == "1") {
-                val distance = prizeDistance[position]
-                var decimal = BigDecimal(distance)
-                decimal = decimal.setScale(2, BigDecimal.ROUND_UP)
-                textDistance.text = decimal.toString()
-            } else if (prizeLocation[position] == "0") {
-                textDistance.text = resources.getString(R.string.not_applicable)
-            } else if (prizeLocation[position] == "2") {
-                textDistance.text = resources.getString(R.string.multiple_locations)
-            } else {
-                textDistance.text = "???"
+            when {
+                prizeLocation[position] == "1" -> {
+                    val distance = prizeDistance[position]
+                    var decimal = BigDecimal(distance)
+                    decimal = decimal.setScale(2, BigDecimal.ROUND_UP)
+                    textDistance.text = decimal.toString()
+                }
+                prizeLocation[position] == "0" -> {
+                    textDistance.text = resources.getString(R.string.not_applicable)
+                }
+                prizeLocation[position] == "2" -> {
+                    textDistance.text = resources.getString(R.string.multiple_locations)
+                }
+                else -> {
+                    textDistance.text = "???"
+                }
             }
             return vi
         }
 
         override fun sendToastMessage(message: String?) {
-            TODO("Not yet implemented")
+            val msg = mErrorHandler!!.obtainMessage()
+            msg.obj = message
+            FusedLocationActivity.mErrorHandler!!.sendMessage(msg)
         }
 
         override fun finish() {
-            // TODO Auto-generated method stub
+            TODO("Not yet implemented")
         }
 
-    inner class ErrorHandler : Handler(Looper.getMainLooper()) {
+    class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(
-                activity!!.applicationContext,
+                mApplicationContext,
                 msg.obj as String,
                 Toast.LENGTH_LONG
             ).show()
@@ -94,10 +102,22 @@ class LazyAdapter(
 
     companion object {
         private var inflater: LayoutInflater? = null
-        var errorHandler: ErrorHandler? = null
+        var mErrorHandler: ErrorHandler? = null
+        private var mApplicationContext: Context? = null
+        private lateinit var mResources: Resources
+        private lateinit var mCallerActivity: Activity
+
+        private fun writeToLog(filter: String, msg: String) {
+            if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
+                Log.d(filter, msg)
+            }
+        }
     }
 
     init {
         inflater = activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        mCallerActivity = activity
+        mErrorHandler = ErrorHandler()
+        mResources = resources
     }
 }

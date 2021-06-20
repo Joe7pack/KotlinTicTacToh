@@ -22,8 +22,7 @@ object WebServerInterface {
         var networkAvailable = false
         try {
             writeToLog("WebServerInterface", "converseWithWebServer() called")
-            var myURL: URL? = null
-            myURL = if (urlToEncode == null) {
+            val myURL = if (urlToEncode == null) {
                 URL(url)
             } else {
                 val encodedUrl = URLEncoder.encode(urlToEncode, "UTF-8")
@@ -42,7 +41,7 @@ object WebServerInterface {
             result = convertStreamToString(`is`) // convert the Bytes read to a String.
             networkAvailable = true
         } catch (e: Exception) {
-            writeToLog("WebServerInterface", "response code: " + responseCode + " error: " + e.message + " error at: " + errorAt)
+            writeToLog("WebServerInterface", "response code: $responseCode error: $e.message error at: $errorAt")
             val networkNotAvailable = resources.getString(R.string.network_not_available)
             mToastMessage!!.sendToastMessage(networkNotAvailable)
         } finally {
@@ -51,7 +50,7 @@ object WebServerInterface {
                 `is`!!.close()
             } catch (e: Exception) {
                 //nothing to do here
-                writeToLog("WebServerInterface", "finally exception: " + e.message)
+                writeToLog("WebServerInterface", "finally exception: $e.message")
             }
         }
         WillyShmoApplication.isNetworkAvailable = networkAvailable
@@ -74,26 +73,25 @@ object WebServerInterface {
             }
         } catch (e: IOException) {
             writeToLog( "WebServerInterface", "convertStreamToString IOException: " + e.message)
-            mToastMessage!!.sendToastMessage(e.message)
+            if (e.message?.indexOf("it must not be null", 0)!! == -1)
+                mToastMessage!!.sendToastMessage("convertStreamToString IOException: " + e.message)
         } catch (e: Exception) {
             writeToLog( "WebServerInterface", "convertStreamToString Exception: " + e.message)
-            mToastMessage!!.sendToastMessage(e.message)
+            if (e.message?.indexOf("it must not be null", 0)!! == -1)
+                mToastMessage!!.sendToastMessage("convertStreamToString Exception: " + e.message)
         } finally {
             try {
                 `is`!!.close()
             } catch (e: IOException) {
                 writeToLog("WebServerInterface", "is close IOException:: " + e.message)
-                mToastMessage!!.sendToastMessage(e.message)
+                mToastMessage!!.sendToastMessage("is close IOException: " + e.message)
             }
         }
         return sb.toString()
     }
 
     private fun writeToLog(filter: String, msg: String) {
-        if ("true".equals(
-                mResources!!.getString(R.string.debug),
-                ignoreCase = true
-            )
-        ) Log.d(filter, msg)
+        if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true))
+            Log.d(filter, msg)
     }
 }

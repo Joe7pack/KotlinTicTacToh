@@ -71,7 +71,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
     private var myLatitude = 0.0
     private var myLongitude = 0.0
     private var pgsBar: ProgressBar? = null
-    var handlerThread: HandlerThread? = null
+    private var handlerThread: HandlerThread? = null
     private var looper: Looper? = null
     private var looperHandler: Handler? = null
     val START_LOCATION_CHECK_ACTION = 0
@@ -248,7 +248,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
                         longitude = myLongitude
                         CoroutineScope( Dispatchers.Default).launch {
                             val getPrizeListTask = GetPrizeListTask()
-                            getPrizeListTask.main(mCallerActivity, resources,true)
+                            getPrizeListTask.main(mCallerActivity, resources)
                         }
                     } else {
                         val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
@@ -395,7 +395,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
         mErrorHandler!!.sendMessage(msg)
     }
 
-    fun startMyThread() {
+    private fun startMyThread() {
         handlerThread = HandlerThread("MyHandlerThread")
         handlerThread!!.start()
         looper = handlerThread!!.looper
@@ -434,12 +434,12 @@ class FusedLocationActivity : Activity(), ToastMessage {
         }
     }
 
-    fun setStartLocationLookup() {
+    private fun setStartLocationLookup() {
         val msg = looperHandler!!.obtainMessage(START_LOCATION_CHECK_ACTION)
         looperHandler!!.sendMessage(msg)
     }
 
-    fun setStartLocationLookupCompleted() {
+    private fun setStartLocationLookupCompleted() {
         val msg = looperHandler!!.obtainMessage(COMPLETED_LOCATION_CHECK_ACTION)
         looperHandler!!.sendMessage(msg)
     }
