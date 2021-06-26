@@ -116,7 +116,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
         val item = intent.getParcelableExtra<ParcelItems>(PARCELABLE_VALUES)
         writeToLog("GameActivity", "our parcelable extra item: $item")
-
         writeToLog("GameActivity", "onCreate() Completed")
     }
 
@@ -161,6 +160,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mServerHasOpponent = intent.getStringExtra(HAVE_OPPONENT)
             writeToLog("GameActivity", "onResume - we are serving but server is not running")
         }
+
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
+        var usersOnlineNumer = settings.getInt("ga_users_online_number", 0)
+
         mClient = java.lang.Boolean.valueOf(intent.getStringExtra(START_CLIENT))
         if (mClient) { // && !mClientRunning) {
             mPlayer1Id = intent.getIntExtra(PLAYER1_ID, 0)
@@ -184,8 +187,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mPlayer1NetworkScore = mPlayer2NetworkScore
             mPlayer2Name = null
             displayScores()
-            //mHostWaitDialog = showHostWaitDialog()
-            //mHostWaitDialog!!.show()
+            if (usersOnlineNumer == 0) {
+                mHostWaitDialog = showHostWaitDialog()
+                mHostWaitDialog!!.show()
+            }
             val androidId = "&deviceId=$androidId"
             val latitude = "&latitude=$latitude"
             val longitude = "&longitude=$longitude"
@@ -247,7 +252,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             val cell = mGameView!!.selection
             mButtonNext!!.isEnabled = cell >= 0
             if (cell >= 0) {
-                playHumanMoveSound()
+                //playHumanMoveSound()
+                playSound(R.raw.human_token_move_sound)
                 mLastCellSelected = cell
             }
         }
@@ -329,7 +335,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     finish()
                 }
             } else if (player == GameView.State.PLAYER1 || player == GameView.State.PLAYER2) {
-                playFinishMoveSound()
+                //playFinishMoveSound()
+                playSound(R.raw.finish_move)
                 val cell = mGameView!!.selection
                 var okToFinish = true
                 if (cell >= 0) {
@@ -753,7 +760,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
         mGameView!!.moveComputerToken(boardPosition, resultValue) //move token selected to location on board
         mLastCellSelected = boardPosition
-        playFinishMoveSound()
+        //playFinishMoveSound()
+        playSound(R.raw.finish_move)
         mGameView!!.disableBall(resultValue)
         mGameView!!.setCell(boardPosition, GameView.State.PLAYER2) //set State table
     }
@@ -762,7 +770,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         var computerToken = GameView.BoardSpaceValues.EMPTY
         val index = selectBestMove() //0 = boardSpaceSelected, 1 = tokenSelected
         if (index[0] != -1) {
-            playComputerMoveSound()
+            //playComputerMoveSound()
+            playSound(R.raw.computer_token_move_sound)
             mGameView!!.setCell(index[0], GameView.State.PLAYER2) // set State table - the computer (Willy) is always PLAYER2
             computerToken = mGameView!!.moveComputerToken(index[0], index[1]) //move computer token to location on board
         }
@@ -1256,11 +1265,13 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 }
                 if (currentPlayer == GameView.State.PLAYER1) {
                     player1Score += mRegularWin
-                    playHumanWinSound()
+                    //playHumanWinSound()
+                    playSound(R.raw.player_win)
                     checkForPrizeWin(winnerFound[4], winnerFound[5], winnerFound[6], PrizeValue.REGULARPRIZE)
                 } else {
                     player1Score += mSuperWin
-                    playHumanWinShmoSound()
+                    //playHumanWinShmoSound()
+                    playSound(R.raw.player_win_shmo)
                     checkForPrizeWin(winnerFound[4], winnerFound[5], winnerFound[6], PrizeValue.SHMOPRIZE)
                 }
                 if (HUMAN_VS_NETWORK) {
@@ -1277,18 +1288,22 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 if (currentPlayer == GameView.State.PLAYER2) {
                     if (HUMAN_VS_HUMAN || HUMAN_VS_NETWORK) {
                         player2Score += mRegularWin
-                        playHumanWinSound()
+                        //playHumanWinSound()
+                        playSound(R.raw.player_win)
                     } else {
                         mWillyScore += mRegularWin
-                        playWillyWinSound()
+                        //playWillyWinSound()
+                        playSound(R.raw.willy_win)
                     }
                 } else {
                     if (HUMAN_VS_HUMAN || HUMAN_VS_NETWORK) {
                         player2Score += mSuperWin
-                        playHumanWinShmoSound()
+                        //playHumanWinShmoSound()
+                        playSound(R.raw.player_win_shmo)
                     } else {
                         mWillyScore += mSuperWin
-                        playWillyWinShmoSound()
+                        //playWillyWinShmoSound()
+                        playSound(R.raw.willy_win_shmo)
                     }
                 }
                 if (HUMAN_VS_HUMAN) {
@@ -1362,82 +1377,15 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         mGameView!!.setViewDisabled(true)
     }
 
-    //FIXME - there's got to be some way to consolidate these sound methods into a single callable method
-    // with a switch/case ?    
-    private fun playFinishMoveSound() {
+    private fun playSound(soundToPlay: Int) {
         if (!soundMode) {
             return
         }
-        val soundFinishMove = MediaPlayer.create(applicationContext, R.raw.finish_move)
-        if (soundFinishMove != null) {
-            soundFinishMove.setOnCompletionListener { mp -> mp.release() }
-            soundFinishMove.start()
-        }
-    }
 
-    private fun playHumanMoveSound() {
-        if (!soundMode) {
-            return
-        }
-        val soundHumanMove = MediaPlayer.create(applicationContext, R.raw.human_token_move_sound)
-        if (soundHumanMove != null) {
-            soundHumanMove.setOnCompletionListener { mp -> mp.release() }
-            soundHumanMove.start()
-        }
-    }
-
-    private fun playComputerMoveSound() {
-        if (!soundMode) {
-            return
-        }
-        val soundComputerMove = MediaPlayer.create(applicationContext, R.raw.computer_token_move_sound)
-        if (soundComputerMove != null) {
-            soundComputerMove.setOnCompletionListener { mp -> mp.release() }
-            soundComputerMove.start()
-        }
-    }
-
-    private fun playHumanWinSound() {
-        if (!soundMode) {
-            return
-        }
-        val soundHumanWin = MediaPlayer.create(applicationContext, R.raw.player_win)
-        if (soundHumanWin != null) {
-            soundHumanWin.setOnCompletionListener { mp -> mp.release() }
-            soundHumanWin.start()
-        }
-    }
-
-    private fun playHumanWinShmoSound() {
-        if (!soundMode) {
-            return
-        }
-        val soundHumanWinShmo = MediaPlayer.create(applicationContext, R.raw.player_win_shmo)
-        if (soundHumanWinShmo != null) {
-            soundHumanWinShmo.setOnCompletionListener { mp -> mp.release() }
-            soundHumanWinShmo.start()
-        }
-    }
-
-    private fun playWillyWinSound() {
-        if (!soundMode) {
-            return
-        }
-        val soundWillyWin = MediaPlayer.create(applicationContext, R.raw.willy_win)
-        if (soundWillyWin != null) {
-            soundWillyWin.setOnCompletionListener { mp -> mp.release() }
-            soundWillyWin.start()
-        }
-    }
-
-    private fun playWillyWinShmoSound() {
-        if (!soundMode) {
-            return
-        }
-        val soundWillyWinShmo = MediaPlayer.create(applicationContext, R.raw.willy_win_shmo)
-        if (soundWillyWinShmo != null) {
-            soundWillyWinShmo.setOnCompletionListener { mp -> mp.release() }
-            soundWillyWinShmo.start()
+        val soundPlayed = MediaPlayer.create(applicationContext, soundToPlay)
+        if (soundPlayed != null) {
+            soundPlayed.setOnCompletionListener { mp -> mp.release() }
+            soundPlayed.start()
         }
     }
 
@@ -1533,6 +1481,15 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     override fun onDestroy() {
         super.onDestroy()
         writeToLog("GameActivity", "GameActivity onDestroy() called")
+
+        if (mClientWaitDialog !=null && mClientWaitDialog!!.isShowing())
+            mClientWaitDialog!!.cancel()
+
+        if (mLikeToPlayDialog !=null && mLikeToPlayDialog!!.isShowing())
+            mLikeToPlayDialog!!.cancel()
+
+        if (mServerRefusedGame  !=null && mServerRefusedGame!!.isShowing())
+            mServerRefusedGame!!.cancel()
     }
 
     private inner class ServerThread: Thread() {
@@ -1886,7 +1843,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 writeToLog("GameActivity", "isServerRunning is false in acceptIncomingGameRequestFromClient(), gonna return...")
                 return
             }
-            AlertDialog.Builder(this@GameActivity)
+            mLikeToPlayDialog = AlertDialog.Builder(this@GameActivity)
                 .setTitle("$mPlayer2Name would like to play")
                 .setPositiveButton("Accept") { dialog, which -> acceptMsg.sendToTarget() }
                 .setCancelable(true)
@@ -1910,7 +1867,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             writeToLog("GameActivity", "displayServerRefusedGameAlert mGameStarted: $mGameStarted")
         }
         try {
-            AlertDialog.Builder(this@GameActivity)
+            mServerRefusedGame = AlertDialog.Builder(this@GameActivity)
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setTitle("Sorry, $playerName server side has left the game")
                 //.setNeutralButton("OK") { dialog, which -> finish() }
@@ -2095,6 +2052,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private lateinit var resources: Resources
         private var mHostWaitDialog: AlertDialog? = null
         private var mClientWaitDialog: AlertDialog? = null
+        private var mLikeToPlayDialog: AlertDialog? = null
+        private var mServerRefusedGame: AlertDialog? = null
         private var mChooseTokenDialog: AlertDialog? = null
         private var mNetworkOpponentPlayerName: String? = null
         private var mLastCellSelected = 0

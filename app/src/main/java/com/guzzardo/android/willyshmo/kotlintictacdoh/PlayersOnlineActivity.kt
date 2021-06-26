@@ -38,8 +38,8 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         mPlayersOnlineActivity = this
         mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
         playersOnline
-        resetPlayersOnline()
-        if (mUserNames.size == 0) {
+        setNumberOfPlayersOnline()
+        if (mUserNames.isEmpty()) {
             writeToLog("PlayersOnlineActivity", "starting server only")
             val i = Intent(mApplicationContext, GameActivity::class.java)
             i.putExtra(GameActivity.START_SERVER, "true")
@@ -212,10 +212,10 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             mPlayer1Id = settings.getInt(GameActivity.PLAYER1_ID, 0)
         }
 
-    private fun resetPlayersOnline() {
+    private fun setNumberOfPlayersOnline() {
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
         val editor = settings.edit()
-        editor.putString("ga_users_online", null)
+        editor.putInt("ga_users_online_number",  mUserNames.size)
         editor.apply()
     }
 
