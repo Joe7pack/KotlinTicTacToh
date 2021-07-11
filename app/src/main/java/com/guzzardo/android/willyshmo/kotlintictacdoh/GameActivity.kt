@@ -113,14 +113,15 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         mGameView!!.setViewDisabled(false)
         mHostName = getConfigMap("RabbitMQIpAddress")
         mQueuePrefix = getConfigMap("RabbitMQQueuePrefix")
-
-
-        val item = intent.getParcelableExtra<ParcelItems>(PARCELABLE_VALUES)
-        writeToLog("GameActivity", "our parcelable extra item: $item")
+        mStartSource = intent.getParcelableExtra<ParcelItems>(PARCELABLE_VALUES).toString()
+        writeToLog("GameActivity", "our parcelable extra item: $mStartSource")
         writeToLog("GameActivity", "onCreate() Completed")
     }
 
     private fun createHostWaitDialog(): AlertDialog {
+        if (mHostWaitDialog != null) {
+            mHostWaitDialog!!.dismiss()
+        }
         val opponentName = if (mPlayer2Name == null) "Waiting for player to connect..." else "Waiting for $mPlayer2Name to connect..."
         val hostingDescription = if (mPlayer2Name == null) "Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)" else "Hosting..."
         mGameView!!.setGamePrize()
@@ -164,7 +165,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
 
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
-        var usersOnlineNumber = settings.getInt("ga_users_online_number", 0)
+        val usersOnlineNumber = settings.getInt("ga_users_online_number", 0)
 
         mClient = java.lang.Boolean.valueOf(intent.getStringExtra(START_CLIENT))
         if (mClient) { // && !mClientRunning) {
@@ -204,6 +205,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
             }
             writeToLog("GameActivity", "onResume - we are serving but we're not a client")
+            // hack to deal with stale leftGame message that I can't seem to get rid of for some goddamn reason
+            if (mStartSource != null && mStartSource!!.contains("Shakespeare")) {
+                writeToLog("GameActivity", "onResume - finishing due to spurious left game message")
+                finish()
+            }
             return
         }
         var player = mGameView!!.currentPlayer
@@ -1581,6 +1587,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 serverIsPlayingNow = false
+                writeToLog("ServerThread", "server run method finished")
             } catch (e: Exception) {
                 //e.printStackTrace();
                 writeToLog("ServerThread", "error in Server Thread: " + e.message)
@@ -1654,7 +1661,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
         override fun run() {
             try {
-                writeToLog("ClientService", "client run method started")
+                writeToLog("ClientThread", "client run method started")
                 while (mClientRunning) {
                     if (mMessageToServer != null) {
                         val messageToBeSent = mMessageToServer //circumvent sending a null message to sendMessageToRabbitMQTask
@@ -1700,10 +1707,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         mRabbitMQClientResponseHandler!!.rabbitMQResponse = null // .rabbitMQResponse(null)
                     }
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
-                }
+                } // while end
                 writeToLog("ClientThread", "client run method finished")
             } catch (e: Exception) {
-                //writeToLog("ClientService", "Client error 2: "+e);
+                writeToLog("ClientThread", "error in Client Thread: "+e.message);
                 sendToastMessage(e.message)
             } finally {
                 val urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
@@ -1863,7 +1870,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mLikeToPlayDialog = AlertDialog.Builder(this@GameActivity)
                 .setTitle("$mPlayer2Name would like to play")
                 .setPositiveButton("Accept") { dialog, which -> acceptMsg.sendToTarget() }
-                .setCancelable(true)
+                .setCancelable(false)
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setNegativeButton("Reject") { dialog, which -> rejectMsg.sendToTarget() }
                 .show()
@@ -1889,7 +1896,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 .setTitle("Sorry, $playerName server side has left the game")
                 //.setNeutralButton("OK") { dialog, which -> finish() }
                 .setPositiveButton("OK") { dialog, which -> joesPositiveMethod() }
-                //.setCancelable(true)
+                .setCancelable(false)
                 //.setNegativeButton("Cancel") { dialog, which -> joesNegativeMethod() }
                 .show()
         } catch (e: Exception) {
@@ -2085,6 +2092,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private const val ACCEPT_GAME = 1
         private const val REJECT_GAME = 2
         private var mGameStarted = false
+        private var mStartSource: String? = null
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(resources.getString(R.string.debug), ignoreCase = true)) {

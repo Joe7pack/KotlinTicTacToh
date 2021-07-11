@@ -44,7 +44,7 @@ class GetConfigurationValuesFromDB { // : AsyncTask<Any?, Void?, String?>() {
             writeToLog("GetConfigurationValuesFromDB", "doInBackground: " + e.message)
             mCallerActivity.sendToastMessage(e.message)
         }
-        writeToLog("GetConfigurationValuesFromDB", "GetConfigurationValuesFromDB doInBackground called usersOnline: $configValues")
+        writeToLog("GetConfigurationValuesFromDB", "GetConfigurationValuesFromDB doInBackground return values: $configValues")
         setConfigValues(configValues);
     }
 
