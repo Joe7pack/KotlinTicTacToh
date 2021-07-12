@@ -16,7 +16,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
     var channel: Channel? = null
     var connection: Connection? = null
     private val mExchangeType = "fanout"
-    var queue: String? = null //The Queue name for this consumer
+    private var queue: String? = null //The Queue name for this consumer
     var consumer: QueueingConsumer? = null
     private var mConsumeRunning = false
     private var mResources = resources
@@ -42,9 +42,9 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
     private val mMessageHandler = Handler(Looper.getMainLooper())
 
     // Create runnable for posting back to main thread
-    val mReturnMessage = Runnable { mOnReceiveMessageHandler!!.onReceiveMessage(mLastMessage) }
+    val mReturnMessage = Runnable { mOnReceiveMessageHandler.onReceiveMessage(mLastMessage) }
     private val mConsumeHandler = Handler(Looper.getMainLooper())
-    val mConsumeRunner = Runnable { consume() }
+    private val mConsumeRunner = Runnable { consume() }
 
     /**
      * Create Exchange and then start consuming. A binding needs to be added before any messages will be delivered
@@ -65,7 +65,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
      * Add a binding between this consumers Queue and the Exchange with routingKey
      * @param routingKey the binding key eg GOOG
      */
-    fun AddBinding(routingKey: String?) {
+    fun addBinding(routingKey: String?) {
         try {
             channel!!.queueBind(queue, mExchange, routingKey)
         } catch (e: IOException) {
@@ -78,7 +78,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
      * Remove binding between this consumers Queue and the Exchange with routingKey
      * @param routingKey the binding key eg GOOG
      */
-    fun RemoveBinding(routingKey: String?) {
+    fun removeBinding(routingKey: String?) {
         try {
             channel!!.queueUnbind(queue, mExchange, routingKey)
         } catch (e: IOException) {
