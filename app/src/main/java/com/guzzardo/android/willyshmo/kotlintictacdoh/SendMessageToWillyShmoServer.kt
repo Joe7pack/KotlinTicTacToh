@@ -79,11 +79,14 @@ class SendMessageToWillyShmoServer {
              */
          val reader = BufferedReader(InputStreamReader(`is`))
          val sb = StringBuilder()
-         var line: String?
          try {
+             val allText = `is`?.bufferedReader()?.readText() //. .use(BufferedReader::readText)
+             sb.append(allText)
+             /*
              while (reader.readLine().also { line = it } != null) {
                  sb.append(""" $line """.trimIndent())
              }
+             */
          } catch (e: IOException) {
              writeToLog("SendMessageToWillyShmoServer","IOException: " + e.message)
              mCallerActivity!!.sendToastMessage(e.message)
@@ -92,6 +95,7 @@ class SendMessageToWillyShmoServer {
              mCallerActivity!!.sendToastMessage(e.message)
          } finally {
              try {
+                 reader.close()
                  `is`!!.close()
              } catch (e: IOException) {
                  writeToLog("SendMessageToWillyShmoServer", "is close IOException: " + e.message)

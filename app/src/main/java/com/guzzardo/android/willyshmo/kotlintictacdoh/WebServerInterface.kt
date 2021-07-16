@@ -70,11 +70,14 @@ object WebServerInterface {
          */
         val reader = BufferedReader(InputStreamReader(`is`))
         val sb = StringBuilder()
-        var line: String
         try {
+            val allText = `is`?.bufferedReader()?.readText() //. .use(BufferedReader::readText)
+            sb.append(allText)
+            /*
             while (reader.readLine().also { line = it } != null) {
                 sb.append(""" $line """.trimIndent())
             }
+            */
         } catch (e: IOException) {
             writeToLog( "WebServerInterface", "convertStreamToString IOException: " + e.message)
             if (e.message?.indexOf("it must not be null", 0)!! == -1)
@@ -82,9 +85,10 @@ object WebServerInterface {
         } catch (e: Exception) {
             writeToLog( "WebServerInterface", "convertStreamToString Exception: " + e.message)
             if (e.message?.indexOf("it must not be null", 0)!! == -1)
-                mToastMessage!!.sendToastMessage("convertStreamToString Exception: " + e.message)
+                mToastMessage!!.sendToastMessage("convertStreamToString Exception: " + e.message + "Please try again")
         } finally {
             try {
+                reader.close()
                 `is`!!.close()
             } catch (e: IOException) {
                 writeToLog("WebServerInterface", "is close IOException:: " + e.message)
