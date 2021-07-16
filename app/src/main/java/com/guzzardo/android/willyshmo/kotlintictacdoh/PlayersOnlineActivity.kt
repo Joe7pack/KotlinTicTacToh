@@ -51,6 +51,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             finish()
         } else {
             mMessageConsumer = RabbitMQMessageConsumer(this, mResources)
+            setUpMessageConsumer(mMessageConsumer, "startGame", mRabbitMQPlayerResponseHandler)
             mRabbitMQPlayerResponseHandler = RabbitMQPlayerResponseHandler()
             setContentView(R.layout.players_online) //this starts up the list view
         }
@@ -82,6 +83,55 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     override fun onDestroy() {
         super.onDestroy()
         writeToLog("PlayersOnlineActivity", "onDestroy called from main class")
+    }
+
+    private fun setUpMessageConsumer(rabbitMQMessageConsumer: RabbitMQMessageConsumer?, qNameQualifier: String, rabbitMQResponseHandler: RabbitMQResponseHandler?) {
+        val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + mPlayer1Id
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val consumerConnectTask = ConsumerConnectTask()
+            consumerConnectTask.main(
+                getConfigMap("RabbitMQIpAddress"),
+                rabbitMQMessageConsumer,
+                qName,
+                mPlayersOnlineActivity,
+                mResources,
+                "fromPlayersOnlineActivity"
+            )
+        }
+        writeToLog("PlayersOnlineActivity", "$qNameQualifier message consumer listening on queue: $qName")
+
+        // register for messages
+        rabbitMQMessageConsumer!!.setOnReceiveMessageHandler(object: RabbitMQMessageConsumer.OnReceiveMessageHandler {
+            override fun onReceiveMessage(message: ByteArray?) {
+                val text = String(message!!, StandardCharsets.UTF_8)
+                rabbitMQResponseHandler!!.rabbitMQResponse = text
+                writeToLog("PlayersOnlineActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
+                if (text.startsWith("letsPlay")) {
+                    val playStringArray = text.split(",")
+                    if (playStringArray.size >= 3) {
+                        val opposingPlayerId = playStringArray[2]
+                        val opposingPlayerName = playStringArray[1]
+                        val i = Intent(mApplicationContext, GameActivity::class.java)
+
+                        val item = GameActivity.ParcelItems(123456789, "Shakespeare")
+                        i.putExtra(GameActivity.PARCELABLE_VALUES, item)
+
+
+                        i.putExtra(GameActivity.START_SERVER, "true")
+                        //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
+                        i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
+                        i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
+                        i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, opposingPlayerId)
+                        i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
+                        i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
+                        writeToLog("PlayersOnlineActivity", "starting client and server from new player: $opposingPlayerName")
+                        startActivity(appContext, i, null)
+                    }
+                    writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $text at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+                }
+            }
+        })
     }
 
     /**
@@ -116,6 +166,11 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             super.onResume()
             writeToLog("PlayersOnlineFragment", "onResume called from PlayersOnlineFragment")
             startGame()
+        }
+
+        private fun startGame() {
+            mSelectedPosition = -1
+            mRabbitMQPlayerResponseHandler!!.rabbitMQResponse = "null" // get rid of any old game requests
         }
 
         override fun onPause() { // pause the PlayersOnlineFragment
@@ -184,7 +239,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private fun showDetails(index: Int) {
             mCurCheckPosition = index
         }
-    } //not going to play against myself on the network// this is where the keys (userNames) gets sorted
+    }
 
     //we're creating a clone because removing an entry from the original TreeMap causes a problem for the iterator
     private val playersOnline: Unit
@@ -281,61 +336,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var mSelectedPosition = -1
         private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mRabbitMQPlayerResponseHandler: RabbitMQPlayerResponseHandler? = null
-
-        private fun setUpMessageConsumer(rabbitMQMessageConsumer: RabbitMQMessageConsumer?, qNameQualifier: String, rabbitMQResponseHandler: RabbitMQResponseHandler?) {
-            val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + mPlayer1Id
-
-            CoroutineScope(Dispatchers.Default).launch {
-                val consumerConnectTask = ConsumerConnectTask()
-                consumerConnectTask.main(
-                    getConfigMap("RabbitMQIpAddress"),
-                    rabbitMQMessageConsumer,
-                    qName,
-                    mPlayersOnlineActivity,
-                    mResources,
-                    "fromPlayersOnlineActivity"
-                )
-            }
-            writeToLog("PlayersOnlineActivity", "$qNameQualifier message consumer listening on queue: $qName")
-
-            // register for messages
-            rabbitMQMessageConsumer!!.setOnReceiveMessageHandler(object: RabbitMQMessageConsumer.OnReceiveMessageHandler {
-                override fun onReceiveMessage(message: ByteArray?) {
-                    val text = String(message!!, StandardCharsets.UTF_8)
-                    rabbitMQResponseHandler!!.rabbitMQResponse = text
-                    writeToLog("PlayersOnlineActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
-                    if (text.startsWith("letsPlay")) {
-                        val playStringArray = text.split(",")
-                        if (playStringArray.size >= 3) {
-                            val opposingPlayerId = playStringArray[2]
-                            val opposingPlayerName = playStringArray[1]
-                            val i = Intent(mApplicationContext, GameActivity::class.java)
-
-                            val item = GameActivity.ParcelItems(123456789, "Shakespeare")
-                            i.putExtra(GameActivity.PARCELABLE_VALUES, item)
-
-
-                            i.putExtra(GameActivity.START_SERVER, "true")
-                            //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
-                            i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
-                            i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-                            i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, opposingPlayerId)
-                            i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
-                            i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
-                            writeToLog("PlayersOnlineActivity", "starting client and server from new player: $opposingPlayerName")
-                            startActivity(appContext, i, null)
-                        }
-                        writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $text at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
-                    }
-                }
-            })
-        }
-
-        private fun startGame() {
-            setUpMessageConsumer(mMessageConsumer, "startGame", mRabbitMQPlayerResponseHandler)
-            mSelectedPosition = -1
-            mRabbitMQPlayerResponseHandler!!.rabbitMQResponse = "null" // get rid of any old game requests
-        }
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
