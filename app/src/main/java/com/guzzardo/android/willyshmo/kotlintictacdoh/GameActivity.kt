@@ -1492,6 +1492,34 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         writeToLog("GameActivity", "GameActivity onDestroy() called")
         setNetworkGameStatusAndResponse(false, false)
 
+        if (mClientThread != null) {
+            mClientThread!!.closeRabbitMQConnection(mClientThread!!.rabbitMQConnection)
+            writeToLog("GameActivity", " onDestroy about to call DisposeRabbitMQTask()")
+            CoroutineScope(Dispatchers.Default).launch {
+                val disposeRabbitMQTask = DisposeRabbitMQTask()
+                disposeRabbitMQTask.main(
+                    mMessageClientConsumer,
+                    resources,
+                    this@GameActivity as ToastMessage
+                )
+            }
+            mClientThread = null
+        }
+
+        if (mServerThread != null) {
+            mServerThread!!.closeRabbitMQConnection(mServerThread!!.rabbitMQConnection)
+            writeToLog("GameActivity", "onDestroy about to call DisposeRabbitMQTask()")
+            CoroutineScope(Dispatchers.Default).launch {
+                val disposeRabbitMQTask = DisposeRabbitMQTask()
+                disposeRabbitMQTask.main(
+                    mMessageServerConsumer,
+                    resources,
+                    this@GameActivity as ToastMessage
+                )
+            }
+            mServerThread = null
+        }
+
         if (mClientWaitDialog != null) // && mClientWaitDialog!!.isShowing())
             mClientWaitDialog!!.dismiss()
 
@@ -1552,7 +1580,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
         }
 
-        private fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
+        fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
             writeToLog("ServerThread", "about to close server side RabbitMQ connection")
             return runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
@@ -1571,8 +1599,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mGameStarted = false
-
-                //val rabbitMQConnection = setUpRabbitMQConnection()
                 var waitInterval = 0
                 while (rabbitMQConnection == null) {
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
@@ -1627,7 +1653,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     }
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
                 } // while end
-                //closeRabbitMQConnection(rabbitMQConnection)
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 serverIsPlayingNow = false
@@ -1637,24 +1662,15 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 writeToLog("ServerThread", "error in Server Thread: " + e.message)
                 sendToastMessage(e.message)
             } finally {
-                //mServerRunning = false
                 isServerRunning = false
                 serverIsPlayingNow = false
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
-                mServerThread = null
-
                 val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&playingNow=false&opponentId=0"
                 CoroutineScope( Dispatchers.Default).launch {
                     val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
                     sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
                 }
-                writeToLog("ServerThread", "Server about to call DisposeRabbitMQTask()")
-                CoroutineScope(Dispatchers.Default).launch {
-                    val disposeRabbitMQTask = DisposeRabbitMQTask()
-                    disposeRabbitMQTask.main(mMessageServerConsumer, resources, this@GameActivity as ToastMessage)
-                }
-                closeRabbitMQConnection(rabbitMQConnection)
                 writeToLog("ServerThread", "server run method finally done")
             }
         }
@@ -1720,7 +1736,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
 
         //FIXME - consolidate client side and server side methods with a single shared method
-        private fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
+        fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
             writeToLog("ClientThread", "about to close client side RabbitMQ connection")
             return runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
@@ -1796,7 +1812,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
                 } // while end
                 writeToLog("ClientThread", "client run method finished")
-                //closeRabbitMQConnection(rabbitMQConnection)
             } catch (e: Exception) {
                 writeToLog("ClientThread", "error in Client Thread: "+e.message)
                 sendToastMessage(e.message)
@@ -1809,13 +1824,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mClientRunning = false
-                mClientThread = null
-                writeToLog("ClientThread", "Client about to call DisposeRabbitMQTask()")
-                CoroutineScope(Dispatchers.Default).launch {
-                    val disposeRabbitMQTask = DisposeRabbitMQTask()
-                    disposeRabbitMQTask.main(mMessageClientConsumer, resources, this@GameActivity as ToastMessage)
-                }
-                closeRabbitMQConnection(rabbitMQConnection)
                 writeToLog("ClientThread", "client run method finally done")
             }
         }
@@ -1984,7 +1992,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setTitle("Sorry, $playerName server side has left the game")
                 //.setNeutralButton("OK") { dialog, which -> finish() }
-                .setPositiveButton("OK") { dialog, which -> joesPositiveMethod() }
+                .setPositiveButton("OK") { dialog, which -> startTwoPlayerActivity() }
                 .setCancelable(false)
                 //.setNegativeButton("Cancel") { dialog, which -> joesNegativeMethod() }
                 .show()
@@ -1993,10 +2001,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
     }
 
-    private fun joesPositiveMethod() {
-        writeToLog("GameActivity", "joesPositiveMethod() called, mGameStarted: $mGameStarted")
-        val i = Intent(this, PlayOverNetwork::class.java)
+    private fun startTwoPlayerActivity() {
+        writeToLog("GameActivity", "startTwoPlayerActivity() called, mGameStarted: $mGameStarted")
+        val i = Intent(this, TwoPlayerActivity::class.java)
         i.putExtra(PLAYER1_NAME, mPlayer1Name)
+        i.putExtra(PLAYER2_NAME, mPlayer2Name)
         startActivity(i)
         finish()
     }
@@ -2008,7 +2017,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             return AlertDialog.Builder(this@GameActivity)
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setTitle("Sorry, $playerName $clientOrServer side has left the game")
-                .setNeutralButton("OK") { dialog, which -> finish() }
+                .setPositiveButton("OK") { dialog, which -> startTwoPlayerActivity() }
+                .setCancelable(false)
                 .show()
     }
 
@@ -2027,6 +2037,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     }
 
     override fun sendToastMessage(message: String?) {
+        writeToLog("GameActivity", "sendToastMessage message: $message")
         runOnUiThread { Toast.makeText(this, message, Toast.LENGTH_LONG).show() }
     }
 
@@ -2070,12 +2081,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     }
 
     fun sendMessageToServerHost(message: String) {
-        val qName = "$mQueuePrefix-server-$player2Id"
-        CoroutineScope(Dispatchers.Default).launch {
-            val sendMessageToRabbitMQTask = SendMessageToRabbitMQTask()
-            sendMessageToRabbitMQTask.main(mHostName, qName,  message, this@GameActivity as ToastMessage, Companion.resources)
+        if (mClientRunning) {
+            mClientThread!!.setMessageToServer(message)
         }
-        writeToLog("GameActivity", "sendMessageToServerHost: $message queue: $qName")
+        writeToLog("GameActivity", "sendMessageToServerHost: $message")
     }
 
     // to update the game count:

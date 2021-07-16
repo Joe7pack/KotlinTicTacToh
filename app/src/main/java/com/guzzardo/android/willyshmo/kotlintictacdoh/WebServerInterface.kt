@@ -20,6 +20,7 @@ object WebServerInterface {
         var errorAt: String? = null
         var responseCode = 0
         var networkAvailable = false
+        var httpUrlConnection: HttpURLConnection? = null
         try {
             writeToLog("WebServerInterface", "converseWithWebServer() called")
             val myURL = if (urlToEncode == null) {
@@ -29,7 +30,7 @@ object WebServerInterface {
                 URL(url + encodedUrl)
             }
             errorAt = "openConnection"
-            val httpUrlConnection = myURL.openConnection() as HttpURLConnection
+            httpUrlConnection = myURL.openConnection() as HttpURLConnection
             httpUrlConnection.requestMethod = "POST"
             httpUrlConnection.connectTimeout = 3000
             responseCode = httpUrlConnection.responseCode
@@ -46,6 +47,9 @@ object WebServerInterface {
             mToastMessage!!.sendToastMessage(networkNotAvailable)
         } finally {
             try {
+                if (httpUrlConnection != null) {
+                    httpUrlConnection.disconnect()
+                }
                 bis!!.close()
                 `is`!!.close()
             } catch (e: Exception) {

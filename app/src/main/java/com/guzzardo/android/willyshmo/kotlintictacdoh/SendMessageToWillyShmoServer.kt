@@ -4,6 +4,7 @@ import android.content.res.Resources
 import android.util.Log
 import kotlinx.coroutines.runBlocking
 import java.io.*
+import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 
@@ -19,6 +20,7 @@ class SendMessageToWillyShmoServer {
         var `is`: InputStream? = null
         var result: String? = null
         var errorAt: String? = null
+        var urlConnection: HttpURLConnection? = null
         try {
             val myURL = if (urlToEncode == null) {
                 URL(url)
@@ -27,10 +29,10 @@ class SendMessageToWillyShmoServer {
                 URL(url + encodedUrl)
             }
             errorAt = "openConnection"
-            val ucon = myURL.openConnection()
+            urlConnection = myURL.openConnection() as HttpURLConnection
             /* Define InputStreams to read from the URLConnection. */
             errorAt = "getInputStream"
-            `is` = ucon.getInputStream()
+            `is` = urlConnection.getInputStream()
             errorAt = "bufferedInputStream"
             bis = BufferedInputStream(`is`)
             errorAt = "convertStreamToString"
@@ -41,6 +43,9 @@ class SendMessageToWillyShmoServer {
             mCallerActivity.sendToastMessage("SendMessageToWillyShmoServer error at $errorAt")
         } finally {
             try {
+                if (urlConnection != null) {
+                    urlConnection.disconnect()
+                }
                 bis!!.close()
                 `is`!!.close()
             } catch (e: Exception) {

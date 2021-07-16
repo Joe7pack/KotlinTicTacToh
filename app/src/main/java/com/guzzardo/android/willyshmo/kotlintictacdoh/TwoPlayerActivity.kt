@@ -73,6 +73,7 @@ class TwoPlayerActivity : Activity() {
         i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
         i.putExtra(GameActivity.PLAYER2_NAME, mPlayer2Name)
         startActivity(i)
+        finish()
     }
 
     private fun playOverNetwork() {
@@ -83,6 +84,7 @@ class TwoPlayerActivity : Activity() {
         val i = Intent(this, PlayOverNetwork::class.java)
         i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
         startActivity(i)
+        finish()
     }
 
     private fun displayNameRequiredAlert() {

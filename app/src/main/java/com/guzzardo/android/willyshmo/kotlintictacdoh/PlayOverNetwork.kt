@@ -7,14 +7,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.widget.Toast
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class PlayOverNetwork : Activity(), ToastMessage {
 
@@ -25,8 +24,8 @@ class PlayOverNetwork : Activity(), ToastMessage {
         super.onCreate(savedInstanceState)
         mCallerActivity = this
         mApplicationContext = applicationContext
-        errorHandler = ErrorHandler()
-        Companion.resources = resources
+        mErrorHandler = ErrorHandler()
+        mResources = resources
         sharedPreferences
         if (mPlayer1Name == null) {
             mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
@@ -49,7 +48,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
         val latitude = "&latitude=$latitude"
         val longitude = "&longitude=$longitude"
         val trackingInfo = androidId + latitude + longitude
-        val url = Companion.resources!!.getString(R.string.domainName) + "/gamePlayer/createAndroid/" + trackingInfo + "&userName="
+        val url = mResources!!.getString(R.string.domainName) + "/gamePlayer/createAndroid/" + trackingInfo + "&userName="
         CoroutineScope( Dispatchers.Default).launch {
             val webServerInterfaceNewPlayerTask =  WebServerInterfaceNewPlayerTask()
             webServerInterfaceNewPlayerTask.main(mCallerActivity as Context, url, mPlayer1Name, resources)
@@ -71,25 +70,9 @@ class PlayOverNetwork : Activity(), ToastMessage {
         editor.apply()
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
-
     override fun onResume() {
         super.onResume()
         mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
-    }
-
-    override fun onStop() {
-        super.onStop()
-    }
-
-    override fun onStart() {
-        super.onStart()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
@@ -112,15 +95,20 @@ class PlayOverNetwork : Activity(), ToastMessage {
     }
 
     override fun sendToastMessage(message: String?) {
-        val msg = errorHandler!!.obtainMessage()
+        val msg = mErrorHandler!!.obtainMessage()
         msg.obj = message
-        errorHandler!!.sendMessage(msg)
+        mErrorHandler!!.sendMessage(msg)
     }
 
     companion object {
         private var mApplicationContext: Context? = null
         private var mPlayer1Id = 0
-        private var resources: Resources? = null
-        var errorHandler: ErrorHandler? = null
+        private var mResources: Resources? = null
+        var mErrorHandler: ErrorHandler? = null
+        private fun writeToLog(filter: String, msg: String) {
+            if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
+                Log.d(filter, msg)
+            }
+        }
     }
 }

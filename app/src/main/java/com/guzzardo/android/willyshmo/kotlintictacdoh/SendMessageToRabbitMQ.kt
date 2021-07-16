@@ -10,16 +10,12 @@ class SendMessageToRabbitMQ {
         try {
             mCallingActivity = callerActivity
             mResources = resources
-            //val connection = rabbitMQConnection?.connection
             val channel = rabbitMQConnection?.channel
             channel?.queueDeclare(qName, false, false, false, null)
-//			channel.basicPublish(EXCHANGE_NAME, QUEUE_NAME, null, tempstr.getBytes());
             channel?.basicPublish("", qName, null, message.toByteArray())
-            writeToLog("SendMessageToRabbitMQTask", "message: $message to queue: $qName")
-            //channel.close()
-            //connection.close()
+            writeToLog("SendMessageToRabbitMQ", "message: $message to queue: $qName")
         } catch (e: Exception) {
-            writeToLog("SendMessageToRabbitMQTask", "Exception: " + e.message)
+            writeToLog("SendMessageToRabbitMQ", "Exception: " + e.message)
             mCallingActivity!!.sendToastMessage(e.message)
         }
     }
