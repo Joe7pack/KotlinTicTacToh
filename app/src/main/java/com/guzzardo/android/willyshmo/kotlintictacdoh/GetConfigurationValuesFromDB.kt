@@ -14,25 +14,6 @@ class GetConfigurationValuesFromDB { // : AsyncTask<Any?, Void?, String?>() {
     private lateinit var mCallerActivity: ToastMessage
     private var applicationContext: Context? = null
 
-
-/*
-    override fun doInBackground(vararg params: Any?): String? {
-        var configValues: String? = null
-        mCallerActivity = params[0] as SplashScreen
-        applicationContext = params[1] as Context
-        mResources = params[2] as Resources
-        val url = mResources!!.getString(R.string.domainName) + "/config/getConfigValues"
-        try { configValues = WebServerInterface.converseWithWebServer(url, null, mCallerActivity, mResources!!)
-        } catch (e: Exception) {
-            writeToLog("GetConfigurationValuesFromDB", "doInBackground: " + e.message)
-            mCallerActivity!!.sendToastMessage(e.message)
-        }
-        writeToLog("GetConfigurationValuesFromDB", "GetConfigurationValuesFromDB doInBackground called usersOnline: $configValues")
-        return configValues
-    }
-
- */
-
     fun main(callerActivity: ToastMessage, resources: Resources) = runBlocking {
         var configValues: String? = null
         mCallerActivity = callerActivity
@@ -45,7 +26,7 @@ class GetConfigurationValuesFromDB { // : AsyncTask<Any?, Void?, String?>() {
             mCallerActivity.sendToastMessage(e.message)
         }
         writeToLog("GetConfigurationValuesFromDB", "GetConfigurationValuesFromDB doInBackground return values: $configValues")
-        setConfigValues(configValues);
+        setConfigValues(configValues)
     }
 
     fun setConfigValues(configValues: String?) {
