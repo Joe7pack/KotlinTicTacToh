@@ -32,6 +32,9 @@ class WebServerInterfaceUsersOnlineTask {
         val url = mResources.getString(R.string.domainName) + "/gamePlayer/listUsers"
         try {
             mUsersOnline = converseWithWebServer(url,null, mCallerActivity as ToastMessage, mResources)
+            // consider replacing above call with this?
+            //val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
+            //sendMessageToWillyShmoServer.main(url, null, mCallerActivity  as ToastMessage, mResources, java.lang.Boolean.valueOf(false))
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceUsersOnlineTask", "doInBackground: " + e.message)
             mToastMessage!!.sendToastMessage(e.message)

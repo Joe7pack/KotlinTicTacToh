@@ -26,6 +26,7 @@ import java.util.*
 
 class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     private var mUsersOnline: String? = null
+    private var mMessageConsumer: RabbitMQMessageConsumer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +45,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
             val item = GameActivity.ParcelItems(123456789, "Cannabis")
             i.putExtra(GameActivity.PARCELABLE_VALUES, item)
+
             i.putExtra(GameActivity.START_SERVER, "true")
             i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
             i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
@@ -83,6 +85,16 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     override fun onDestroy() {
         super.onDestroy()
         writeToLog("PlayersOnlineActivity", "onDestroy called from main class")
+        if (mMessageConsumer != null) {
+            CoroutineScope(Dispatchers.Default).launch {
+                val disposeRabbitMQTask = DisposeRabbitMQTask()
+                disposeRabbitMQTask.main(
+                    mMessageConsumer,
+                    mResources,
+                    mPlayersOnlineActivity as ToastMessage
+                )
+            }
+        }
     }
 
     private fun setUpMessageConsumer(rabbitMQMessageConsumer: RabbitMQMessageConsumer?, qNameQualifier: String, rabbitMQResponseHandler: RabbitMQResponseHandler?) {
@@ -104,33 +116,47 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         // register for messages
         rabbitMQMessageConsumer!!.setOnReceiveMessageHandler(object: RabbitMQMessageConsumer.OnReceiveMessageHandler {
             override fun onReceiveMessage(message: ByteArray?) {
-                val text = String(message!!, StandardCharsets.UTF_8)
-                rabbitMQResponseHandler!!.rabbitMQResponse = text
-                writeToLog("PlayersOnlineActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text")
-                if (text.startsWith("letsPlay")) {
-                    val playStringArray = text.split(",")
-                    if (playStringArray.size >= 3) {
-                        val opposingPlayerId = playStringArray[2]
-                        val opposingPlayerName = playStringArray[1]
-                        val i = Intent(mApplicationContext, GameActivity::class.java)
+                try {
+                    val text = String(message!!, StandardCharsets.UTF_8)
+                    rabbitMQResponseHandler!!.rabbitMQResponse = text
+                    writeToLog(
+                        "PlayersOnlineActivity",
+                        "$qNameQualifier OnReceiveMessageHandler received message: $text"
+                    )
+                    if (text.startsWith("letsPlay")) {
+                        val playStringArray = text.split(",")
+                        if (playStringArray.size >= 3) {
+                            val opposingPlayerId = playStringArray[2]
+                            val opposingPlayerName = playStringArray[1]
+                            val i = Intent(mApplicationContext, GameActivity::class.java)
 
-                        val item = GameActivity.ParcelItems(123456789, "Shakespeare")
-                        i.putExtra(GameActivity.PARCELABLE_VALUES, item)
+                            val item = GameActivity.ParcelItems(123456789, "Shakespeare")
+                            i.putExtra(GameActivity.PARCELABLE_VALUES, item)
 
-
-                        i.putExtra(GameActivity.START_SERVER, "true")
-                        //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
-                        i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
-                        i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-                        i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, opposingPlayerId)
-                        i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
-                        i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
-                        writeToLog("PlayersOnlineActivity", "starting client and server from new player: $opposingPlayerName")
-                        startActivity(appContext, i, null)
+                            i.putExtra(GameActivity.START_SERVER, "true")
+                            //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
+                            i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
+                            i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
+                            i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, opposingPlayerId)
+                            i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
+                            i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
+                            writeToLog(
+                                "PlayersOnlineActivity",
+                                "starting client and server from new player: $opposingPlayerName"
+                            )
+                            startActivity(appContext, i, null)
+                        }
+                        writeToLog(
+                            "PlayersOnlineActivity",
+                            "got LetsPlay response received message: $text at: " + SimpleDateFormat(
+                                "yyyy-MM-dd HH:mm:ss"
+                            ).format(Date())
+                        )
                     }
-                    writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $text at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+                } catch (e: Exception) {
+                    writeToLog("PlayersOnlineActivity", "exception in onReceiveMessage: $e")
                 }
-            }
+            } // end onReceiveMessage
         })
     }
 
@@ -175,11 +201,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
         override fun onPause() { // pause the PlayersOnlineFragment
             super.onPause()
-            writeToLog("PlayersOnlineFragment", "onPause called from PlayersOnlineFragment to dispose of RabbitMQTask")
-            CoroutineScope(Dispatchers.Default).launch {
-                val disposeRabbitMQTask = DisposeRabbitMQTask()
-                disposeRabbitMQTask.main(mMessageConsumer, mResources, mPlayersOnlineActivity as ToastMessage)
-            }
+            writeToLog("PlayersOnlineFragment", "onPause called from PlayersOnlineFragment")
         }
 
         override fun onStop() {
@@ -334,7 +356,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private lateinit var mResources: Resources
         private var mPlayersOnlineActivity: PlayersOnlineActivity? = null
         private var mSelectedPosition = -1
-        private var mMessageConsumer: RabbitMQMessageConsumer? = null
+        //private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mRabbitMQPlayerResponseHandler: RabbitMQPlayerResponseHandler? = null
 
         private fun writeToLog(filter: String, msg: String) {

@@ -34,7 +34,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
             setSharedPreferences()
             addMyselfToPlayerList()
         } else {
-            CoroutineScope( Dispatchers.Default).launch {
+            CoroutineScope( Dispatchers.Default).launch { //consider changing this to an async task?
                 val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
                 webServerInterfaceUsersOnlineTask.main(mCallerActivity, mPlayer1Name, resources, Integer.valueOf(mPlayer1Id))
             }

@@ -57,11 +57,14 @@ class TwoPlayerActivity : Activity() {
         }
         mButtonPlayOverNetwork = findViewById<View>(R.id.play_over_network) as Button
         mButtonPlayOverNetwork!!.setOnClickListener { playOverNetwork() }
+
+        /*
         if (WillyShmoApplication.isNetworkAvailable) {
             mButtonPlayOverNetwork!!.visibility = View.VISIBLE
         } else {
             mButtonPlayOverNetwork!!.visibility = View.GONE
         }
+        */
     }
 
     private fun startGame(player: Int) {

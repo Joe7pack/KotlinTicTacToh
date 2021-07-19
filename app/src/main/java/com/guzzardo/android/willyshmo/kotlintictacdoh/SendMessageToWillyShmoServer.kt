@@ -54,6 +54,7 @@ class SendMessageToWillyShmoServer {
             }
         }
         onPostExecute(finishActivity)
+        //return result
     }
 
     fun onPostExecute(finishActivity: Boolean) {

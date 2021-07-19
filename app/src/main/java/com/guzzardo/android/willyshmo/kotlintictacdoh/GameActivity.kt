@@ -622,7 +622,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                                         }
                                         //set available moves for new test board
                                         mGameView!!.setAvailableMoves(x, testBoard2, testAvailableValues)
-                                        if (testAvailableValues[z] == true && z != x) {
+                                        if (testAvailableValues[z] && z != x) {
                                             testBoard2[z] = mPlayer1TokenChoice
                                             val winnerFound2 = checkWinningPosition(testBoard2)
                                             if (winnerFound2[0] > -1 || winnerFound2[1] > -1 || winnerFound2[2] > -1) {
@@ -837,7 +837,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
 
             if (msg.what == MSG_NETWORK_SERVER_REFUSED_GAME) {
-                displayServerRefusedGameAlert("server", mNetworkOpponentPlayerName)
+                displayServerRefusedGameAlert(mNetworkOpponentPlayerName)
                 //displayOpponentLeftGameAlert("server", mPlayer2Name)
                 mGameStarted = false
             }
@@ -1599,18 +1599,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mGameStarted = false
-                var waitInterval = 0
-                while (rabbitMQConnection == null) {
-                    sleep(THREAD_SLEEP_INTERVAL.toLong())
-                    if (rabbitMQConnection == null) {
-                        waitInterval++
-                        continue
-                    }
-                    if (rabbitMQConnection == null && waitInterval > 10) {
-                        mClientRunning = false
-                    }
-                }
-
                 while (isServerRunning) {
                     if (mRabbitMQServerResponseHandler!!.rabbitMQResponse != null) {
                         writeToLog("ServerThread", "Retrieving command: " + mRabbitMQServerResponseHandler!!.rabbitMQResponse)
@@ -1752,18 +1740,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         override fun run() {
             try {
                 writeToLog("ClientThread", "client run method started")
-                //val rabbitMQConnection = setUpRabbitMQConnection()
-                var waitInterval = 0
-                while (rabbitMQConnection == null) {
-                    sleep(THREAD_SLEEP_INTERVAL.toLong())
-                    if (rabbitMQConnection == null) {
-                        waitInterval++
-                        continue
-                    }
-                    if (rabbitMQConnection == null && waitInterval > 10) {
-                        mClientRunning = false
-                    }
-                }
                 while (mClientRunning) {
                     if (mMessageToServer != null) {
                         val messageToBeSent = mMessageToServer //circumvent sending a null message to sendMessageToRabbitMQTask
@@ -1966,10 +1942,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             mLikeToPlayDialog = AlertDialog.Builder(this@GameActivity)
                 .setTitle("$mPlayer2Name would like to play")
-                .setPositiveButton("Accept") { dialog, which -> acceptMsg.sendToTarget() }
+                .setPositiveButton("Accept") { dialog, _ -> acceptMsg.sendToTarget() }
                 .setCancelable(false)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setNegativeButton("Reject") { dialog, which -> rejectMsg.sendToTarget() }
+                .setNegativeButton("Reject") { dialog, _ -> rejectMsg.sendToTarget() }
                 .show()
         } catch (e: Exception) {
             writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception isServerRunning: $isServerRunning")
@@ -1979,7 +1955,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
     }
 
-    private fun displayServerRefusedGameAlert(clientOrServer: String, playerName: String?) {
+    private fun displayServerRefusedGameAlert(playerName: String?) {
         if (!mGameStarted) {
             //val i = Intent(this, PlayOverNetwork::class.java)
             //i.putExtra(PLAYER1_NAME, mPlayer1Name)
@@ -1994,7 +1970,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 //.setNeutralButton("OK") { dialog, which -> finish() }
                 .setPositiveButton("OK") { dialog, which -> startTwoPlayerActivity() }
                 .setCancelable(false)
-                //.setNegativeButton("Cancel") { dialog, which -> joesNegativeMethod() }
                 .show()
         } catch (e: Exception) {
             sendToastMessage(e.message)
@@ -2017,7 +1992,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             return AlertDialog.Builder(this@GameActivity)
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setTitle("Sorry, $playerName $clientOrServer side has left the game")
-                .setPositiveButton("OK") { dialog, which -> startTwoPlayerActivity() }
+                .setPositiveButton("OK") { _, which -> startTwoPlayerActivity() }
                 .setCancelable(false)
                 .show()
     }
@@ -2099,7 +2074,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 }
                 .setCancelable(true)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setNegativeButton("Reject") { dialog, which -> }
+                .setNegativeButton("Reject") { _, _ -> }
                 .show()
         } catch (e: Exception) {
             sendToastMessage("showPrizeWon error: $e.message")
