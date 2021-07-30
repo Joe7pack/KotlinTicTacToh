@@ -4,7 +4,7 @@
 	<!-- these elements need to be changed before going to production -->
 
 	<!-- increment version number to match values found in app/build.gradle -->
-	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Kotlin Version 19 (1.301.17)</string>
+	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Kotlin Version 20 (1.301.18)</string>
     <string name="about_2" translatable="false">Copyright © 1986&#8211;2021 &#8211; Tom Volpert and
 		Joe Guzzardo. All rights reserved.</string>
 
@@ -105,7 +105,7 @@
 
 	<!-- License checking status messages -->
 	<string name="check_license">Check license</string>
-	<string name="checking_license">Checking license...</string>
+	<string name="checking_license">Checking license…</string>
 	<string name="dont_allow">Don\'t allow the user access</string>
 	<string name="allow">Allow the user access</string>
 	<string name="application_error">Application error: %1$s</string>
