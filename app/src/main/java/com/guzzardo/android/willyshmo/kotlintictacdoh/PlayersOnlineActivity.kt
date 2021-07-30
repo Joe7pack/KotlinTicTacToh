@@ -68,11 +68,19 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         writeToLog("PlayersOnlineActivity", "onPause called from Main Activity")
         if (mSelectedPosition == -1) {
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&opponentId=0&userName="
-            CoroutineScope(Dispatchers.Default).launch {
-                val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-                sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, mPlayersOnlineActivity as ToastMessage, mResources, false)
-            }
-            writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false")
+            //return runBlocking {
+                val messageResponse = CoroutineScope(Dispatchers.Default).async {
+                    val sendMessageToAppServer = SendMessageToAppServer
+                    sendMessageToAppServer.main(
+                        urlData,
+                        mPlayer1Name,
+                        mPlayersOnlineActivity as ToastMessage,
+                        mResources,
+                        false
+                    )
+                } //.await()
+            //}
+            writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false $messageResponse")
         }
         GameActivity.isClientRunning = false
     }
@@ -188,7 +196,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             }
         }
 
-        override fun onResume() { //only called when at least one opponent is online to select 
+        override fun onResume() { //only called when at least one opponent is online to select
             super.onResume()
             writeToLog("PlayersOnlineFragment", "onResume called from PlayersOnlineFragment")
             startGame()

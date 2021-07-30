@@ -12,7 +12,6 @@ object WebServerInterface {
     private var mResources: Resources? = null
     @JvmStatic
 	fun converseWithWebServer(url: String, urlToEncode: String?, toastMessage: ToastMessage?, resources: Resources ): String? {
-        var bis: BufferedInputStream? = null
         var `is`: InputStream? = null
         var result: String? = null
         mResources = resources
@@ -36,8 +35,6 @@ object WebServerInterface {
             responseCode = httpUrlConnection.responseCode
             errorAt = "getInputStream"
             `is` = httpUrlConnection.inputStream // define InputStreams to read from the URLConnection.
-            errorAt = "bufferedInputStream"
-            bis = BufferedInputStream(`is`)
             errorAt = "convertStreamToString"
             result = convertStreamToString(`is`) // convert the Bytes read to a String.
             networkAvailable = true
@@ -47,11 +44,10 @@ object WebServerInterface {
             mToastMessage!!.sendToastMessage(networkNotAvailable)
         } finally {
             try {
+                `is`!!.close()
                 if (httpUrlConnection != null) {
                     httpUrlConnection.disconnect()
                 }
-                bis!!.close()
-                `is`!!.close()
             } catch (e: Exception) {
                 //nothing to do here
                 writeToLog("WebServerInterface", "finally exception: $e.message")
@@ -62,22 +58,11 @@ object WebServerInterface {
     }
 
     private fun convertStreamToString(`is`: InputStream?): String {
-        /*
-         * To convert the InputStream to String we use the BufferedReader.readLine()
-         * method. We iterate until the BufferedReader return null which means
-         * there's no more data to read. Each line will appended to a StringBuilder
-         * and returned as String.
-         */
         val reader = BufferedReader(InputStreamReader(`is`))
         val sb = StringBuilder()
         try {
-            val allText = `is`?.bufferedReader()?.readText() //. .use(BufferedReader::readText)
+            val allText = `is`?.bufferedReader()?.readText()
             sb.append(allText)
-            /*
-            while (reader.readLine().also { line = it } != null) {
-                sb.append(""" $line """.trimIndent())
-            }
-            */
         } catch (e: IOException) {
             writeToLog( "WebServerInterface", "convertStreamToString IOException: " + e.message)
             if (e.message?.indexOf("it must not be null", 0)!! == -1)
@@ -89,7 +74,6 @@ object WebServerInterface {
         } finally {
             try {
                 reader.close()
-                `is`!!.close()
             } catch (e: IOException) {
                 writeToLog("WebServerInterface", "is close IOException:: " + e.message)
                 mToastMessage!!.sendToastMessage("is close IOException: " + e.message)

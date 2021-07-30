@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.guzzardo.android.willyshmo.kotlintictacdoh"
-        minSdkVersion 19
+        minSdkVersion 20
         targetSdkVersion 30
         versionCode 19  //must increment versionCode before building bundle for deployment to Google Play Store
         versionName "1.3"
@@ -26,7 +26,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            versionNameSuffix '01.17'  //alwways bump this up by 1 for release
+            versionNameSuffix '01.18'  //alwways bump this up by 1 for release
 
             //The version as seen in the Play Store is the concatenation of the versionName and versionNameSuffix.
             // In this particular case it will be displayed as Current Version 1.301.08

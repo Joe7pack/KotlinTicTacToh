@@ -3,16 +3,12 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
-//import android.os.AsyncTask
 import android.util.Log
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.converseWithWebServer
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.lang.Boolean.FALSE
+import kotlinx.coroutines.*
 
 /**
  * An AsyncTask that will be used to find other players currently online
@@ -54,10 +50,7 @@ class WebServerInterfaceUsersOnlineTask {
             val longitude = "&longitude=$longitude"
             val trackingInfo = androidId + latitude + longitude
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&playingNow=false&opponentId=0&userName="
-            CoroutineScope( Dispatchers.Default).launch {
-                val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-                sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, mCallerActivity as ToastMessage, mResources, FALSE)
-            }
+            sendMessageToAppServer(urlData)
             val settings = mCallerActivity!!.getSharedPreferences(MainActivity.UserPreferences.PREFS_NAME,0)
             val editor = settings.edit()
             editor.putString("ga_users_online", mUsersOnline)
@@ -68,11 +61,23 @@ class WebServerInterfaceUsersOnlineTask {
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_DEBUG_LOG_RESOLUTION or Intent.FLAG_FROM_BACKGROUND)
             mCallerActivity!!.startActivity(i) // control is picked up in onCreate method
         } catch (e: Exception) {
-            writeToLog(
-                "WebServerInterfaceUsersOnlineTask",
-                "onPostExecute exception called " + e.message
-            )
+            writeToLog("WebServerInterfaceUsersOnlineTask", "onPostExecute exception called " + e.message)
             mToastMessage!!.sendToastMessage(e.message)
+        }
+    }
+
+    private fun sendMessageToAppServer(urlData: String) {
+        return runBlocking {
+            CoroutineScope(Dispatchers.Default).async {
+                val sendMessageToAppServer = SendMessageToAppServer
+                val messageResult = sendMessageToAppServer.main(
+                    urlData,
+                    mPlayer1Name,
+                    mCallerActivity as ToastMessage,
+                    mResources,
+                    false
+                )
+            }.await()
         }
     }
 

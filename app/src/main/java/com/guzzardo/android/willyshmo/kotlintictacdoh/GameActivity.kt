@@ -84,6 +84,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     public override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
         Companion.resources = resources
+        mGameActivity = this
         errorHandler = ErrorHandler()
         setContentView(R.layout.lib_game)
         mApplicationContext = applicationContext
@@ -201,11 +202,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             val trackingInfo = androidId + latitude + longitude
             val urlData = ("/gamePlayer/update/?onlineNow=true&playingNow=false&opponentId=0" + trackingInfo + "&id="
                     + mPlayer1Id + "&userName=")
-            CoroutineScope( Dispatchers.Default).launch {
-                val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-                sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
-            }
-            writeToLog("GameActivity", "onResume - we are serving but we're not a client")
+            val messageResponse = sendMessageToAppServer(urlData, mPlayer1Name, false)
+            writeToLog("GameActivity", "onResume - we are serving but we're not a client, messageResponse: $messageResponse")
             // hack to deal with stale leftGame message that I can't seem to get rid of for some goddamn reason
             if (mStartSource != null && mStartSource!!.contains("Shakespeare")) {
                 writeToLog("GameActivity", "onResume - finishing due to spurious left game message")
@@ -271,42 +269,42 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private inner class MyButtonListener : View.OnClickListener {
         fun showChooseTokenDialog(): AlertDialog {
             return AlertDialog.Builder(this@GameActivity)
-                    .setIcon(R.drawable.willy_shmo_small_icon)
-                    .setTitle(R.string.alert_dialog_starting_token_value)
-                    .setSingleChoiceItems(R.array.select_starting_token, 0) { dialog, whichButton ->
-                        when (whichButton) {
-                            0 -> {
-                                if (HUMAN_VS_HUMAN) {
-                                    if (mGameView!!.currentPlayer == GameView.State.PLAYER1) {
-                                        mPlayer1TokenChoice = GameView.BoardSpaceValues.CIRCLE
-                                        mPlayer2TokenChoice = GameView.BoardSpaceValues.CROSS
-                                    } else {
-                                        mPlayer1TokenChoice = GameView.BoardSpaceValues.CROSS // else we're looking at player 2
-                                        mPlayer2TokenChoice = GameView.BoardSpaceValues.CIRCLE
-                                    }
+                .setIcon(R.drawable.willy_shmo_small_icon)
+                .setTitle(R.string.alert_dialog_starting_token_value)
+                .setSingleChoiceItems(R.array.select_starting_token, 0) { dialog, whichButton ->
+                    when (whichButton) {
+                        0 -> {
+                            if (HUMAN_VS_HUMAN) {
+                                if (mGameView!!.currentPlayer == GameView.State.PLAYER1) {
+                                    mPlayer1TokenChoice = GameView.BoardSpaceValues.CIRCLE
+                                    mPlayer2TokenChoice = GameView.BoardSpaceValues.CROSS
+                                } else {
+                                    mPlayer1TokenChoice = GameView.BoardSpaceValues.CROSS // else we're looking at player 2
+                                    mPlayer2TokenChoice = GameView.BoardSpaceValues.CIRCLE
+                                }
+                            } else {
+                                mPlayer1TokenChoice = GameView.BoardSpaceValues.CIRCLE
+                                mPlayer2TokenChoice = GameView.BoardSpaceValues.CROSS
+                            }
+                        }
+                        1 -> {
+                            if (HUMAN_VS_HUMAN) {
+                                if (mGameView!!.currentPlayer == GameView.State.PLAYER1) {
+                                    mPlayer1TokenChoice = GameView.BoardSpaceValues.CROSS
+                                    mPlayer2TokenChoice = GameView.BoardSpaceValues.CIRCLE
                                 } else {
                                     mPlayer1TokenChoice = GameView.BoardSpaceValues.CIRCLE
                                     mPlayer2TokenChoice = GameView.BoardSpaceValues.CROSS
                                 }
-                            }
-                            1 -> {
-                                if (HUMAN_VS_HUMAN) {
-                                    if (mGameView!!.currentPlayer == GameView.State.PLAYER1) {
-                                        mPlayer1TokenChoice = GameView.BoardSpaceValues.CROSS
-                                        mPlayer2TokenChoice = GameView.BoardSpaceValues.CIRCLE
-                                    } else {
-                                        mPlayer1TokenChoice = GameView.BoardSpaceValues.CIRCLE
-                                        mPlayer2TokenChoice = GameView.BoardSpaceValues.CROSS
-                                    }
-                                } else {
-                                    mPlayer1TokenChoice = GameView.BoardSpaceValues.CROSS
-                                    mPlayer2TokenChoice = GameView.BoardSpaceValues.CIRCLE
-                                }
+                            } else {
+                                mPlayer1TokenChoice = GameView.BoardSpaceValues.CROSS
+                                mPlayer2TokenChoice = GameView.BoardSpaceValues.CIRCLE
                             }
                         }
-                        setGameTokenFromDialog()
                     }
-                    .create()
+                    setGameTokenFromDialog()
+                }
+                .create()
         }
 
         private fun sendNewGameToServer() {
@@ -405,7 +403,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
         if (!(HUMAN_VS_HUMAN or HUMAN_VS_NETWORK)) { //playing against Willy
             setComputerMove()
-            finishTurn(false, false, false) //added to test if Willy wins 
+            finishTurn(false, false, false) //added to test if Willy wins
             mGameView!!.disableBall()
         } else if (HUMAN_VS_HUMAN) {
             finishTurn(false, true, false) //don't send message to make computer move but switch the player don't use player 2 for win testing
@@ -429,9 +427,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private fun saveHumanWinner(winningPositionOnBoard: Int, positionStatus: Int) {
         humanWinningHashMap[winningPositionOnBoard] = positionStatus
 
-        //second value indicates position is available for use after comparing against other 
+        //second value indicates position is available for use after comparing against other
         //entries in this map
-        //second value: initialized to -1 upon creation 
+        //second value: initialized to -1 upon creation
         // set to 0 if not available
         // set to 1 if available
     }
@@ -444,10 +442,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         if (mPlayer2TokenChoice == GameView.BoardSpaceValues.EMPTY) { //computer makes first move of game
             tokenSelected = mGameView!!.selectRandomComputerToken()
             //TODO - just for testing 1 specific case
-            //tokenSelected = mGameView.selectSpecificComputerToken(BoardSpaceValues.CROSS, true);        	
+            //tokenSelected = mGameView.selectSpecificComputerToken(BoardSpaceValues.CROSS, true);
             boardSpaceSelected = mGameView!!.selectRandomAvailableBoardSpace()
         } else {
-            // populate array with available moves        
+            // populate array with available moves
             var availableSpaceCount = 0
             val availableValues = mGameView!!.boardSpaceAvailableValues
             val normalizedBoardPlayer1 = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
@@ -518,7 +516,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 /*
  * There is a possibility that the human will have more than 1 winning move. So, lets save each
  * winning outcome in a HashMap and re-test them with successive available moves until we find one
- * that results in no winning next available move for human.         	
+ * that results in no winning next available move for human.
  */         if (tokenSelected == -1) { //try again with human selected token
                 tokenChoice = mGameView!!.selectSpecificComputerToken(mPlayer2TokenChoice, false)
                 if (tokenChoice > -1) {
@@ -531,10 +529,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                                 testBoard[y] = normalizedBoardPlayer1[y]
                             }
                             testBoard[x] = mPlayer1TokenChoice
-                            // since there can be multiple winning moves available for the human 
-// move computer token to boardSpaceSelected
-// reset available and re-test for winner using mPlayer1TokenChoice
-// if winner not found then set tokenSelected to tokenChoice and set boardSpaceSelected to x                				
+                            // since there can be multiple winning moves available for the human
+                            // move computer token to boardSpaceSelected
+                            // reset available and re-test for winner using mPlayer1TokenChoice
+                            // if winner not found then set tokenSelected to tokenChoice and set boardSpaceSelected to x
                             val winnerFound = checkWinningPosition(testBoard)
                             if (winnerFound[0] > -1 || winnerFound[1] > -1 || winnerFound[2] > -1) {
                                 saveHumanWinner(x, -1)
@@ -592,7 +590,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 }
             }
             // if we reach here then the computer cannot win on this move and the human
-            // cannot win on the next 
+            // cannot win on the next
             // so we'll select a position that at least doesn't give the human a win and move there
             if (tokenSelected == -1) {
                 tokenChoice = mGameView!!.selectSpecificComputerToken(mPlayer1TokenChoice, false)
@@ -648,7 +646,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 tokenChoice = mGameView!!.selectSpecificComputerToken(mPlayer2TokenChoice, false)
                 if (availableSpaceCount == 2) { //we're down to our last 2 possible moves
                     //if we get here we're on the last move and we know we can't win with it.
-                    //so let's see if the human could make the computer win 
+                    //so let's see if the human could make the computer win
                     val testBoard = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
                     //copy normalizedBoard to testBoard
                     for (y in testBoard.indices) {
@@ -788,7 +786,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     }
 
     private fun networkCallBackFinish() {
-        finishTurn(false, false, true) //don't send message to make computer move don't switch the player don't use player 2 for win testing 
+        finishTurn(false, false, true) //don't send message to make computer move don't switch the player don't use player 2 for win testing
         val testText = mButtonNext!!.text.toString()
         if (testText.endsWith("Play Again?")) {
             highlightCurrentPlayer(GameView.State.EMPTY)
@@ -812,12 +810,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER) {
                 val urlData = ("/gamePlayer/update/?id=$mPlayer1Id&playingNow=true&opponentId=$player2Id&userName=")
-                CoroutineScope( Dispatchers.Default).launch {
-                    val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-                    sendMessageToWillyShmoServer.main(urlData, mPlayer1Name, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
-                }
+                val messageResponse = sendMessageToAppServer(urlData, mPlayer1Name, false)
                 mClientWaitDialog!!.dismiss()
-                writeToLog("MyHandlerCallback", "client wait dialog dismissed")
+                writeToLog("MyHandlerCallback", "client wait dialog dismissed, messageResponse: $messageResponse")
                 mClientWaitDialog = null
                 return true
             }
@@ -915,41 +910,41 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             if (msg.what == MSG_COMPUTER_TURN) {
 //            	int computerToken = BoardSpaceValues.EMPTY;
-// consider setting a difficulty level            	
+// consider setting a difficulty level
 
-/* 
+/*
  * trivial cases:
- * 		if only 1 token on board then just put token anywhere  but don't select xo token    
+ * 		if only 1 token on board then just put token anywhere  but don't select xo token
  * 		if only 1 space is available then just put last card there
- * 
+ *
  * test cases using mPlayer2TokenChoice:
  * look for available computer token that matches mPlayer2TokenChoice
  * if found test for win for computer player using mPlayer2TokenChoice value
  * testing each available position
- * 		if (testForWin == true) we are done  
+ * 		if (testForWin == true) we are done
  * test for human player win with opposing token
- * 		if found move token there 
- * 
+ * 		if found move token there
+ *
  * test cases using mPlayer2TokenChoice:
  * 		loop thru available board positions
  * 		put token anywhere where result doesn't cause human player to win
  *
  * else choose random position and place random token there
- * 
+ *
  * test for win possibility changing xo card on board to computer token
  * test for block possibility changing xo card on board to player 1 token
  * else just put down token randomly for now
- *        	
+ *
  */
                 val computerToken = setComputerMove()
 
-// for now, the computer will never select the xo token for its opening move but we may change this in 
+// for now, the computer will never select the xo token for its opening move but we may change this in
 // the future. As of 07/10/2010, the computer will select the xo token only on a winning move or for the last
 // move possible.
                 if (mPlayer2TokenChoice == GameView.BoardSpaceValues.EMPTY) {
                     if (computerToken != GameView.BoardSpaceValues.EMPTY) mPlayer2TokenChoice = computerToken
                     mPlayer1TokenChoice = if (mPlayer2TokenChoice == GameView.BoardSpaceValues.CIRCLECROSS ||
-                            mPlayer2TokenChoice == GameView.BoardSpaceValues.CROSS) { //computer will always choose X if it selects the XO card
+                        mPlayer2TokenChoice == GameView.BoardSpaceValues.CROSS) { //computer will always choose X if it selects the XO card
                         GameView.BoardSpaceValues.CIRCLE // on its first move, we may want to change this behavior
                         // see comments above
                     } else {
@@ -1003,7 +998,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private fun finishTurn(makeComputerMove: Boolean, switchPlayer: Boolean, usePlayer2: Boolean) {
         writeToLog("finishTurn", "called with switchPLayer $switchPlayer usePlayer2: $usePlayer2")
         var player = mGameView!!.currentPlayer
-        if (usePlayer2) { // if we're playing over a network then current player is always player 1 
+        if (usePlayer2) { // if we're playing over a network then current player is always player 1
             player = GameView.State.PLAYER2 // so we need to add some extra logic to test winner on player 2 over the network
         }
         mGameView!!.disableBall()
@@ -1020,7 +1015,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     }
 
     // Given the existence of the xo token, there is a possibility that both players could be winners.
-    // in this case we will give precedence to the token type of the player that made the winning move.    
+    // in this case we will give precedence to the token type of the player that made the winning move.
     private fun checkGameFinished(player: GameView.State, usePlayer2: Boolean): Boolean {
         val boardSpaceValues = mGameView!!.boardSpaceValues
         var data = IntArray(GameView.BoardSpaceValues.BOARDSIZE)
@@ -1130,7 +1125,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
 
         // check diagonals
-        //upper left to lower right diagonals:    
+        //upper left to lower right diagonals:
         if (row == -1 && col == -1) {
             if (data[0] != GameView.BoardSpaceValues.EMPTY && data[0] == data[6] && data[0] == data[12]) {
                 winningToken = data[0]
@@ -1258,12 +1253,12 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private fun testForWinner(data: IntArray, usePlayer2: Boolean): Boolean {
         val winnerFound = checkWinningPosition(data)
 
-// For scoring purposes we will need to determine if the current player is the winner when the last card 
+// For scoring purposes we will need to determine if the current player is the winner when the last card
 // was placed or if the opposing player is the winner.
-// if the opposing player wins then more points are awarded to the opponent          
+// if the opposing player wins then more points are awarded to the opponent
         var player: GameView.State? = null
         var currentPlayer = mGameView!!.currentPlayer
-        if (usePlayer2) // if we're playing over a network then current player is always player 1 
+        if (usePlayer2) // if we're playing over a network then current player is always player 1
             currentPlayer = GameView.State.PLAYER2 // so we need to add some extra logic to test winner on player 2 over the network
         if (winnerFound[3] > -1) {
             if (winnerFound[3] == mPlayer1TokenChoice) {
@@ -1462,7 +1457,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     public override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         // Restore UI state from the savedInstanceState.
-        // This bundle has also been passed to onCreate.	
+        // This bundle has also been passed to onCreate.
         mPlayer1TokenChoice = savedInstanceState.getInt("ga_player1_token_choice")
         mPlayer2TokenChoice = savedInstanceState.getInt("ga_player2_token_choice")
         mPlayer1Score = savedInstanceState.getInt("ga_player1_score")
@@ -1494,7 +1489,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
         if (mClientThread != null) {
             mClientThread!!.closeRabbitMQConnection(mClientThread!!.rabbitMQConnection)
-            writeToLog("GameActivity", " onDestroy about to call DisposeRabbitMQTask()")
+            writeToLog("GameActivity", " onDestroy about to call clientThread DisposeRabbitMQTask()")
             CoroutineScope(Dispatchers.Default).launch {
                 val disposeRabbitMQTask = DisposeRabbitMQTask()
                 disposeRabbitMQTask.main(
@@ -1508,7 +1503,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
         if (mServerThread != null) {
             mServerThread!!.closeRabbitMQConnection(mServerThread!!.rabbitMQConnection)
-            writeToLog("GameActivity", "onDestroy about to call DisposeRabbitMQTask()")
+            writeToLog("GameActivity", "onDestroy about to call serverThread DisposeRabbitMQTask()")
             CoroutineScope(Dispatchers.Default).launch {
                 val disposeRabbitMQTask = DisposeRabbitMQTask()
                 disposeRabbitMQTask.main(
@@ -1627,7 +1622,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         writeToLog("ServerThread", "Server about to respond to client: $messageToBeSent")
                         val qName = "$mQueuePrefix-client-$player2Id"
                         CoroutineScope( Dispatchers.Default).launch {
-                            //val sendMessageToRabbitMQTask = SendMessageToRabbitMQTask()
                             val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
                             sendMessageToRabbitMQ.main(rabbitMQConnection, qName,
                                 messageToBeSent!!, this@GameActivity as ToastMessage, Companion.resources)
@@ -1655,11 +1649,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&playingNow=false&opponentId=0"
-                CoroutineScope( Dispatchers.Default).launch {
-                    val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-                    sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
-                }
-                writeToLog("ServerThread", "server run method finally done")
+                val messageResponse = sendMessageToAppServer(urlData, null,false)
+                writeToLog("ServerThread", "server run method finally done, messageResponse: $messageResponse")
             }
         }
     }
@@ -1713,14 +1704,14 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private fun setUpRabbitMQConnection(): RabbitMQConnection {
             val qName = "$mQueuePrefix-server-$player2Id"
             return runBlocking {
-               CoroutineScope(Dispatchers.Default).async {
-                   SetUpRabbitMQConnection().main(
-                       qName,
-                       this@GameActivity as ToastMessage,
-                       Companion.resources
-                   )
-               }.await()
-           }
+                CoroutineScope(Dispatchers.Default).async {
+                    SetUpRabbitMQConnection().main(
+                        qName,
+                        this@GameActivity as ToastMessage,
+                        Companion.resources
+                    )
+                }.await()
+            }
         }
 
         //FIXME - consolidate client side and server side methods with a single shared method
@@ -1745,7 +1736,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         val messageToBeSent = mMessageToServer //circumvent sending a null message to sendMessageToRabbitMQTask
                         val qName = "$mQueuePrefix-server-$player2Id"
                         CoroutineScope( Dispatchers.Default).launch {
-                            //val sendMessageToRabbitMQTask = SendMessageToRabbitMQTask()
                             val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
                             sendMessageToRabbitMQ.main(rabbitMQConnection, qName,
                                 messageToBeSent!!, this@GameActivity as ToastMessage, Companion.resources)
@@ -1758,7 +1748,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     }
                     if (mRabbitMQClientResponseHandler!!.rabbitMQResponse == null)
                         continue
-                     else {
+                    else {
                         writeToLog("ClientThread", "read response: " + mRabbitMQClientResponseHandler!!.rabbitMQResponse)
                         if (mClientWaitDialog != null ) { //&&  mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("clientStarting")) {
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
@@ -1793,14 +1783,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 sendToastMessage(e.message)
             } finally {
                 val urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
-                CoroutineScope( Dispatchers.Default).launch {
-                    val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-                    sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
-                }
+                val messageResponse = sendMessageToAppServer(urlData, null, false)
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mClientRunning = false
-                writeToLog("ClientThread", "client run method finally done")
+                writeToLog("ClientThread", "client run method finally done, messageResponse: $messageResponse")
             }
         }
     }
@@ -1818,8 +1805,31 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mServerThread!!.setMessageToClient("leftGame, $mPlayer1Name $dateTime")
             setNetworkGameStatusAndResponse(false, false)
         } else if (isServerRunning) {
-            isServerRunning = false
+            //isServerRunning = false
         }
+    }
+
+    private fun sendMessageToAppServer(urlData: String, stringToEncode: String?, finishActivity: Boolean): String? {
+        var returnMessage: String? = null
+        runBlocking {
+            val job = CoroutineScope(Dispatchers.IO).launch {
+                returnMessage = converseWithAppServer(urlData, stringToEncode, finishActivity)
+                writeToLog("GameActivity", "sendMessageToAppServer returnMessage: $returnMessage")
+            }
+            job.join()
+        }
+        writeToLog("GameActivity", "sendMessageToAppServer after job join() returnMessage: $returnMessage")
+        return returnMessage
+    }
+
+    private fun converseWithAppServer(urlData: String, stringToEncode: String?, finishActivity: Boolean): String? {
+        return SendMessageToAppServer.main(
+            urlData,
+            stringToEncode,
+            mGameActivity as ToastMessage,
+            resources,
+            finishActivity
+        )
     }
 
     private fun getGameSetUpFromClient(gameSetUp: String) {
@@ -1861,23 +1871,22 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             serverIsPlayingNow = true
             mServerThread!!.setMessageToClient("serverAccepted")
         } else {
+            writeToLog("GameActivity", "setNetworkGameStatusAndResponse sendNoPlay: $sendNoPlay")
             urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
             mPlayer2NetworkScore = 0
             mPlayer1NetworkScore = mPlayer2NetworkScore
             mPlayer2Name = null
             serverIsPlayingNow = false
             if (mServerThread != null) {
+                writeToLog("GameActivity", "setNetworkGameStatusAndResponse server thread is running")
                 if (sendNoPlay) {
                     mServerThread!!.setMessageToClient("noPlay, $mPlayer1Name")
                 }
             }
+            finish()
         }
-
-        //TODO - replace GameActivity.this with a static reference to getContext() set at class instantiation
-        CoroutineScope( Dispatchers.Default).launch {
-            val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-            sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, !start)
-        }
+        val messageResponse = sendMessageToAppServer(urlData, null, !start)
+        writeToLog("GameActivity", "messageResponse: $messageResponse")
     }
 
     private val newNetworkGameHandler = object: Handler(Looper.getMainLooper()) {
@@ -1918,7 +1927,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         //val item = intent.getParcelableExtra<ParcelItems>(PARCELABLE_VALUES)
         //writeToLog("GameActivity", "our parcelable extra item: $item")
 
-
         val acceptMsg = Message.obtain()
         acceptMsg.target = newNetworkGameHandler
         acceptMsg.what = ACCEPT_GAME
@@ -1928,7 +1936,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
         if (!serverIsPlayingNow) { //see if this gets rid of error when getting a tokenList after we've gotten a leftGame message
             writeToLog("GameActivity", "serverIsPlayingNow is false in acceptIncomingGameRequestFromClient(), not gonna return this time")
-           // return
+            // return
         }
         if (mServerThread == null) { //see if this gets rid of error when getting a tokenList after we've gotten a leftGame message
             writeToLog("GameActivity", "mServerThread is null in acceptIncomingGameRequestFromClient(), gonna return...")
@@ -1989,20 +1997,18 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         if (mOpponentLeftGameAlert != null) {
             mOpponentLeftGameAlert!!.dismiss()
         }
-            return AlertDialog.Builder(this@GameActivity)
-                .setIcon(R.drawable.willy_shmo_small_icon)
-                .setTitle("Sorry, $playerName $clientOrServer side has left the game")
-                .setPositiveButton("OK") { _, which -> startTwoPlayerActivity() }
-                .setCancelable(false)
-                .show()
+        return AlertDialog.Builder(this@GameActivity)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setTitle("Sorry, $playerName $clientOrServer side has left the game")
+            .setPositiveButton("OK") { _, which -> startTwoPlayerActivity() }
+            .setCancelable(false)
+            .show()
     }
 
     private fun updateWebServerScore() {
         val urlData = "/gamePlayer/updateGamesPlayed/?id=$mPlayer1Id&score=$mPlayer1NetworkScore"
-        CoroutineScope( Dispatchers.Default).launch {
-            val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-            sendMessageToWillyShmoServer.main(urlData, null, this@GameActivity, Companion.resources, java.lang.Boolean.valueOf(false))
-        }
+        val messageResponse = sendMessageToAppServer(urlData, null, false)
+        writeToLog("GameActivity", "updateWebServerScore() messageResponse: $messageResponse")
     }
 
     class ErrorHandler : Handler(Looper.getMainLooper()) {
@@ -2094,6 +2100,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     companion object {
         private var mApplicationContext: Context? = null
+        private var mGameActivity: GameActivity? = null
         var errorHandler: ErrorHandler? = null
         private const val packageName = "com.guzzardo.android.willyshmo.kotlintictacdoh"
         /* Start player. Must be 1 or 2. Default is 1.  */
