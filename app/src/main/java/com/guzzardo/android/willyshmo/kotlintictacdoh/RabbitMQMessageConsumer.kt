@@ -18,7 +18,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
     private val mExchangeType = "fanout"
     private var queue: String? = null //The Queue name for this consumer
     var consumer: QueueingConsumer? = null
-    private var mConsumeRunning = false
+    private var mConsumerRunning = false
     private var mResources = resources
     private lateinit var mLastMessage: ByteArray //last message to post back
 
@@ -57,7 +57,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
         //if (mExchangeType == "fanout")
         //  AddBinding("");//fanout has default binding
         mConsumeHandler.post(mConsumeRunner)
-        mConsumeRunning = true
+        mConsumerRunning = true
         return true
     }
 
@@ -91,25 +91,24 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
         val thread: Thread = object : Thread() {
             override fun run() {
                 var delivery: Delivery
-                while (mConsumeRunning) {
+                while (mConsumerRunning) {
                     //Log.d("RabbitMQMessageConsumer", "inside consume run loop");
                     try {
                         delivery = consumer!!.nextDelivery() //blocks until a message is received
                         mLastMessage = delivery.body
                         writeToLog("RabbitMQMessageConsumer", "last message: " + String(mLastMessage))
-                        //Log.d("RabbitMQMessageConsumer", "last message: " + new String(mLastMessage));
                         mMessageHandler.post(mReturnMessage)
                     } catch (ie: InterruptedException) {
                         writeToLog("RabbitMQMessageConsumer", "InterruptedException: " + ie.message)
                         mToastMessage.sendToastMessage(ie.message)
                     } catch (sse: ShutdownSignalException) {
-
+                        writeToLog("RabbitMQMessageConsumer", "ShutdownSignalException: $sse")
                     } catch (cce: ConsumerCancelledException) {
-
+                        writeToLog("RabbitMQMessageConsumer", "ConsumerCancelledException: $cce")
                     } catch (e: Exception) {
-
+                        writeToLog("RabbitMQMessageConsumer", "Some other Exception: $e")
                     } finally {
-
+                        writeToLog("RabbitMQMessageConsumer", "run finally completed")
                     }
                 }
                 writeToLog("RabbitMQMessageConsumer", "thread all done")
@@ -119,21 +118,20 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
     }
 
     fun dispose() {
-        mConsumeRunning = false
+        mConsumerRunning = false
         writeToLog("RabbitMQMessageConsumer", "dispose called")
         try {
             if (channel != null) channel!!.abort()
             if (connection != null) connection!!.close()
-        } catch (e: IOException) {
+        } catch (e: Exception) {
+            writeToLog("RabbitMQMessageConsumer", "dispose() function error: $e")
             mToastMessage.sendToastMessage("queuePurge " + e.message)
         }
     }
 
     private fun writeToLog(filter: String, msg: String) {
         if ("true".equals(resources!!.getString(R.string.debug), ignoreCase = true)) {
-            if ("true".equals(resources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
-            }
         }
     }
 }
