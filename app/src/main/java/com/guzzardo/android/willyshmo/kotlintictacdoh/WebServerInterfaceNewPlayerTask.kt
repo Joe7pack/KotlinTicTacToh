@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.util.Log
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.converseWithWebServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,18 +14,18 @@ import org.json.JSONObject
 class WebServerInterfaceNewPlayerTask {
     private var mCallerActivity: Context? = null
     private lateinit var mToastMessage: ToastMessage //? = mCallerActivity as ToastMessage
-    private var mPlayer1Name: String? = null
-    private var mPlayer1Id: Int? = null
+    private var mPlayerName: String? = null
+    private var mPlayerId: Int? = null
 
-    fun main(callerActivity: Context, url: String, player1Name: String?, resources: Resources) = runBlocking {
+    fun main(callerActivity: Context, url: String, playerName: String, resources: Resources) = runBlocking {
         mCallerActivity = callerActivity
         mToastMessage = callerActivity as ToastMessage
-        mPlayer1Name = player1Name
         mResources = resources
+        mPlayerName = playerName
         writeToLog("WebServerInterfaceNewPlayerTask", "main function called")
         try {
-            val newUser = converseWithWebServer(url, mPlayer1Name, mToastMessage, mResources)
-            mPlayer1Id = getNewUserId(newUser)
+            val newUser = SendMessageToAppServer.main(url, mToastMessage, mResources, false)
+            mPlayerId = getNewUserId(newUser)
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceNewPlayerTask", "doInBackground exception called " + e.message)
             mToastMessage.sendToastMessage(e.message)
@@ -36,18 +35,20 @@ class WebServerInterfaceNewPlayerTask {
 
     private fun findOtherPlayersCurrentlyOnline() {
         try {
-            writeToLog("WebServerInterfaceNewPlayerTask", "onPostExecute called player1Id: $mPlayer1Id")
-            if (mPlayer1Id == null) {
+            writeToLog("WebServerInterfaceNewPlayerTask", "findOtherPlayersCurrentlyOnline() called playerId: $mPlayerId")
+            if (mPlayerId == null) {
+                writeToLog("WebServerInterfaceNewPlayerTask", "findOtherPlayersCurrentlyOnline() returned null, this is very bad!!")
+                mToastMessage.sendToastMessage("findOtherPlayersCurrentlyOnline() returned null, this is very bad!!")
                 return
             }
             val settings = mCallerActivity!!.getSharedPreferences(UserPreferences.PREFS_NAME, 0)
             val editor = settings.edit()
-            editor.putInt(GameActivity.PLAYER1_ID, mPlayer1Id!!)
+            editor.putInt(GameActivity.PLAYER1_ID, mPlayerId!!)
             // Commit the edits!
             editor.apply()
             CoroutineScope( Dispatchers.Default).launch {
                 val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
-                webServerInterfaceUsersOnlineTask.main(mCallerActivity, mPlayer1Name, mResources, mPlayer1Id!!)
+                webServerInterfaceUsersOnlineTask.main(mCallerActivity, mPlayerName, mResources, mPlayerId!!)
             }
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceNewPlayerTask", "onPostExecute exception called " + e.message)
