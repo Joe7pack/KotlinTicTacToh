@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.util.Log
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.converseWithWebServer
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
@@ -13,6 +12,8 @@ import kotlinx.coroutines.*
 /**
  * An AsyncTask that will be used to find other players currently online
  */
+
+//TODO - change this into an object named WebServerInterfaceUsersOnlineTask2 ? (then get rid of original class)
 class WebServerInterfaceUsersOnlineTask {
     private var mCallerActivity: Context? = null
     private var mToastMessage: ToastMessage? = null
@@ -20,23 +21,21 @@ class WebServerInterfaceUsersOnlineTask {
     private var mPlayer1Id: Int? = null
     private var mUsersOnline: String? = null
 
-    fun main(callerActivity: Context?, player1Name: String?, resources: Resources, player1Id: Int) {
+    fun main(callerActivity: Context?, player1Name: String?, resources: Resources, player1Id: Int): String? {
         mCallerActivity = callerActivity
         mPlayer1Name =  player1Name
         mResources = resources
         mPlayer1Id = player1Id
-        val url = mResources.getString(R.string.domainName) + "/gamePlayer/listUsers"
+        val urlData = "/gamePlayer/listUsers"
         try {
-            mUsersOnline = converseWithWebServer(url,null, mCallerActivity as ToastMessage, mResources)
-            // consider replacing above call with this?
-            //val sendMessageToWillyShmoServer = SendMessageToWillyShmoServer()
-            //sendMessageToWillyShmoServer.main(url, null, mCallerActivity  as ToastMessage, mResources, java.lang.Boolean.valueOf(false))
+            mUsersOnline = sendMessageToAppServer(urlData)
         } catch (e: Exception) {
             writeToLog("WebServerInterfaceUsersOnlineTask", "doInBackground: " + e.message)
             mToastMessage!!.sendToastMessage(e.message)
         }
-        writeToLog("WebServerInterfaceUsersOnline", "WebServerInterfaceUsersOnlineTask doInBackground called usersOnline: $mUsersOnline")
+        writeToLog("WebServerInterfaceUsersOnlineTask", "main - usersOnline: $mUsersOnline")
         setOnlineNow()
+        return mUsersOnline
     }
 
      private fun setOnlineNow() {
@@ -44,12 +43,15 @@ class WebServerInterfaceUsersOnlineTask {
             if (mUsersOnline == null) {
                 return
             }
+            if (mUsersOnline != null && mUsersOnline!!.contains("failed to connect")) {
+                //show a snack message asking user to reconnect
+            }
             writeToLog("WebServerInterfaceUsersOnlineTask","setPlayingNow called usersOnline: $mUsersOnline")
             val androidId = "&deviceId=$androidId"
             val latitude = "&latitude=$latitude"
             val longitude = "&longitude=$longitude"
             val trackingInfo = androidId + latitude + longitude
-            val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&playingNow=false&opponentId=0&userName="
+            val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&playingNow=false&opponentId=0&userName=$mPlayer1Name"
             sendMessageToAppServer(urlData)
             val settings = mCallerActivity!!.getSharedPreferences(MainActivity.UserPreferences.PREFS_NAME,0)
             val editor = settings.edit()
@@ -66,19 +68,16 @@ class WebServerInterfaceUsersOnlineTask {
         }
     }
 
-    private fun sendMessageToAppServer(urlData: String) {
-        return runBlocking {
-            CoroutineScope(Dispatchers.Default).async {
-                val sendMessageToAppServer = SendMessageToAppServer
-                val messageResult = sendMessageToAppServer.main(
-                    urlData,
-                    mPlayer1Name,
-                    mCallerActivity as ToastMessage,
-                    mResources,
-                    false
-                )
-            }.await()
+    private fun sendMessageToAppServer(urlData: String): String? {
+        var returnMessage: String? = null
+        runBlocking {
+            val job = CoroutineScope(Dispatchers.IO).launch {
+                returnMessage = SendMessageToAppServer.main(urlData, mCallerActivity as ToastMessage, mResources,false)
+           }
+           job.join()
         }
+        writeToLog("WebServerInterfaceUsersOnlineTask", "sendMessageToAppServer returnMessage: $returnMessage")
+        return returnMessage
     }
 
     companion object {
