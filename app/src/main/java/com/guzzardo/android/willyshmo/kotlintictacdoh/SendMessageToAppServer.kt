@@ -5,59 +5,58 @@ import android.util.Log
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.*
 
 object SendMessageToAppServer {
     private var mToastMessage: ToastMessage? = null
     private var mResources: Resources? = null
 
-    fun main(urlData: String, stringToEncode: String?, callerActivity: ToastMessage,  resources: Resources, finishActivity: Boolean): String {
-        mToastMessage = callerActivity
+    fun main(urlData: String, toastMessage: ToastMessage, resources: Resources, finishActivity: Boolean): String {
+        mToastMessage = toastMessage
         mResources = resources
         val url = mResources!!.getString(R.string.domainName) + urlData
-        var `is`: InputStream? = null
-        var result: String? = null
+        val inputStream: InputStream?
+        var result = "noResultReturned"
         var errorAt: String? = null
-        var urlConnection: HttpURLConnection? = null
-        var exceptionMessage:String ? = null
+        var httpUrlConnection: HttpURLConnection? = null
+        var networkAvailable = false
+        var responseCode = 0
+        val beginTime = System.currentTimeMillis()
 
         try {
-            val myURL = if (stringToEncode == null) {
-                URL(url)
-            } else {
-                val encodedUrl = URLEncoder.encode(stringToEncode, "UTF-8")
-                URL(url + encodedUrl)
-            }
+            val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+            //writeToLog("SendMessageToAppServer", "main() called at time: $dateTime with message: $urlData")
+            val myURL = URL(url)
             errorAt = "openConnection"
-            urlConnection = myURL.openConnection() as HttpURLConnection
-            /* Define InputStreams to read from the URLConnection. */
+            httpUrlConnection = myURL.openConnection() as HttpURLConnection
+            httpUrlConnection.requestMethod = "POST"
+            httpUrlConnection.connectTimeout = 3000
+            responseCode = httpUrlConnection.responseCode
             errorAt = "getInputStream"
-            `is` = urlConnection.getInputStream()
+            inputStream = httpUrlConnection.inputStream
             errorAt = "convertStreamToString"
-            result = convertStreamToString(`is`)
+            result = convertStreamToString(inputStream) // convert the Bytes read to a String.
+            networkAvailable = true
         } catch (e: Exception) {
-            writeToLog("SendMessageToAppServer", "error: " + e.message + " error at: " + errorAt)
+            writeToLog("SendMessageToAppServer", "response code: $responseCode error: ${e.message}  message error at: $errorAt url: $url")
             mToastMessage!!.sendToastMessage("SendMessageToAppServer error: " + e.message + " at $errorAt")
-            exceptionMessage = e.message
         } finally {
             try {
-                `is`!!.close()
-                if (urlConnection != null) {
-                    urlConnection.disconnect()
-                }
+                httpUrlConnection?.disconnect()
             } catch (e: Exception) {
                 //nothing to do here
-                writeToLog(
-                    "SendMessageToAppServer",
-                    "finally error: " + e.message
-                )
+                writeToLog("SendMessageToAppServer", "finally error: " + e.message)
             }
-        onPostExecute(finishActivity)
-        return "Hi there Joseph" //exceptionMessage // result
+            onPostExecute(finishActivity)
+            WillyShmoApplication.isNetworkAvailable = networkAvailable
         }
+        val endTime = System.currentTimeMillis()
+        writeToLog("SendMessageToAppServer", "main() url: $url elapsed time: ${endTime-beginTime} result: $result")
+        return result
     }
 
-    fun onPostExecute(finishActivity: Boolean) {
+    private fun onPostExecute(finishActivity: Boolean) {
         try {
             if (finishActivity) {
                 mToastMessage?.finish()
@@ -67,12 +66,11 @@ object SendMessageToAppServer {
         }
     }
 
-    //@JvmStatic
-    private fun convertStreamToString(`is`: InputStream?): String {
-        val reader = BufferedReader(InputStreamReader(`is`))
+    private fun convertStreamToString(inputStream: InputStream?): String {
+        val reader = BufferedReader(InputStreamReader(inputStream))
         val sb = StringBuilder()
         try {
-            val allText = `is`?.bufferedReader()?.readText() //. .use(BufferedReader::readText)
+            val allText = inputStream?.bufferedReader()?.readText()
             sb.append(allText)
         } catch (e: IOException) {
             writeToLog("SendMessageToAppServer", "IOException: " + e.message)
@@ -83,8 +81,9 @@ object SendMessageToAppServer {
         } finally {
             try {
                 reader.close()
-            } catch (e: IOException) {
-                writeToLog("SendMessageToAppServer", "is close IOException: " + e.message)
+                inputStream!!.close()
+            } catch (e: Exception) {
+                writeToLog("SendMessageToAppServer", "is close Exception: " + e.message)
                 mToastMessage!!.sendToastMessage(e.message)
             }
         }
@@ -96,5 +95,4 @@ object SendMessageToAppServer {
             Log.d(filter, msg)
         }
     }
-
 }
