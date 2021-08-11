@@ -185,7 +185,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mPlayer2Name = intent.getStringExtra(PLAYER2_NAME)
             mClientWaitDialog = createClientWaitDialog()
             mClientWaitDialog!!.show()
-            writeToLog("GameActivity", "onResume - we are client but client is not running")
+            writeToLog("GameActivity", "onResume - started client thread")
         }
         if (mServer && !mClient) {
             mPlayer2NetworkScore = 0
@@ -201,12 +201,12 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             val longitude = "&longitude=$longitude"
             val trackingInfo = androidId + latitude + longitude
             val urlData = ("/gamePlayer/update/?onlineNow=true&playingNow=false&opponentId=0" + trackingInfo + "&id="
-                    + mPlayer1Id + "&userName=")
-            val messageResponse = sendMessageToAppServer(urlData, mPlayer1Name, false)
+                + mPlayer1Id + "&userName=" + mPlayer1Name)
+            val messageResponse = sendMessageToAppServer(urlData,false)
             writeToLog("GameActivity", "onResume - we are serving but we're not a client, messageResponse: $messageResponse")
             // hack to deal with stale leftGame message that I can't seem to get rid of for some goddamn reason
             if (mStartSource != null && mStartSource!!.contains("Shakespeare")) {
-                writeToLog("GameActivity", "onResume - finishing due to spurious left game message")
+                writeToLog("GameActivity", "onResume - gonna finish() due to spurious letsPlay message")
                 finish()
             }
             return
@@ -333,7 +333,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             val player = mGameView!!.currentPlayer
             val testText = mButtonNext!!.text.toString()
             if (testText.endsWith("Play Again?")) { //game is over
-                if (serverIsPlayingNow) {
+                if (mServerIsPlayingNow) {
                     mHostWaitDialog = createHostWaitDialog()
                     mHostWaitDialog!!.show()
                 } else if (mClientRunning) { //reset values on client side
@@ -375,7 +375,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     if (okToFinish) {
                         if (HUMAN_VS_NETWORK) {
                             val movedMessage = "moved, " + mGameView!!.ballMoved + ", " + cell + ", " + gameTokenPlayer1
-                            if (serverIsPlayingNow) {
+                            if (mServerIsPlayingNow) {
                                 mServerThread!!.setMessageToClient(movedMessage)
                             } else {
                                 mClientThread!!.setMessageToServer(movedMessage)
@@ -415,7 +415,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         showPlayerTokenChoice()
         val movedMessage = "moved, $mBallMoved, $mSavedCell, $mPlayer1TokenChoice"
         if (HUMAN_VS_NETWORK) {
-            if (serverIsPlayingNow) {
+            if (mServerIsPlayingNow) {
                 mServerThread!!.setMessageToClient(movedMessage)
             } else {
                 mClientThread!!.setMessageToServer(movedMessage)
@@ -809,8 +809,12 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 return true
             }
             if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER) {
-                val urlData = ("/gamePlayer/update/?id=$mPlayer1Id&playingNow=true&opponentId=$player2Id&userName=")
-                val messageResponse = sendMessageToAppServer(urlData, mPlayer1Name, false)
+                val urlData = ("/gamePlayer/update/?id=$mPlayer1Id&playingNow=true&opponentId=$player2Id&userName=$mPlayer1Name")
+                val messageResponse = sendMessageToAppServer(urlData,false)
+                if (mClientWaitDialog == null) {
+                    sendToastMessage("you torqued this up really well Joe, I'm proud of you!")
+                    return true
+                }
                 mClientWaitDialog!!.dismiss()
                 writeToLog("MyHandlerCallback", "client wait dialog dismissed, messageResponse: $messageResponse")
                 mClientWaitDialog = null
@@ -845,6 +849,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mOpponentLeftGameAlert = displayOpponentLeftGameAlert("client", mPlayer2Name)
                 mPlayer2Name = null
                 mGameStarted = false
+                mServerIsPlayingNow = false
             }
             if (msg.what == NEW_GAME_FROM_CLIENT) {
                 mGameView!!.initalizeGameValues()
@@ -893,7 +898,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     networkCallBackFinish()
                     val testText = mButtonNext!!.text.toString()
                     if (testText.endsWith("Play Again?")) {
-                        if (serverIsPlayingNow) { // if win came from client side we need to send back a message to give client the
+                        if (mServerIsPlayingNow) { // if win came from client side we need to send back a message to give client the
                             mServerThread!!.setMessageToClient("game over") // ability to respond
                         }
                     }
@@ -1484,7 +1489,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     override fun onDestroy() {
         super.onDestroy()
-        writeToLog("GameActivity", "GameActivity onDestroy() called")
+        writeToLog("GameActivity", "GameActivity onDestroy() called - client thread: $mClientThread server thread: $mServerThread")
         setNetworkGameStatusAndResponse(false, false)
 
         if (mClientThread != null) {
@@ -1515,21 +1520,18 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mServerThread = null
         }
 
-        if (mClientWaitDialog != null) // && mClientWaitDialog!!.isShowing())
+        if (mClientWaitDialog != null)
             mClientWaitDialog!!.dismiss()
-
-        if (mLikeToPlayDialog != null) // && mLikeToPlayDialog!!.isShowing())
+        if (mLikeToPlayDialog != null)
             mLikeToPlayDialog!!.dismiss()
-
-        if (mServerRefusedGame != null) // && mServerRefusedGame!!.isShowing())
+        if (mServerRefusedGame != null)
             mServerRefusedGame!!.dismiss()
-
-        if (mHostWaitDialog != null) // && mHostWaitDialog!!.isShowing())
+        if (mHostWaitDialog != null)
             mHostWaitDialog!!.dismiss()
-
-        if (mOpponentLeftGameAlert != null) // &&mOpponentLeftGameAlert!!.isShowing())
+        if (mOpponentLeftGameAlert != null)
             mOpponentLeftGameAlert!!.dismiss()
 
+        writeToLog("GameActivity", "=====================GameActivity onDestroy() all done")
     }
 
     private inner class ServerThread: Thread() {
@@ -1629,7 +1631,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         writeToLog("ServerThread", "Server responded to client completed, queue: $qName, message: $messageToBeSent")
                         if (messageToBeSent!!.startsWith("leftGame") || messageToBeSent.startsWith("noPlay")) {
                             isServerRunning = false
-                            serverIsPlayingNow = false
+                            mServerIsPlayingNow = false
                         }
                         mMessageToClient = null
                     }
@@ -1637,7 +1639,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 } // while end
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
-                serverIsPlayingNow = false
+                mServerIsPlayingNow = false
                 writeToLog("ServerThread", "server run method finished")
             } catch (e: Exception) {
                 //e.printStackTrace();
@@ -1645,11 +1647,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 sendToastMessage(e.message)
             } finally {
                 isServerRunning = false
-                serverIsPlayingNow = false
+                mServerIsPlayingNow = false
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&playingNow=false&opponentId=0"
-                val messageResponse = sendMessageToAppServer(urlData, null,false)
+                val messageResponse = sendMessageToAppServer(urlData, false)
                 writeToLog("ServerThread", "server run method finally done, messageResponse: $messageResponse")
             }
         }
@@ -1783,7 +1785,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 sendToastMessage(e.message)
             } finally {
                 val urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
-                val messageResponse = sendMessageToAppServer(urlData, null, false)
+                val messageResponse = sendMessageToAppServer(urlData,false)
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mClientRunning = false
@@ -1794,27 +1796,28 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     override fun onPause() {
         super.onPause()
-        writeToLog("GameActivity", "+++++++++++++++++++++> onPause called, mClientRunning: $mClientRunning, serverIsPlayingNow: $serverIsPlayingNow, isServerRunning: $isServerRunning")
+        writeToLog("GameActivity", "+++++++++++++++++++++> onPause called, mClientRunning: $mClientRunning, serverIsPlayingNow: $mServerIsPlayingNow, isServerRunning: $isServerRunning")
         val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+        val rnds = (0..1000000).random() // generated random from 0 to 1,000,000 included
 
         if (mClientRunning) {
-            mClientThread!!.setMessageToServer("leftGame, $mPlayer1Name $dateTime")
+            mClientThread!!.setMessageToServer("leftGame, $mPlayer1Name $dateTime $rnds")
             setNetworkGameStatusAndResponse(false, false)
         }
-        if (serverIsPlayingNow) {
-            mServerThread!!.setMessageToClient("leftGame, $mPlayer1Name $dateTime")
+        if (mServerIsPlayingNow) {
+            mServerThread!!.setMessageToClient("leftGame, $mPlayer1Name $dateTime $rnds")
             setNetworkGameStatusAndResponse(false, false)
         } else if (isServerRunning) {
-            //isServerRunning = false
+            isServerRunning = false
         }
     }
 
-    private fun sendMessageToAppServer(urlData: String, stringToEncode: String?, finishActivity: Boolean): String? {
+    private fun sendMessageToAppServer(urlData: String, finishActivity: Boolean): String? {
         var returnMessage: String? = null
         runBlocking {
             val job = CoroutineScope(Dispatchers.IO).launch {
-                returnMessage = converseWithAppServer(urlData, stringToEncode, finishActivity)
-                writeToLog("GameActivity", "sendMessageToAppServer returnMessage: $returnMessage")
+                returnMessage = converseWithAppServer(urlData, finishActivity)
+                //writeToLog("GameActivity", "sendMessageToAppServer returnMessage: $returnMessage")
             }
             job.join()
         }
@@ -1822,10 +1825,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         return returnMessage
     }
 
-    private fun converseWithAppServer(urlData: String, stringToEncode: String?, finishActivity: Boolean): String? {
+    private fun converseWithAppServer(urlData: String, finishActivity: Boolean): String {
         return SendMessageToAppServer.main(
             urlData,
-            stringToEncode,
             mGameActivity as ToastMessage,
             resources,
             finishActivity
@@ -1868,7 +1870,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         var urlData = "/gamePlayer/update/?playingNow=true&id=$mPlayer1Id&opponentId=$player2Id"
         if (start) {
             mHandler.sendEmptyMessage(NEW_GAME_FROM_CLIENT)
-            serverIsPlayingNow = true
+            mServerIsPlayingNow = true
             mServerThread!!.setMessageToClient("serverAccepted")
         } else {
             writeToLog("GameActivity", "setNetworkGameStatusAndResponse sendNoPlay: $sendNoPlay")
@@ -1876,7 +1878,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mPlayer2NetworkScore = 0
             mPlayer1NetworkScore = mPlayer2NetworkScore
             mPlayer2Name = null
-            serverIsPlayingNow = false
+            mServerIsPlayingNow = false
             if (mServerThread != null) {
                 writeToLog("GameActivity", "setNetworkGameStatusAndResponse server thread is running")
                 if (sendNoPlay) {
@@ -1885,7 +1887,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             finish()
         }
-        val messageResponse = sendMessageToAppServer(urlData, null, !start)
+        val messageResponse = sendMessageToAppServer(urlData, !start)
         writeToLog("GameActivity", "messageResponse: $messageResponse")
     }
 
@@ -1934,7 +1936,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         rejectMsg.target = newNetworkGameHandler
         rejectMsg.what = REJECT_GAME
 
-        if (!serverIsPlayingNow) { //see if this gets rid of error when getting a tokenList after we've gotten a leftGame message
+        if (!mServerIsPlayingNow) { //see if this gets rid of error when getting a tokenList after we've gotten a leftGame message
             writeToLog("GameActivity", "serverIsPlayingNow is false in acceptIncomingGameRequestFromClient(), not gonna return this time")
             // return
         }
@@ -1957,7 +1959,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 .show()
         } catch (e: Exception) {
             writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception isServerRunning: $isServerRunning")
-            writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception serverIsPlayingNow: $serverIsPlayingNow")
+            writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception serverIsPlayingNow: $mServerIsPlayingNow")
             writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception mServerThread: $mServerThread")
             sendToastMessage(e.message)
         }
@@ -1990,7 +1992,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         i.putExtra(PLAYER1_NAME, mPlayer1Name)
         i.putExtra(PLAYER2_NAME, mPlayer2Name)
         startActivity(i)
-        finish()
+        finish() //causes onPause to be invoked
     }
 
     private fun displayOpponentLeftGameAlert(clientOrServer: String, playerName: String?): AlertDialog {
@@ -2007,7 +2009,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     private fun updateWebServerScore() {
         val urlData = "/gamePlayer/updateGamesPlayed/?id=$mPlayer1Id&score=$mPlayer1NetworkScore"
-        val messageResponse = sendMessageToAppServer(urlData, null, false)
+        val messageResponse = sendMessageToAppServer(urlData,false)
         writeToLog("GameActivity", "updateWebServerScore() messageResponse: $messageResponse")
     }
 
@@ -2053,7 +2055,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
                 if (text.startsWith("leftGame")) {
                     writeToLog("GameActivity", "Got a leftGame message from opponent")
-                    if (!serverIsPlayingNow) {
+                    if (!mServerIsPlayingNow) {
                         writeToLog("GameActivity", "Got a leftGame message from opponent and server is NOT playing now!")
                     }
                 }
@@ -2159,7 +2161,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private var mButtonStartText: CharSequence? = null
         private var mServerRunning = false
         private var mClientRunning = false
-        private var serverIsPlayingNow = false
+        private var mServerIsPlayingNow = false
         private var mBallMoved = 0 //hack for correcting problem with resetting mBallId to -1 in mGameView.disableBall()
         private lateinit var resources: Resources
         private var mHostWaitDialog: AlertDialog? = null
