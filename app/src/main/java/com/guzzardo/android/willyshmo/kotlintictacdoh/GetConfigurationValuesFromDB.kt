@@ -1,6 +1,5 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
 import android.util.Log
@@ -18,9 +17,14 @@ class GetConfigurationValuesFromDB { // : AsyncTask<Any?, Void?, String?>() {
         var configValues: String? = null
         mCallerActivity = callerActivity
         mResources = resources
-        val url = mResources!!.getString(R.string.domainName) + "/config/getConfigValues"
+        val urlData = "/config/getConfigValues"
         try {
-            configValues = WebServerInterface.converseWithWebServer(url, null, mCallerActivity, mResources!!)
+            configValues = SendMessageToAppServer.main(
+                urlData,
+                mCallerActivity,
+                resources,
+                false
+            )
         } catch (e: Exception) {
             writeToLog("GetConfigurationValuesFromDB", "doInBackground: " + e.message)
             mCallerActivity.sendToastMessage(e.message)
