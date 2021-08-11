@@ -5,7 +5,6 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WebServerInterface.converseWithWebServer
 import kotlinx.coroutines.runBlocking
 import org.json.JSONException
 import org.json.JSONObject
@@ -26,9 +25,16 @@ class GetPrizeListTask {
         val longitude = WillyShmoApplication.longitude
         val latitude = WillyShmoApplication.latitude
         mCallerActivity.setGettingPrizesCalled()
-        val url = mResources!!.getString(R.string.domainName) + "/prize/getPrizesByDistance/?longitude=" + longitude + "&latitude=" + latitude
+        //val url = mResources!!.getString(R.string.domainName) + "/prize/getPrizesByDistance/?longitude=" + longitude + "&latitude=" + latitude
+        val urlData = "/prize/getPrizesByDistance/?longitude=" + longitude + "&latitude=" + latitude
         try {
-            mPrizesAvailable = converseWithWebServer(url, null, mCallerActivity, mResources!!)
+            //mPrizesAvailable = converseWithWebServer(url, null, mCallerActivity, mResources!!)
+            mPrizesAvailable = SendMessageToAppServer.main(
+                urlData,
+                mCallerActivity as ToastMessage,
+                resources,
+                false
+            )
             mCallerActivity.setPrizesRetrievedFromServer()
         } catch (e: Exception) {
             writeToLog("GetPrizeListTask", "doInBackground: " + e.message)
