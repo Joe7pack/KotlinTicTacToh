@@ -36,6 +36,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
+import kotlin.math.sqrt
 
 class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     enum class State(val value: Int) {
@@ -81,7 +82,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     private var mCellListener: ICellListener? = null
 
     /** Contains one of [State.EMPTY], [State.PLAYER1] or [State.PLAYER2] or [State.PLAYERBOTH] where PlayerBoth = XO card.  */
-    val data = arrayOfNulls<State>(BoardSpaceValues.BOARDSIZE)
+    private val data = arrayOfNulls<State>(BoardSpaceValues.BOARDSIZE)
     val boardSpaceAvailableValues = BooleanArray(BoardSpaceValues.BOARDSIZE) // false = not available
     val boardSpaceValues = IntArray(BoardSpaceValues.BOARDSIZE) // -1 = empty, 0 = circle, 1 = cross 2 = circleCross
     private var mSelectedCell = -1
@@ -128,7 +129,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         HUMAN_VS_HUMAN = humanState
     }
 
-    fun setBoardSpaceValue(offset: Int, token: Int) {
+    private fun setBoardSpaceValue(offset: Int, token: Int) {
         boardSpaceValues[offset] = token
         boardSpaceAvailableValues[offset] = false
     }
@@ -154,7 +155,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         for (x in boardSpaceValues.indices) {
             if (boardSpaceValues[x] != BoardSpaceValues.EMPTY) tokenCount++
         }
-        return if (tokenCount == howFull) true else false
+        return tokenCount == howFull
     }
 
     fun setPlayer1TokenChoice(player1TokenChoice: Int) {
@@ -420,7 +421,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         val s3 = mSxy * 5
         val x7 = mOffsetX
         val y7 = mOffsetY
-        val tokenToDraw: Bitmap? //= null
         run {
             var i = 0
             var k = mSxy
@@ -461,7 +461,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             }
         }
         mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * 2, MARGIN + mOffsetY + mSxy * 2)
-        tokenToDraw = tokenToDrawCenter
+        val tokenToDraw: Bitmap? = tokenToDrawCenter
         canvas.drawBitmap(tokenToDraw!!, mSrcRect, mDstRect, mBmpPaint)
         if (prizeLocation > -1 && !prizeDrawn) {
             mDstRect.offsetTo(
@@ -508,6 +508,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                             drawPlayerToken(canvas, k)
                         }
                         State.PLAYER2 -> drawPlayerToken(canvas, k)
+                        else -> { /* not applicable to player2 */ }
                     }
                 }
                 i++
@@ -573,8 +574,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             canvas.drawLine(
                 (x7 + MARGIN).toFloat(),
                 (y7 + MARGIN + mSxy).toFloat(),
-                (
-                        x7 + s3 - 1 - MARGIN - mSxy).toFloat(),
+                (x7 + s3 - 1 - MARGIN - mSxy).toFloat(),
                 (y7 + s3 - 1 - MARGIN).toFloat(),
                 mWinPaint
             )
@@ -704,11 +704,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         return 4
     }
 
-    private fun resetAvailableMoves(
-        canvas: Canvas?,
-        boardSpaceAvailable: BooleanArray,
-        selectedCell: Int
-    ) {
+    private fun resetAvailableMoves(canvas: Canvas?, boardSpaceAvailable: BooleanArray, selectedCell: Int) {
         for (x in boardSpaceAvailable.indices) {
             val xValue = x % 5
             val yValue = calculateYValue(x)
@@ -724,20 +720,14 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         }
     }
 
-    fun setAvailableMoves(
-        selectedCell: Int, boardSpaceValue: IntArray,
-        boardSpaceAvailable: BooleanArray
-    ) {
+    fun setAvailableMoves(selectedCell: Int, boardSpaceValue: IntArray, boardSpaceAvailable: BooleanArray) {
         setAvailableMoves(null, selectedCell, boardSpaceValue, boardSpaceAvailable)
     }
 
     //	if the position checked is occupied determine if left, right, up and down exist
     //	for each direction that exists check if its already occupied
     //	if its not, then its available
-    private fun setAvailableMoves(
-        canvas: Canvas?, selectedCell: Int, boardSpaceValue: IntArray,
-        boardSpaceAvailable: BooleanArray
-    ) {
+    private fun setAvailableMoves(canvas: Canvas?, selectedCell: Int, boardSpaceValue: IntArray, boardSpaceAvailable: BooleanArray) {
         resetAvailableMoves(canvas, boardSpaceAvailable, selectedCell)
         val leftLimit = calculateLeftLimit(boardSpaceValue)
         val rightLimit = calculateRightLimit(boardSpaceValue)
@@ -803,8 +793,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     //calculate the Y offset given the cell position on the game board
     private fun calculateYValue(cellNumber: Int): Int {
-        val yValue = if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
-        return yValue
+        return if (cellNumber < 5) 0 else if (cellNumber < 10) 1 else if (cellNumber < 15) 2 else if (cellNumber < 20) 3 else 4
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -914,7 +903,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 val centerY = ball.getCoordY() + 25
                 // calculate the radius from the touch to the center of the ball
                 val radCircle =
-                    Math.sqrt(((centerX - X) * (centerX - X) + (centerY - Y) * (centerY - Y)).toDouble())
+                    sqrt(((centerX - X) * (centerX - X) + (centerY - Y) * (centerY - Y)).toDouble())
                 // if the radius is smaller then 23 (radius of a ball is 22), then it must be on the ball
                 if (radCircle < mTokenRadius) {
                     ballMoved = ball.iD
@@ -951,22 +940,19 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 if (state == State.EMPTY) state = mCurrentPlayer
                 writeToLog("ClientService", "cell calculated: $cell")
                 if (ballMoved > -1) {
-                    if (boardSpaceAvailableValues[cell] == true) {
-                        mDstRect.offsetTo(
-                            MARGIN + mOffsetX + mSxy * xPos,
-                            MARGIN + mOffsetY + mSxy * yPos
-                        )
+                    if (boardSpaceAvailableValues[cell]) {
+                        mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * xPos, MARGIN + mOffsetY + mSxy * yPos)
                         mColorBall[ballMoved]!!.setCoordX(MARGIN + mOffsetX + mSxy * xPos)
                         mColorBall[ballMoved]!!.setCoordY(MARGIN + mOffsetY + mSxy * yPos)
                         mBlinkRect[MARGIN + mOffsetX + xPos * mSxy, MARGIN + mOffsetY + yPos * mSxy, MARGIN + mOffsetX + (xPos + 1) * mSxy] =
                             MARGIN + mOffsetY + (yPos + 1) * mSxy
                         mSelectedCell = cell
                         mSelectedValue = state
-                        writeToLog("ClientService","ball id: " + ballMoved + " cell calculated: " + cell)
+                        writeToLog("ClientService", "ball id: $ballMoved cell calculated: $cell")
                     } else {
                         ballMoved = -1
                         stopBlink()
-                        writeToLog("ClientService","ball id: " + ballMoved + " cell calculated: " + cell + " space not available")
+                        writeToLog("ClientService","ball id: $ballMoved cell calculated: $cell space not available")
                     }
                 }
                 if (ballMoved > -1 && !mColorBall[ballMoved]!!.isDisabled && state != State.EMPTY) {
@@ -1003,6 +989,12 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             invalidate()
             return true
         }
+        this.performClick() //added to eliminate warning message: onTouch should call View#performClick when a click is detected
+        return false
+    }
+
+    override fun performClick(): Boolean { //added to eliminate warning message: onTouch should call View#performClick when a click is detected
+        super.performClick()
         return false
     }
 
@@ -1042,7 +1034,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 val centerY = ball.getCoordY() + 25
                 // calculate the radius from the touch to the center of the ball
                 val radCircle =
-                    Math.sqrt(((centerX - X) * (centerX - X) + (centerY - Y) * (centerY - Y)).toDouble())
+                    sqrt(((centerX - X) * (centerX - X) + (centerY - Y) * (centerY - Y)).toDouble())
                 // if the radius is smaller then 23 (radius of a ball is 22), then it must be on the ball
                 if (radCircle < mTokenRadius) {
                     ballMoved = ball.iD
@@ -1075,11 +1067,8 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 }
                 writeToLog("ClientService", "cell calculated: $cell")
                 if (ballMoved > -1) {
-                    if (boardSpaceAvailableValues[cell] == true) {
-                        mDstRect.offsetTo(
-                            MARGIN + mOffsetX + mSxy * xPos,
-                            MARGIN + mOffsetY + mSxy * yPos
-                        )
+                    if (boardSpaceAvailableValues[cell]) {
+                        mDstRect.offsetTo(MARGIN + mOffsetX + mSxy * xPos,MARGIN + mOffsetY + mSxy * yPos)
                         mColorBall[ballMoved]!!.setCoordX(MARGIN + mOffsetX + mSxy * xPos)
                         mColorBall[ballMoved]!!.setCoordY(MARGIN + mOffsetY + mSxy * yPos)
                         stopBlinkTouchMode()
@@ -1087,10 +1076,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                             MARGIN + mOffsetY + (yPos + 1) * mSxy
                         mSelectedCell = cell
                         mSelectedValue = state
-                        writeToLog(
-                            "ClientService",
-                            "ball id: " + ballMoved + " cell calculated: " + cell
-                        )
+                        writeToLog("ClientService", "ball id: $ballMoved cell calculated: $cell")
                         mHandler.sendEmptyMessageDelayed(MSG_BLINK, FPS_MS)
                         if (!(mPrevSelectedBall == ballMoved && mPrevSelectedCell == mSelectedCell)) {
                             mCellListener!!.onCellSelected()
@@ -1102,7 +1088,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                     }
                 }
                 //if we've touched a valid square on the board then make it blink
-                if (boardSpaceAvailableValues[cell] == true) {
+                if (boardSpaceAvailableValues[cell]) {
                     stopBlinkTouchMode()
                     mBlinkRect[MARGIN + mOffsetX + xPos * mSxy, MARGIN + mOffsetY + yPos * mSxy, MARGIN + mOffsetX + (xPos + 1) * mSxy] =
                         MARGIN + mOffsetY + (yPos + 1) * mSxy
@@ -1205,12 +1191,12 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         //build array of avail cells
         var numberAvailable = 0
         for (x in boardSpaceAvailableValues.indices) {
-            if (boardSpaceAvailableValues[x] == true) numberAvailable++
+            if (boardSpaceAvailableValues[x]) numberAvailable++
         }
         val boardCellsAvailable = IntArray(numberAvailable)
         var boardCellNumber = 0
         for (x in boardSpaceAvailableValues.indices) {
-            if (boardSpaceAvailableValues[x] == true) boardCellsAvailable[boardCellNumber++] = x
+            if (boardSpaceAvailableValues[x]) boardCellsAvailable[boardCellNumber++] = x
         }
         val randomNumber = mRandom.nextInt(boardCellsAvailable.size)
         return boardCellsAvailable[randomNumber]
@@ -1307,10 +1293,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     fun setClient(clientThread: ClientThread?) {
         mClientThread = clientThread
-    }
-
-    fun setOpposingPlayerId(playerId: String?) {
-        mOpposingPlayerId = playerId
     }
 
     private val isClientRunning: Boolean
@@ -1410,7 +1392,6 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         private var HUMAN_VS_HUMAN = false
         private var mClientThread: ClientThread? = null
         private var mGameActivity: GameActivity? = null
-        private var mOpposingPlayerId: String? = null
         private var mPrevSelectedBall = 0 //save value for touch selection
         private var mPrevSelectedCell = 0 //save value for touch selection
 
