@@ -87,6 +87,11 @@ class SplashScreen : Activity(), ToastMessage {
         }
     }
 
+    public override fun onResume() {
+        super.onResume()
+        finish()
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
             setSplashActive(false)
