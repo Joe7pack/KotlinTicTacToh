@@ -15,9 +15,9 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
 import kotlinx.coroutines.*
 
-class PlayOverNetwork : Activity(), ToastMessage {
+class PlayOverNetwork: Activity(), ToastMessage {
 
-    private var mPlayer1Name: String? = null
+    private lateinit var mPlayer1Name: String
     private lateinit var mCallerActivity: PlayOverNetwork
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,17 +27,21 @@ class PlayOverNetwork : Activity(), ToastMessage {
         mErrorHandler = ErrorHandler()
         mResources = resources
         sharedPreferences
-        if (mPlayer1Name == null) {
-            mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
-        }
+        val player1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
+        mPlayer1Name = player1Name ?: "Corriander"
         if (mPlayer1Id == 0) {
-            setSharedPreferences()
+            //setSharedPreferences()
             addMyselfToPlayerList()
         } else {
-            CoroutineScope( Dispatchers.Default).launch { //consider changing this to an async task?
-                val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
-                webServerInterfaceUsersOnlineTask.main(mCallerActivity, mPlayer1Name, resources, Integer.valueOf(mPlayer1Id))
+            var returnMessage: String? = null
+            runBlocking {
+                val job = CoroutineScope(Dispatchers.IO).launch {
+                    val webServerInterfaceUsersOnlineTask = WebServerInterfaceUsersOnlineTask()
+                    returnMessage = webServerInterfaceUsersOnlineTask.main(mCallerActivity, mPlayer1Name, resources, Integer.valueOf(mPlayer1Id))
+                }
+                job.join()
             }
+            writeToLog("PlayOverNetwork", "WebServerInterfaceUsersOnlineTask_called, return value: $returnMessage")
         }
         finish()
     }
@@ -48,7 +52,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
         val latitude = "&latitude=$latitude"
         val longitude = "&longitude=$longitude"
         val trackingInfo = androidId + latitude + longitude
-        val url = mResources!!.getString(R.string.domainName) + "/gamePlayer/createAndroid/" + trackingInfo + "&userName="
+        val url = "/gamePlayer/createAndroid/$trackingInfo&userName=$mPlayer1Name"
         CoroutineScope( Dispatchers.Default).launch {
             val webServerInterfaceNewPlayerTask =  WebServerInterfaceNewPlayerTask()
             webServerInterfaceNewPlayerTask.main(mCallerActivity as Context, url, mPlayer1Name, resources)
@@ -59,7 +63,7 @@ class PlayOverNetwork : Activity(), ToastMessage {
         get() {
             val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
             mPlayer1Id = settings.getInt(GameActivity.PLAYER1_ID, 0)
-            mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, null)
+            mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, null) ?: "CheeseSteak"
         }
 
     private fun setSharedPreferences() {
@@ -68,11 +72,6 @@ class PlayOverNetwork : Activity(), ToastMessage {
         editor.putString(GameActivity.PLAYER1_NAME, mPlayer1Name)
         // Commit the edits!
         editor.apply()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
     }
 
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
