@@ -61,6 +61,8 @@
                 android:gravity="start"
                 android:padding="8dip"
                 android:text="Player 1"
+                android:clickable="true"
+                android:focusable="false"
                 android:textColor="#000000" />
 
             <ImageView
@@ -116,6 +118,8 @@
                 android:gravity="end"
                 android:padding="8dip"
                 android:text="Player 2"
+                android:clickable="true"
+                android:focusable="false"
                 android:textColor="#000000" />
 
             <TextView
