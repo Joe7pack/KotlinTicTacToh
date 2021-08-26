@@ -11,9 +11,9 @@ import kotlinx.coroutines.*
 
 /**
  * An AsyncTask that will be used to find other players currently online
+ * Cannot be changed into an object instead of a class because it requires the mCallerActivity: Context object
  */
 
-//TODO - change this into an object named WebServerInterfaceUsersOnlineTask2 ? (then get rid of original class)
 class WebServerInterfaceUsersOnlineTask {
     private var mCallerActivity: Context? = null
     private var mToastMessage: ToastMessage? = null
@@ -40,11 +40,8 @@ class WebServerInterfaceUsersOnlineTask {
 
      private fun setOnlineNow() {
         try {
-            if (mUsersOnline == null) {
+            if (mUsersOnline != null && mUsersOnline!!.equals("noResultReturned")) {
                 return
-            }
-            if (mUsersOnline != null && mUsersOnline!!.contains("failed to connect")) {
-                //show a snack message asking user to reconnect
             }
             writeToLog("WebServerInterfaceUsersOnlineTask","setPlayingNow called usersOnline: $mUsersOnline")
             val androidId = "&deviceId=$androidId"
@@ -68,7 +65,7 @@ class WebServerInterfaceUsersOnlineTask {
         }
     }
 
-    private fun sendMessageToAppServer(urlData: String): String? {
+    private fun sendMessageToAppServerOrig(urlData: String): String? {
         var returnMessage: String? = null
         runBlocking {
             val job = CoroutineScope(Dispatchers.IO).launch {
@@ -78,6 +75,10 @@ class WebServerInterfaceUsersOnlineTask {
         }
         writeToLog("WebServerInterfaceUsersOnlineTask", "sendMessageToAppServer returnMessage: $returnMessage")
         return returnMessage
+    }
+
+    private fun sendMessageToAppServer(urlData: String): String {
+        return SendMessageToAppServer.main(urlData, mCallerActivity as ToastMessage, mResources,false)
     }
 
     companion object {
