@@ -9,18 +9,38 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
 import kotlinx.coroutines.*
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
+import android.os.StrictMode.VmPolicy
+
 
 class PlayOverNetwork: Activity(), ToastMessage {
-
     private lateinit var mPlayer1Name: String
     private lateinit var mCallerActivity: PlayOverNetwork
 
     public override fun onCreate(savedInstanceState: Bundle?) {
+        /*
+            StrictMode.setThreadPolicy(
+                ThreadPolicy.Builder()
+                    .detectNetwork()
+                    .penaltyLog()
+                    .build()
+            )
+            StrictMode.setVmPolicy(
+                VmPolicy.Builder()
+                    .detectLeakedSqlLiteObjects()
+                    .detectLeakedClosableObjects()
+                    .penaltyLog()
+                    .penaltyDeath()
+                    .build()
+            )
+         */
         super.onCreate(savedInstanceState)
         mCallerActivity = this
         mApplicationContext = applicationContext
@@ -29,6 +49,19 @@ class PlayOverNetwork: Activity(), ToastMessage {
         sharedPreferences
         val player1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
         mPlayer1Name = player1Name ?: "Corriander"
+        writeToLog("PlayOverNetwork", "onCreate() finished")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        writeToLog("PlayOverNetwork", "onStart() called")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        writeToLog("PlayOverNetwork", "onResume() called")
+        mHostWaitDialog = createHostWaitDialog()
+        mHostWaitDialog!!.show()
         if (mPlayer1Id == 0) {
             //setSharedPreferences()
             addMyselfToPlayerList()
@@ -42,8 +75,14 @@ class PlayOverNetwork: Activity(), ToastMessage {
                 job.join()
             }
             writeToLog("PlayOverNetwork", "WebServerInterfaceUsersOnlineTask_called, return value: $returnMessage")
+            if (returnMessage.isNullOrEmpty() || returnMessage.equals("noResultReturned")) {
+                mHostUnavailableDialog = createHostUnavailableDialog()
+                mHostUnavailableDialog!!.show()
+            } else {
+                finish()
+            }
         }
-        finish()
+        writeToLog("PlayOverNetwork", "onResume() finished")
     }
 
     private fun addMyselfToPlayerList() {
@@ -57,6 +96,43 @@ class PlayOverNetwork: Activity(), ToastMessage {
             val webServerInterfaceNewPlayerTask =  WebServerInterfaceNewPlayerTask()
             webServerInterfaceNewPlayerTask.main(mCallerActivity as Context, url, mPlayer1Name, resources)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (mHostWaitDialog != null) {
+            mHostWaitDialog!!.dismiss()
+        }
+        if (mHostUnavailableDialog != null) {
+            mHostUnavailableDialog!!.dismiss()
+        }
+        writeToLog("PlayOverNetwork", "onDestroy() finished")
+    }
+
+    private fun createHostWaitDialog(): AlertDialog {
+        if (mHostWaitDialog != null) {
+            mHostWaitDialog!!.dismiss()
+        }
+        val hostingDescription = "Please wait while we find someone online to play against..."
+        return AlertDialog.Builder(this@PlayOverNetwork)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setTitle(hostingDescription)
+            .setCancelable(false)
+            .setNegativeButton("Cancel") { _, _ -> finish() }
+            .create()
+    }
+
+    private fun createHostUnavailableDialog(): AlertDialog {
+        if (mHostUnavailableDialog != null) {
+            mHostUnavailableDialog!!.dismiss()
+        }
+        val hostingDescription = "Unable to connect to host, please try again later."
+        return AlertDialog.Builder(this@PlayOverNetwork)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setTitle(hostingDescription)
+            .setCancelable(false)
+            .setNegativeButton("Cancel") { _, _ -> finish() }
+            .create()
     }
 
     private val sharedPreferences: Unit
@@ -104,6 +180,8 @@ class PlayOverNetwork: Activity(), ToastMessage {
         private var mPlayer1Id = 0
         private var mResources: Resources? = null
         var mErrorHandler: ErrorHandler? = null
+        private var mHostWaitDialog: AlertDialog? = null
+        private var mHostUnavailableDialog: AlertDialog? = null
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
