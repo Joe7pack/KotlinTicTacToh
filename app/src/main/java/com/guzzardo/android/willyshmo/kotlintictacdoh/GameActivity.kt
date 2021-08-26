@@ -114,7 +114,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         mQueuePrefix = getConfigMap("RabbitMQQueuePrefix")
         mStartSource = intent.getParcelableExtra<ParcelItems>(PARCELABLE_VALUES).toString()
         writeToLog("GameActivity", "our parcelable extra item: $mStartSource")
-        writeToLog("GameActivity", "onCreate() Completed")
+        writeToLog("GameActivity", "onCreate() Completed taskId: $taskId")
     }
 
     private fun createHostWaitDialog(): AlertDialog {
@@ -206,8 +206,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             writeToLog("GameActivity", "onResume - we are serving but we're not a client, messageResponse: $messageResponse")
             // hack to deal with stale leftGame message that I can't seem to get rid of for some goddamn reason
             if (mStartSource != null && mStartSource!!.contains("Shakespeare")) {
-                writeToLog("GameActivity", "onResume - gonna finish() due to spurious letsPlay message")
-                finish()
+                writeToLog("GameActivity", "onResume - nope, not gonna finish() due to spurious letsPlay message")
+                //finish()
             }
             return
         }
@@ -1577,12 +1577,12 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
         }
 
-        fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
+        fun closeRabbitMQConnection(rabbitMQConnection: RabbitMQConnection) {
             writeToLog("ServerThread", "about to close server side RabbitMQ connection")
             return runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     CloseRabbitMQConnection().main(
-                        mRabbitMQConnection,
+                        rabbitMQConnection,
                         this@GameActivity as ToastMessage,
                         Companion.resources
                     )
@@ -2067,7 +2067,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         if (mClientRunning) {
             mClientThread!!.setMessageToServer(message)
         }
-        writeToLog("GameActivity", "sendMessageToServerHost: $message")
+        //writeToLog("GameActivity", "sendMessageToServerHost: $message")
     }
 
     // to update the game count:
