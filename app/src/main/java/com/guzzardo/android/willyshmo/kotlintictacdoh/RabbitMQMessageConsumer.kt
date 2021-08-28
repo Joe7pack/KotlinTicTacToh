@@ -4,14 +4,17 @@ import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-//import com.guzzardo.android.willyshmo.kotlintictacdoh.ToastMessage.sendToastMessage
 import com.rabbitmq.client.QueueingConsumer.Delivery
 import com.rabbitmq.client.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.lang.Exception
+import java.util.*
 
 // Consumes messages from a RabbitMQ broker
-class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private var resources: Resources?) {
+class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private var resources: Resources?) {
     private val mExchange = "test"
     var channel: Channel? = null
     var connection: Connection? = null
@@ -70,7 +73,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
             channel!!.queueBind(queue, mExchange, routingKey)
         } catch (e: IOException) {
             //e.printStackTrace();
-            mToastMessage.sendToastMessage("queuePurge " + e.message)
+            toastMessage.sendToastMessage("queuePurge " + e.message)
         }
     }
 
@@ -83,7 +86,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
             channel!!.queueUnbind(queue, mExchange, routingKey)
         } catch (e: IOException) {
             //e.printStackTrace();
-            mToastMessage.sendToastMessage("queuePurge " + e.message)
+            toastMessage.sendToastMessage("queuePurge " + e.message)
         }
     }
 
@@ -100,7 +103,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
                         mMessageHandler.post(mReturnMessage)
                     } catch (ie: InterruptedException) {
                         writeToLog("RabbitMQMessageConsumer", "InterruptedException: " + ie.message)
-                        mToastMessage.sendToastMessage(ie.message)
+                        toastMessage.sendToastMessage(ie.message)
                     } catch (sse: ShutdownSignalException) {
                         writeToLog("RabbitMQMessageConsumer", "ShutdownSignalException: $sse")
                     } catch (cce: ConsumerCancelledException) {
@@ -125,7 +128,7 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
             if (connection != null) connection!!.close()
         } catch (e: Exception) {
             writeToLog("RabbitMQMessageConsumer", "dispose() function error: $e")
-            mToastMessage.sendToastMessage("queuePurge " + e.message)
+            toastMessage.sendToastMessage("queuePurge " + e.message)
         }
     }
 
@@ -133,5 +136,22 @@ class RabbitMQMessageConsumer(private val mToastMessage: ToastMessage, private v
         if ("true".equals(resources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
         }
+    }
+
+    fun setUpMessageConsumer(qNameQualifier: String, player1Id: Int?, activity: ToastMessage, resources: Resources, source: String) {
+        val qName = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + player1Id
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val consumerConnectTask = ConsumerConnectTask()
+            consumerConnectTask.main(
+                WillyShmoApplication.getConfigMap("RabbitMQIpAddress"),
+                this@RabbitMQMessageConsumer,
+                qName,
+                activity,
+                resources,
+                source
+            )
+        }
+        writeToLog("RabbitMQMessageConsumer", "$qNameQualifier message consumer listening on queue: $qName")
     }
 }
