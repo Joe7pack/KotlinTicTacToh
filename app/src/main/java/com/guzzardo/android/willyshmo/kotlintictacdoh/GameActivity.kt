@@ -67,8 +67,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private var mRabbitMQClientResponse: String? = null
     private var mRabbitMQServerResponse: String? = null
     private var mRabbitMQStartGameResponse: String? = null
-    private var mRabbitMQServerResponseHandler: RabbitMQServerResponseHandler? = null
-    private var mRabbitMQClientResponseHandler: RabbitMQClientResponseHandler? = null
     private var mServerHasOpponent: String? = null
 
     interface PrizeValue {
@@ -155,9 +153,26 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mPlayer1Id = intent.getIntExtra(PLAYER1_ID, 0)
             mServerThread = ServerThread()
             mMessageServerConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
-            mRabbitMQServerResponseHandler = RabbitMQServerResponseHandler()
-            mRabbitMQServerResponseHandler!!.rabbitMQResponse = "server starting"
-            setUpMessageConsumer(mMessageServerConsumer!!, "server", mRabbitMQServerResponseHandler!!)
+            mRabbitMQServerResponse = "server starting"
+            mMessageServerConsumer!!.setUpMessageConsumer("server", mPlayer1Id, this, resources, "GameActivityServer")
+            mMessageServerConsumer!!.setOnReceiveMessageHandler(object: OnReceiveMessageHandler {
+                override fun onReceiveMessage(message: ByteArray?) {
+                    val text = String(message!!, StandardCharsets.UTF_8)
+                    mRabbitMQServerResponse = text
+                    val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+                    writeToLog("GameActivity", "server OnReceiveMessageHandler received message: $text at my time $dateTime")
+                    if (text.startsWith("letsPlay")) {
+                        writeToLog("GameActivity", "we should never see a letsPlay message here!!!!!")
+                    }
+
+                    if (text.startsWith("leftGame")) {
+                        writeToLog("GameActivity", "Got a leftGame message from opponent")
+                        if (!mServerIsPlayingNow) {
+                            writeToLog("GameActivity", "Got a leftGame message from opponent and server is NOT playing now!")
+                        }
+                    }
+                } // end onReceiveMessage
+            }) // end setOnReceiveMessageHandler
             mPlayer1Name = intent.getStringExtra(PLAYER1_NAME)
             isServerRunning = true
             mServerThread!!.start()
@@ -175,9 +190,26 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID) //clientOpponentId
             mClientThread = ClientThread()
             mMessageClientConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
-            mRabbitMQClientResponseHandler = RabbitMQClientResponseHandler()
-            //mRabbitMQClientResponseHandler!!.rabbitMQResponse = "clientStarting"
-            setUpMessageConsumer(mMessageClientConsumer!!, "client", mRabbitMQClientResponseHandler!!)
+            mRabbitMQClientResponse = "clientStarting"
+            mMessageClientConsumer!!.setUpMessageConsumer("client", mPlayer1Id, this, resources, "GameActivityClient")
+            mMessageClientConsumer!!.setOnReceiveMessageHandler(object: OnReceiveMessageHandler {
+                override fun onReceiveMessage(message: ByteArray?) {
+                    val text = String(message!!, StandardCharsets.UTF_8)
+                    mRabbitMQClientResponse = text
+                    val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+                    writeToLog("GameActivity", "client OnReceiveMessageHandler received message: $text at my time $dateTime")
+                    if (text.startsWith("letsPlay")) {
+                        writeToLog("GameActivity", "we should never see a letsPlay message here!!!!!")
+                    }
+
+                    if (text.startsWith("leftGame")) {
+                        writeToLog("GameActivity", "Got a leftGame message from opponent")
+                        if (!mServerIsPlayingNow) {
+                            writeToLog("GameActivity", "Got a leftGame message from opponent and server is NOT playing now!")
+                        }
+                    }
+                } // end onReceiveMessage
+            }) // end setOnReceiveMessageHandler
             mClientThread!!.start()
             mClientRunning = true
             HUMAN_VS_NETWORK = true
@@ -1597,27 +1629,27 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mGameStarted = false
                 while (isServerRunning) {
-                    if (mRabbitMQServerResponseHandler!!.rabbitMQResponse != null) {
-                        writeToLog("ServerThread", "Retrieving command: " + mRabbitMQServerResponseHandler!!.rabbitMQResponse)
-                        if (mRabbitMQServerResponseHandler!!.rabbitMQResponse!!.contains("tokenList")) {
-                            getGameSetUpFromClient(mRabbitMQServerResponseHandler!!.rabbitMQResponse!!)
+                    if (mRabbitMQServerResponse != null) {
+                        writeToLog("ServerThread", "Retrieving command: " + mRabbitMQServerResponse)
+                        if (mRabbitMQServerResponse!!.contains("tokenList")) {
+                            getGameSetUpFromClient(mRabbitMQServerResponse!!)
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_CLIENT)
                             mHandler.sendEmptyMessage(ACCEPT_INCOMING_GAME_REQUEST_FROM_CLIENT)
                             mGameStarted = true
                         }
-                        if (mRabbitMQServerResponseHandler!!.rabbitMQResponse!!.startsWith("moved")) {
-                            parseLine(mRabbitMQServerResponseHandler!!.rabbitMQResponse!!)
+                        if (mRabbitMQServerResponse!!.startsWith("moved")) {
+                            parseLine(mRabbitMQServerResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_SERVER_TURN)
                         }
-                        if (mRabbitMQServerResponseHandler!!.rabbitMQResponse!!.startsWith("leftGame") && isGameStarted) {
+                        if (mRabbitMQServerResponse!!.startsWith("leftGame") && isGameStarted) {
                             //mGameStarted = false
-                            playerNotPlaying("client", mRabbitMQServerResponseHandler!!.rabbitMQResponse!!, 1)
+                            playerNotPlaying("client", mRabbitMQServerResponse!!, 1)
                         }
-                        if (mRabbitMQServerResponseHandler!!.rabbitMQResponse!!.startsWith("noPlay")) {
+                        if (mRabbitMQServerResponse!!.startsWith("noPlay")) {
                             //mGameStarted = false
-                            playerNotPlaying("client", mRabbitMQServerResponseHandler!!.rabbitMQResponse!!, 1)
+                            playerNotPlaying("client", mRabbitMQServerResponse!!, 1)
                         }
-                        mRabbitMQServerResponseHandler!!.rabbitMQResponse = null
+                        mRabbitMQServerResponse = null
                     }
                     if (mMessageToClient != null) {
                         val messageToBeSent = mMessageToClient //circumvent sending a null message to sendMessageToRabbitMQTask
@@ -1748,34 +1780,34 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         }
                         mMessageToServer = null
                     }
-                    if (mRabbitMQClientResponseHandler!!.rabbitMQResponse == null)
+                    if (mRabbitMQClientResponse == null)
                         continue
                     else {
-                        writeToLog("ClientThread", "read response: " + mRabbitMQClientResponseHandler!!.rabbitMQResponse)
+                        writeToLog("ClientThread", "read response: " + mRabbitMQClientResponse)
                         if (mClientWaitDialog != null ) { //&&  mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("clientStarting")) {
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
                         }
-                        if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("serverAccepted")) {
+                        if (mRabbitMQClientResponse!!.startsWith("serverAccepted")) {
                             mGameStarted = true
                         }
-                        if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("moved")) {
+                        if (mRabbitMQClientResponse!!.startsWith("moved")) {
                             mGameStarted = true //I think we can comment out this line??
-                            parseMove(mRabbitMQClientResponseHandler!!.rabbitMQResponse!!)
+                            parseMove(mRabbitMQClientResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_CLIENT_TURN)
                         }
-                        if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("moveFirst")) {
+                        if (mRabbitMQClientResponse!!.startsWith("moveFirst")) {
                             mGameStarted = true
                             mHandler.sendEmptyMessage(MSG_NETWORK_CLIENT_MAKE_FIRST_MOVE)
                         }
-                        if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("noPlay")) {
-                            playerNotPlaying("server", mRabbitMQClientResponseHandler!!.rabbitMQResponse!!, 0)
+                        if (mRabbitMQClientResponse!!.startsWith("noPlay")) {
+                            playerNotPlaying("server", mRabbitMQClientResponse!!, 0)
                             //mGameStarted = false
                         }
-                        if (mRabbitMQClientResponseHandler!!.rabbitMQResponse!!.startsWith("leftGame") && isGameStarted) {
-                            playerNotPlaying("server", mRabbitMQClientResponseHandler!!.rabbitMQResponse!!, 1)
+                        if (mRabbitMQClientResponse!!.startsWith("leftGame") && isGameStarted) {
+                            playerNotPlaying("server", mRabbitMQClientResponse!!, 1)
                             //mGameStarted = false
                         }
-                        mRabbitMQClientResponseHandler!!.rabbitMQResponse = null // .rabbitMQResponse(null)
+                        mRabbitMQClientResponse = null
                     }
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
                 } // while end
@@ -2022,45 +2054,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     override fun sendToastMessage(message: String?) {
         writeToLog("GameActivity", "sendToastMessage message: $message")
         runOnUiThread { Toast.makeText(this, message, Toast.LENGTH_LONG).show() }
-    }
-
-    private inner class RabbitMQServerResponseHandler : RabbitMQResponseHandler()
-    private inner class RabbitMQClientResponseHandler : RabbitMQResponseHandler()
-
-    private fun setUpMessageConsumer(rabbitMQMessageConsumer: RabbitMQMessageConsumer, qNameQualifier: String, rabbitMQResponseHandler: RabbitMQResponseHandler) {
-        val qName = "$mQueuePrefix-$qNameQualifier-$mPlayer1Id"
-        CoroutineScope(Dispatchers.Default).launch {
-            val consumerConnectTask = ConsumerConnectTask()
-            consumerConnectTask.main(
-                getConfigMap("RabbitMQIpAddress"),
-                rabbitMQMessageConsumer,
-                qName,
-                this@GameActivity,
-                resources,
-                "GameActivity"
-            )
-        }
-        writeToLog("GameActivity", "$qNameQualifier message consumer listening on queue: $qName")
-        // register for messages
-        rabbitMQMessageConsumer.setOnReceiveMessageHandler(object : OnReceiveMessageHandler {
-            override fun onReceiveMessage(message: ByteArray?) {
-                //FIXME - clean up this code whence fully debugged!
-                val text = String(message!!, StandardCharsets.UTF_8)
-                rabbitMQResponseHandler.rabbitMQResponse = text
-                val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-                writeToLog("GameActivity", "$qNameQualifier OnReceiveMessageHandler received message: $text at my time $dateTime")
-                if (text.startsWith("letsPlay")) {
-                    writeToLog("GameActivity", "we should never see a letsPlay message here!!!!!")
-                }
-
-                if (text.startsWith("leftGame")) {
-                    writeToLog("GameActivity", "Got a leftGame message from opponent")
-                    if (!mServerIsPlayingNow) {
-                        writeToLog("GameActivity", "Got a leftGame message from opponent and server is NOT playing now!")
-                    }
-                }
-            }
-        })
     }
 
     fun sendMessageToServerHost(message: String) {
