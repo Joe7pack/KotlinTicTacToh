@@ -27,8 +27,8 @@ import java.util.*
 class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     private var mUsersOnline: String? = null
     private var mMessageConsumer: RabbitMQMessageConsumer? = null
-    private var mWaitForPlayerThread: WaitForPlayerThread? = null
-    private var mRabbitMQResponse: String? = null
+    //private var mWaitForPlayerThread: WaitForPlayerThread? = null
+    //private var mRabbitMQResponse: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,45 +68,52 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 override fun onReceiveMessage(message: ByteArray?) {
                     try {
                         val text = String(message!!, StandardCharsets.UTF_8)
-                        mRabbitMQResponse = text
-                        writeToLog("PlayersOnlineActivity", "client OnReceiveMessageHandler has received message: $text")
-                        if (text.startsWith("letsPlay")) {
-                            val playStringArray = text.split(",")
-                            if (playStringArray.size >= 3) {
-                                val opposingPlayerId = playStringArray[2]
-                                val opposingPlayerName = playStringArray[1]
-                                val i = Intent(mApplicationContext, GameActivity::class.java)
-
-                                val item = GameActivity.ParcelItems(123456789, "Shakespeare")
-                                i.putExtra(GameActivity.PARCELABLE_VALUES, item)
-
-                                i.putExtra(GameActivity.START_SERVER, "true")
-                                //i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
-                                i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
-                                i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-                                i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, opposingPlayerId)
-                                i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
-                                i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
-                                writeToLog("PlayersOnlineActivity", "starting client and server from new player: $opposingPlayerName")
-                                startActivity(appContext, i, null)
-                            }
-                            writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $text at: " +
-                                SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-                            )
-                            finish()
-                        }
+                        writeToLog("PlayersOnlineActivity", "OnReceiveMessageHandler has received message: $text")
+                        handleRabbitMQMessage(text)
                     } catch (e: Exception) {
                         writeToLog("PlayersOnlineActivity", "exception in onReceiveMessage: $e")
                     }
                 } // end onReceiveMessage
             }) // end setOnReceiveMessageHandler
             setContentView(R.layout.players_online) //this starts up the list view
-            mWaitForPlayerThread = WaitForPlayerThread()
-            isThreadRunning = true
-            mWaitForPlayerThread!!.start()
+            //mWaitForPlayerThread = WaitForPlayerThread()
+            //isThreadRunning = true
+            //mWaitForPlayerThread!!.start()
         }
         setContext(this)
         writeToLog("PlayersOnlineActivity", "onCreate taskId: $taskId")
+    }
+
+    private fun handleRabbitMQMessage(message: String) {
+        if (mRabbitMQResponse == message) {
+            writeToLog("PlayersOnlineActivity", "================> handleRabbitMQMessage() returning due to duplicate message: $message")
+            return
+        }
+        mRabbitMQResponse = message
+        if (message.startsWith("letsPlay")) {
+            val playStringArray = message.split(",")
+            if (playStringArray.size >= 3) {
+                val opposingPlayerId = playStringArray[2]
+                val opposingPlayerName = playStringArray[1]
+                val i = Intent(mApplicationContext, GameActivity::class.java)
+
+                val item = GameActivity.ParcelItems(123456789, "Shakespeare")
+                i.putExtra(GameActivity.PARCELABLE_VALUES, item)
+
+                i.putExtra(GameActivity.START_SERVER, "true")
+                i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
+                i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
+                i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, opposingPlayerId)
+                i.putExtra(GameActivity.PLAYER2_NAME, opposingPlayerName)
+                i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
+                writeToLog("PlayersOnlineActivity", "starting client and server from new player: $opposingPlayerName")
+                startActivity(appContext, i, null)
+            }
+            writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $message at: " +
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+            )
+            finish()
+        }
     }
 
     public override fun onPause() {
@@ -138,7 +145,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             }
         }
         GameActivity.isClientRunning = false
-        isThreadRunning = false
+        //isThreadRunning = false
         finish()
     }
 
@@ -163,12 +170,12 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             try {
                 writeToLog("PlayersOnlineActivity","WaitForPlayerThread run method started")
                 while (isThreadRunning) {
-                    if (mRabbitMQPlayerResponse != null) {
-                        writeToLog("PlayersOnlineActivity","Retrieving command in WaitForPlayerThread: " + mRabbitMQPlayerResponse)
-                        if (mRabbitMQPlayerResponse!!.startsWith("letsPlay")) {
+                    if (mRabbitMQResponse != null) {
+                        writeToLog("PlayersOnlineActivity","Retrieving command in WaitForPlayerThread: " + mRabbitMQResponse)
+                        if (mRabbitMQResponse!!.startsWith("letsPlay")) {
                             isThreadRunning = false
                         }
-                        mRabbitMQPlayerResponse = null
+                        mRabbitMQResponse = null
                     }
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
                 } // while end
@@ -218,13 +225,14 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
         private fun startGame() {
             mSelectedPosition = -1
-            writeToLog("PlayersOnlineFragment", "startGame() called, old game request = ${mRabbitMQPlayerResponse}")
+            writeToLog("PlayersOnlineFragment", "startGame() called, old game request = ${mRabbitMQResponse}")
             //mRabbitMQPlayerResponseHandler!!.rabbitMQResponse = null // get rid of any old game requests
         }
 
         override fun onPause() { // pause the PlayersOnlineFragment
             super.onPause()
             writeToLog("PlayersOnlineFragment", "onPause called from PlayersOnlineFragment")
+            //isThreadRunning = false
             if (mRabbitMQConnection != null) {
                 closeRabbitMQConnection(mRabbitMQConnection!!)
             }
@@ -256,9 +264,8 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
             writeToLog("PlayersOnlineActivity", "============> onListItemClick called  at: $dateTime")
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
-            //TODO: this as async or fire and forget (launch)?
             return runBlocking {
-                CoroutineScope(Dispatchers.Default).async { //launch {
+                CoroutineScope(Dispatchers.Default).async {
                     val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
                     sendMessageToRabbitMQ.main(
                         mRabbitMQConnection,
@@ -417,10 +424,10 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private lateinit var mResources: Resources
         private var mPlayersOnlineActivity: PlayersOnlineActivity? = null
         private var mSelectedPosition = -1
-        private var mRabbitMQPlayerResponse: String? = null
         private var mRabbitMQConnection: RabbitMQConnection? = null
         private var isThreadRunning: Boolean = false
         private const val THREAD_SLEEP_INTERVAL = 300 //milliseconds
+        private var mRabbitMQResponse: String? = null
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
