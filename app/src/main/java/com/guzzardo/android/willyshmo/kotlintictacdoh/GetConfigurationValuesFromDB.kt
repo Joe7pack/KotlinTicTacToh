@@ -30,7 +30,9 @@ class GetConfigurationValuesFromDB { // : AsyncTask<Any?, Void?, String?>() {
             mCallerActivity.sendToastMessage(e.message)
         }
         writeToLog("GetConfigurationValuesFromDB", "GetConfigurationValuesFromDB doInBackground return values: $configValues")
-        setConfigValues(configValues)
+        if (!configValues.equals("noResultReturned")) {
+            setConfigValues(configValues)
+        }
     }
 
     fun setConfigValues(configValues: String?) {
