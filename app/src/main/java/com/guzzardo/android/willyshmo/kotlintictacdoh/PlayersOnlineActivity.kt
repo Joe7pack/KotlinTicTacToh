@@ -34,7 +34,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         super.onCreate(savedInstanceState)
         mSavedInstanceState = savedInstanceState
         mResources = resources
-        errorHandler = ErrorHandler()
+        mErrorHandler = ErrorHandler()
         mApplicationContext = applicationContext
         sharedPreferences
         mPlayersOnlineActivity = this
@@ -44,6 +44,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "onCreate() mUsersOnline == null")
             sendToastMessage("Sorry unable to retrieve Users online, please try again")
             finish()
+            return
         }
 
         playersOnline
@@ -85,7 +86,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     }
 
     private fun handleRabbitMQMessage(message: String) {
-        if (mRabbitMQResponse == message) {
+        if (mRabbitMQResponse.equals(message)) {
             writeToLog("PlayersOnlineActivity", "================> handleRabbitMQMessage() returning due to duplicate message: $message")
             return
         }
@@ -133,7 +134,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false $messageResponse")
         }
         if (mMessageConsumer != null) {
-            return runBlocking {
+            runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     val disposeRabbitMQTask = DisposeRabbitMQTask()
                     disposeRabbitMQTask.main(
@@ -144,7 +145,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 }.await()
             }
         }
-        GameActivity.isClientRunning = false
+        //GameActivity.isClientRunning = false
         //isThreadRunning = false
         finish()
     }
@@ -400,9 +401,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     }
 
     override fun sendToastMessage(message: String?) {
-        val msg = errorHandler!!.obtainMessage()
+        val msg = mErrorHandler!!.obtainMessage()
         msg.obj = message
-        errorHandler!!.sendMessage(msg)
+        mErrorHandler!!.sendMessage(msg)
     }
 
     companion object {
@@ -420,7 +421,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var mPlayer1Id: Int? = null
         private var mPlayer1Name: String? = null
         private var mApplicationContext: Context? = null
-        var errorHandler: ErrorHandler? = null
+        var mErrorHandler: ErrorHandler? = null
         private lateinit var mResources: Resources
         private var mPlayersOnlineActivity: PlayersOnlineActivity? = null
         private var mSelectedPosition = -1
