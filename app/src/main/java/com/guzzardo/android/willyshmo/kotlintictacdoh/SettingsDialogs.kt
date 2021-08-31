@@ -27,9 +27,7 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AlertDialog
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
-import com.guzzardo.android.willyshmo.kotlintictacdoh.SettingsDialogs
 
-//import android.support.v7.app.AlertDialog;
 class SettingsDialogs : Activity() {
     private var mPlayer1Name: String? = null
     private var mPlayer2Name: String? = null
@@ -67,7 +65,7 @@ class SettingsDialogs : Activity() {
 
         /* Display a text message with yes/no buttons and handle each message as well as the cancel action */
         val twoButtonsTitle = findViewById<View>(R.id.reset_scores) as Button
-        twoButtonsTitle.setOnClickListener { //                showDialog(RESET_SCORES);
+        twoButtonsTitle.setOnClickListener {
             val resetScoresDialog = showResetScoresDialog()
             resetScoresDialog.show()
         }
@@ -86,7 +84,7 @@ class SettingsDialogs : Activity() {
 
         /* Display a radio button group */
         var radioButton = findViewById<View>(R.id.move_mode) as Button
-        radioButton.setOnClickListener { //              showDialog(DIALOG_MOVE_MODE);
+        radioButton.setOnClickListener {
             val moveModeDialog = showMoveModeDialog()
             moveModeDialog.show()
         }
@@ -118,9 +116,9 @@ class SettingsDialogs : Activity() {
         return AlertDialog.Builder(this@SettingsDialogs)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.move_mode)
-            .setSingleChoiceItems(R.array.select_move_mode, mMoveModeChecked) { dialog, whichButton -> setMoveModeSelection(whichButton) }
-            .setPositiveButton(R.string.alert_dialog_ok) { dialog, whichButton -> setMoveMode() }
-            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, whichButton -> dialog.cancel() }
+            .setSingleChoiceItems(R.array.select_move_mode, mMoveModeChecked) { _, whichButton -> setMoveModeSelection(whichButton) }
+            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> setMoveMode() }
+            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, _ -> dialog.cancel() }
             .create()
     }
 
@@ -128,9 +126,9 @@ class SettingsDialogs : Activity() {
         return AlertDialog.Builder(this@SettingsDialogs)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.sound_mode)
-            .setSingleChoiceItems(R.array.select_sound_mode, mSoundModeChecked) { dialog, whichButton -> setSoundModeSelection(whichButton) }
-            .setPositiveButton(R.string.alert_dialog_ok) { dialog, whichButton -> setSoundMode() }
-            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, whichButton -> dialog.cancel() }
+            .setSingleChoiceItems(R.array.select_sound_mode, mSoundModeChecked) { _, whichButton -> setSoundModeSelection(whichButton) }
+            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> setSoundMode() }
+            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, _ -> dialog.cancel() }
             .create()
     }
 
@@ -138,10 +136,10 @@ class SettingsDialogs : Activity() {
         return AlertDialog.Builder(this@SettingsDialogs)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.alert_dialog_reset_scores)
-            .setPositiveButton(R.string.alert_dialog_ok) { dialog, whichButton -> /* User clicked OK so do some stuff */
+            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
                 resetScores()
             }
-            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, whichButton -> /* User clicked Cancel so do some stuff */ }
+            .setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked Cancel so do some stuff */ }
             .create()
     }
 
@@ -158,7 +156,7 @@ class SettingsDialogs : Activity() {
             .setTitle(titleId)
             .setView(textEntryViewPlayer)
             .setCancelable(false)
-            .setPositiveButton(R.string.alert_dialog_ok) { dialog, whichButton -> /* User clicked OK so do some stuff */
+            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
                 val userName = textEntryViewPlayer.findViewById<View>(R.id.username_edit) as EditText
                 val userNameText = userName.text
                 val userNameLength = if (userNameText.length > 15) 15 else userNameText.length
@@ -176,7 +174,7 @@ class SettingsDialogs : Activity() {
                 startActivityForResult(intent, 1)
                 finish()
             }
-            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, whichButton -> /* User clicked cancel so do some stuff */ }
+            .setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked cancel so do some stuff */ }
             .create()
     }
 
@@ -198,13 +196,13 @@ class SettingsDialogs : Activity() {
         tokenSizeDialog.setIcon(R.drawable.willy_shmo_small_icon)
         tokenSizeDialog.setTitle(titleId)
         tokenSizeDialog.setCancelable(false)
-        tokenSizeDialog.setPositiveButton(R.string.alert_dialog_ok) { dialog, whichButton -> /* User clicked OK so do some stuff */
+        tokenSizeDialog.setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
             setTokenSize()
             val intent = Intent(applicationContext, SettingsDialogs::class.java)
             startActivityForResult(intent, 1)
             finish()
         }
-        tokenSizeDialog.setNegativeButton(R.string.alert_dialog_cancel) { dialog, whichButton -> /* User clicked cancel so do some stuff */ }
+        tokenSizeDialog.setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked cancel so do some stuff */ }
         return tokenSizeDialog.create()
     }
 
@@ -222,13 +220,13 @@ class SettingsDialogs : Activity() {
         tokenColorDialog.setIcon(R.drawable.willy_shmo_small_icon)
         tokenColorDialog.setTitle(titleId)
         tokenColorDialog.setCancelable(false)
-        tokenColorDialog.setPositiveButton(R.string.alert_dialog_ok) { dialog, whichButton -> /* User clicked OK so do some stuff */
+        tokenColorDialog.setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
             setTokenColor(playerNumber)
             val intent = Intent(applicationContext, SettingsDialogs::class.java)
             startActivityForResult(intent, 1)
             finish()
         }
-        tokenColorDialog.setNegativeButton(R.string.alert_dialog_cancel) { dialog, whichButton -> /* User clicked cancel so do some stuff */ }
+        tokenColorDialog.setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked cancel so do some stuff */ }
         return tokenColorDialog.create()
     }
 
@@ -246,15 +244,12 @@ class SettingsDialogs : Activity() {
 
     override fun onStop() {
         super.onStop()
-
         // We need an Editor object to make preference changes.
         // All objects are from android.context.Context
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
         val editor = settings.edit()
         editor.putString(GameActivity.PLAYER1_NAME, mPlayer1Name)
         editor.putString(GameActivity.PLAYER2_NAME, mPlayer2Name)
-
-        // Commit the edits!
         editor.commit()
     }
 
@@ -285,19 +280,17 @@ class SettingsDialogs : Activity() {
         editor.putInt(GameActivity.PLAYER1_SCORE, 0)
         editor.putInt(GameActivity.PLAYER2_SCORE, 0)
         editor.putInt(GameActivity.WILLY_SCORE, 0)
-        // Commit the edits!
         editor.commit()
     }
 
     private fun setMoveModeSelection(moveMode: Int) {
-        mMoveModeTouch = if (moveMode == 0) false else true
+        mMoveModeTouch = moveMode != 0
     }
 
     private fun setMoveMode() {
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
         val editor = settings.edit()
         editor.putBoolean(GameActivity.MOVE_MODE, mMoveModeTouch)
-        // Commit the edits!
         editor.commit()
     }
 
@@ -305,7 +298,6 @@ class SettingsDialogs : Activity() {
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
         val editor = settings.edit()
         editor.putInt(GameActivity.TOKEN_SIZE, mTokenSize)
-        // Commit the edits!
         editor.commit()
     }
 
@@ -317,19 +309,17 @@ class SettingsDialogs : Activity() {
         } else {
             editor.putInt(GameActivity.TOKEN_COLOR_2, mTokenColor)
         }
-        // Commit the edits!
         editor.commit()
     }
 
     private fun setSoundModeSelection(soundMode: Int) {
-        mSoundMode = if (soundMode == 0) true else false
+        mSoundMode = soundMode == 0
     }
 
     private fun setSoundMode() {
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
         val editor = settings.edit()
         editor.putBoolean(GameActivity.SOUND_MODE, mSoundMode)
-        // Commit the edits!
         editor.commit()
     }
 
@@ -337,6 +327,6 @@ class SettingsDialogs : Activity() {
         private var mMoveModeTouch = false //false = drag move mode; true = touch move mode
         private var mMoveModeChecked = 0 // 0 = drag move mode; 1 = touch move mode
         private var mSoundModeChecked = 0 // 0 = sound on; 1 = sound off
-        private var mSoundMode = false //false = no sound; true = sound
+        private var mSoundMode = true //false = no sound; true = sound
     }
 }
