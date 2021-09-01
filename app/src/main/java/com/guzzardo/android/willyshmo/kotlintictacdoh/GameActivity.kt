@@ -127,7 +127,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             .setTitle(hostingDescription)
             .setMessage(opponentName)
             .setCancelable(false)
-            .setNegativeButton("Cancel") { _, _ -> finish() }
+            .setNegativeButton("Cancel") { _, _ -> cancelGame() }
             .create()
     }
 
@@ -140,8 +140,14 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             .setTitle("Connecting...")
             .setMessage("Let's see if $mPlayer2Name really wants to play.")
             .setCancelable(false)
-            .setNegativeButton("Cancel") { _, _ -> finish() }
+            .setNegativeButton("Cancel") { _, _ -> cancelGame() }
             .create()
+    }
+
+    private fun cancelGame() {
+        writeToLog("GameActivity", "cancelGame() called")
+        mClientRunning = false
+        finish()
     }
 
     override fun onResume() {
@@ -180,7 +186,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID) //clientOpponentId
             mClientThread = ClientThread()
             mMessageClientConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
-            mRabbitMQClientResponse = "clientStarting"
+            //mRabbitMQClientResponse = "clientStarting"
             mMessageClientConsumer!!.setUpMessageConsumer("client", mPlayer1Id, this, resources, "GameActivityClient")
             mMessageClientConsumer!!.setOnReceiveMessageHandler(object: OnReceiveMessageHandler {
                 override fun onReceiveMessage(message: ByteArray?) {
@@ -1497,6 +1503,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     override fun onDestroy() {
         super.onDestroy()
         writeToLog("GameActivity", "GameActivity onDestroy() called - client thread: $mClientThread server thread: $mServerThread")
+        if (!HUMAN_VS_NETWORK) {
+            return
+        }
         setNetworkGameStatusAndResponse(false, false)
 
         if (mClientThread != null) {
@@ -1776,6 +1785,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         writeToLog("ClientThread", "read response: " + mRabbitMQClientResponse)
                         if (mClientWaitDialog != null ) {
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
+                            //mClientRunning = false
+                            //finish()
                         }
                         if (mRabbitMQClientResponse!!.startsWith("serverAccepted")) {
                             mGameStarted = true
