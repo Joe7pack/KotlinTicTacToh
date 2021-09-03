@@ -6,12 +6,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.guzzardo.android.willyshmo.kotlintictacdoh.PlayersOnlineActivity.Companion.getContext
-import com.guzzardo.android.willyshmo.kotlintictacdoh.TwoPlayerActivity
 
 /*
  * Copyright (C) 2010 The Android Open Source Project
@@ -49,11 +49,9 @@ class TwoPlayerActivity : Activity() {
         mButtonPlayer2!!.text = "$mPlayer2Name moves first?"
         findViewById<View>(R.id.player_1).setOnClickListener {
             startGame(1)
-            //                finish();
         }
         findViewById<View>(R.id.player_2).setOnClickListener {
             startGame(2)
-            //              finish();
         }
         mButtonPlayOverNetwork = findViewById<View>(R.id.play_over_network) as Button
         mButtonPlayOverNetwork!!.setOnClickListener { playOverNetwork() }
@@ -94,9 +92,7 @@ class TwoPlayerActivity : Activity() {
         try {
             AlertDialog.Builder(this@TwoPlayerActivity)
                 .setTitle("Please enter your name in the settings menu")
-                .setNeutralButton(
-                    "OK"
-                ) { dialog, which -> finish() }
+                .setNeutralButton("OK") { _, which -> finish() }
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .show()
         } catch (e: Exception) {
@@ -104,7 +100,23 @@ class TwoPlayerActivity : Activity() {
         }
     }
 
-    protected fun sendToastMessage(message: String?) {
+    override fun onPause() {
+        super.onPause()
+        writeToLog("TwoPlayerActivity", "onPause called for TwoPlayerActivity")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        writeToLog("TwoPlayerActivity", "onDestroy called for TwoPlayerActivity")
+    }
+
+    private fun writeToLog(filter: String, msg: String) {
+        if ("true".equals(resources.getString(R.string.debug), ignoreCase = true)) {
+            Log.d(filter, msg)
+        }
+    }
+
+    private fun sendToastMessage(message: String?) {
         val msg = errorHandler!!.obtainMessage()
         msg.obj = message
         errorHandler!!.sendMessage(msg)

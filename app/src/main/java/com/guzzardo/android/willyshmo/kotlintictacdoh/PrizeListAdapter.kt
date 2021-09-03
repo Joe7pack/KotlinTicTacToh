@@ -84,10 +84,6 @@ class PrizeListAdapter(
             FusedLocationActivity.mErrorHandler!!.sendMessage(msg)
         }
 
-        override fun finish() {
-            TODO("Not yet implemented")
-        }
-
     class ErrorHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Toast.makeText(
@@ -97,8 +93,6 @@ class PrizeListAdapter(
             ).show()
         }
     }
-
-    override fun startActivity(i: Intent?) {}
 
     companion object {
         private var inflater: LayoutInflater? = null

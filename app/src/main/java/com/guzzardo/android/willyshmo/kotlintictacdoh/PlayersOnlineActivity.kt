@@ -87,7 +87,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
     private fun handleRabbitMQMessage(message: String) {
         if (mRabbitMQResponse.equals(message)) {
-            writeToLog("PlayersOnlineActivity", "================> handleRabbitMQMessage() returning due to duplicate message: $message")
+            writeToLog("PlayersOnlineActivity", "================> handleRabbitMQMessage() returning due to duplicate message: $message \n\n")
             return
         }
         mRabbitMQResponse = message
@@ -113,8 +113,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $message at: " +
                 SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
             )
-            finish()
+            //finish()
         }
+        finish()
     }
 
     public override fun onPause() {
@@ -172,7 +173,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 writeToLog("PlayersOnlineActivity","WaitForPlayerThread run method started")
                 while (isThreadRunning) {
                     if (mRabbitMQResponse != null) {
-                        writeToLog("PlayersOnlineActivity","Retrieving command in WaitForPlayerThread: " + mRabbitMQResponse)
+                        writeToLog("PlayersOnlineActivity","Retrieving command in WaitForPlayerThread: $mRabbitMQResponse")
                         if (mRabbitMQResponse!!.startsWith("letsPlay")) {
                             isThreadRunning = false
                         }
@@ -226,7 +227,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
         private fun startGame() {
             mSelectedPosition = -1
-            writeToLog("PlayersOnlineFragment", "startGame() called, old game request = ${mRabbitMQResponse}")
+            writeToLog("PlayersOnlineFragment", "startGame() called, old game request = $mRabbitMQResponse")
             //mRabbitMQPlayerResponseHandler!!.rabbitMQResponse = null // get rid of any old game requests
         }
 
@@ -292,7 +293,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         }
 
         //TODO: think about closing connection in GameActivity and closing it here only if we never start GameActivity
-        fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
+        private fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
             writeToLog("PlayersOnlineActivity", "about to close RabbitMQ connection")
             return runBlocking {
                 CoroutineScope(Dispatchers.Default).async {

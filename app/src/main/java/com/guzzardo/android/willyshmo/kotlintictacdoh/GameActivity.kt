@@ -289,7 +289,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             return AlertDialog.Builder(this@GameActivity)
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setTitle(R.string.alert_dialog_starting_token_value)
-                .setSingleChoiceItems(R.array.select_starting_token, 0) { dialog, whichButton ->
+                .setSingleChoiceItems(R.array.select_starting_token, 0) { _, whichButton ->
                     when (whichButton) {
                         0 -> {
                             if (HUMAN_VS_HUMAN) {
@@ -1000,18 +1000,18 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         anim2.repeatMode = Animation.REVERSE
         anim2.repeatCount = 0
         if (player == GameView.State.PLAYER1) {
-            mPlayer1NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithgreenborder, null))
-            mPlayer2NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
+            mPlayer1NameTextValue!!.background = ResourcesCompat.getDrawable(resources, R.drawable.backwithgreenborder, null)
+            mPlayer2NameTextValue!!.background = ResourcesCompat.getDrawable(resources, R.drawable.backwithwhiteborder, null)
             mPlayer1NameTextValue!!.startAnimation(anim)
             mPlayer2NameTextValue!!.startAnimation(anim2)
         } else if (player == GameView.State.PLAYER2) {
-            mPlayer2NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithgreenborder, null))
+            mPlayer2NameTextValue!!.background = ResourcesCompat.getDrawable(resources, R.drawable.backwithgreenborder, null)
             mPlayer2NameTextValue!!.startAnimation(anim)
-            mPlayer1NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
+            mPlayer1NameTextValue!!.background = ResourcesCompat.getDrawable(resources, R.drawable.backwithwhiteborder, null)
             mPlayer1NameTextValue!!.startAnimation(anim2)
         } else {
-            mPlayer1NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
-            mPlayer2NameTextValue!!.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.backwithwhiteborder, null))
+            mPlayer1NameTextValue!!.background = ResourcesCompat.getDrawable(resources, R.drawable.backwithwhiteborder, null)
+            mPlayer2NameTextValue!!.background = ResourcesCompat.getDrawable(resources, R.drawable.backwithwhiteborder, null)
             mPlayer1NameTextValue!!.startAnimation(anim2)
             mPlayer2NameTextValue!!.startAnimation(anim2)
         }
@@ -1618,7 +1618,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mGameStarted = false
                 while (isServerRunning) {
                     if (mRabbitMQServerResponse != null) {
-                        writeToLog("ServerThread", "Retrieving command: " + mRabbitMQServerResponse)
+                        writeToLog("ServerThread", "Retrieving command: $mRabbitMQServerResponse")
                         if (mRabbitMQServerResponse!!.contains("tokenList")) {
                             getGameSetUpFromClient(mRabbitMQServerResponse!!)
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_CLIENT)
@@ -1782,7 +1782,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     if (mRabbitMQClientResponse == null)
                         continue
                     else {
-                        writeToLog("ClientThread", "read response: " + mRabbitMQClientResponse)
+                        writeToLog("ClientThread", "read response: $mRabbitMQClientResponse")
                         if (mClientWaitDialog != null ) {
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
                             //mClientRunning = false
@@ -1983,10 +1983,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             mLikeToPlayDialog = AlertDialog.Builder(this@GameActivity)
                 .setTitle("$mPlayer2Name would like to play")
-                .setPositiveButton("Accept") { dialog, _ -> acceptMsg.sendToTarget() }
+                .setPositiveButton("Accept") { _, _ -> acceptMsg.sendToTarget() }
                 .setCancelable(false)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setNegativeButton("Reject") { dialog, _ -> rejectMsg.sendToTarget() }
+                .setNegativeButton("Reject") { _, _ -> rejectMsg.sendToTarget() }
                 .show()
         } catch (e: Exception) {
             writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception isServerRunning: $isServerRunning")
@@ -2009,7 +2009,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setTitle("Sorry, $playerName server side has left the game")
                 //.setNeutralButton("OK") { dialog, which -> finish() }
-                .setPositiveButton("OK") { dialog, which -> startTwoPlayerActivity() }
+                .setPositiveButton("OK") { _, _ -> startTwoPlayerActivity() }
                 .setCancelable(false)
                 .show()
         } catch (e: Exception) {
@@ -2033,7 +2033,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle("Sorry, $playerName $clientOrServer side has left the game")
-            .setPositiveButton("OK") { _, which -> startTwoPlayerActivity() }
+            .setPositiveButton("OK") { _, _ -> startTwoPlayerActivity() }
             .setCancelable(false)
             .show()
     }
@@ -2068,7 +2068,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         try {
             AlertDialog.Builder(this@GameActivity)
                 .setTitle("Congratulations, you won a prize!")
-                .setPositiveButton("Accept") { dialog, which ->
+                .setPositiveButton("Accept") { _, _ ->
                     val i = Intent(this@GameActivity, PrizesAvailableActivity::class.java)
                     startActivity(i)
                 }

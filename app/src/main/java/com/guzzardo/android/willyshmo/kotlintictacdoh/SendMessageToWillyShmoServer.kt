@@ -50,17 +50,6 @@ class SendMessageToWillyShmoServer {
                 writeToLog("SendMessageToWillyShmoServer", "finally error: " + e.message)
             }
         }
-        onPostExecute(finishActivity)
-    }
-
-    fun onPostExecute(finishActivity: Boolean) {
-        try {
-            if (finishActivity) {
-                mCallerActivity.finish()
-            }
-        } catch (e: Exception) {
-            mCallerActivity.sendToastMessage(e.message)
-        }
     }
 
     companion object {

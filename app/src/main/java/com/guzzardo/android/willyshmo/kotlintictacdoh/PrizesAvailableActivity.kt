@@ -99,9 +99,6 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
             msg.obj = message
             errorHandler!!.sendMessage(msg)
         }
-
-        override fun finish() {
-        }
     }
 
     class ErrorHandler : Handler(Looper.getMainLooper()) {

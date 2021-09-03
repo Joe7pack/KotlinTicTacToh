@@ -6,7 +6,6 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -109,7 +108,7 @@ class MainActivity : Activity(), ToastMessage {
         anim.startOffset = 20
         anim.repeatMode = Animation.REVERSE
         anim.repeatCount = Animation.INFINITE
-        mPrizeButton!!.setBackground(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.backwithgreenborder))
+        mPrizeButton!!.background = AppCompatResources.getDrawable(applicationContext, R.drawable.backwithgreenborder)
         mPrizeButton!!.startAnimation(anim)
         if (isNetworkAvailable && prizesAreAvailable) {
             mPrizeButton!!.visibility = View.VISIBLE
@@ -254,7 +253,7 @@ class MainActivity : Activity(), ToastMessage {
                         }
                     }
                 })
-            .setNegativeButton(R.string.quit_button) { dialog, which -> finish() }.create()
+            .setNegativeButton(R.string.quit_button) { _, _ -> finish() }.create()
     }
 
     private fun doCheck() {
@@ -325,10 +324,6 @@ class MainActivity : Activity(), ToastMessage {
 
     companion object {
         private var mApplicationContext: Context? = null
-        private lateinit var mResources: Resources
-        private const val mLongitude = 0.0
-        private const val mLatitude = 0.0
-        private const val CONNECTION_FAILURE_RESOLUTION_REQUEST = 1
         var mErrorHandler: ErrorHandler? = null
         private const val BASE64_PUBLIC_KEY =
             "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt6bYx4PqPNnRxsW9DuBAOarpGA6ds7v866szk3e28yIF5LjV/EValnRMLsRylX8FP+BEYeGZvB6THbiQ5Gm7H8i+S2tUv6sngc894hBWZnQKAmwrwgl0Zm+vtYo8fnI6jppIxX4A9+4TrzW+Onl4LeW3kafJ9nIa3P73xSLhtFoxbGjBlEVhUQDVkRl27RXC5LuyULWzsYaUOCI9Yyf06DeDlahl2SwkRoTyB0+LdYsmp0fmw49OsW6P4FkLKvo3UGl75EZyTm3vd8oze4NXNy9GiSxpfD12jhtToKDub/qd7EMJrFadUkuGoTg/qQtmDk4YVoWJvLb26KcUH51PdQIDAQAB"

@@ -48,22 +48,11 @@ object SendMessageToAppServer {
                 //nothing to do here
                 writeToLog("SendMessageToAppServer", "finally error: " + e.message)
             }
-            onPostExecute(finishActivity)
             WillyShmoApplication.isNetworkAvailable = networkAvailable
         }
         val endTime = System.currentTimeMillis()
         writeToLog("SendMessageToAppServer", "main() url: $url elapsed time: ${endTime-beginTime} result: $result")
         return result
-    }
-
-    private fun onPostExecute(finishActivity: Boolean) {
-        try {
-            if (finishActivity) {
-                mToastMessage?.finish()
-            }
-        } catch (e: Exception) {
-            mToastMessage?.sendToastMessage(e.message)
-        }
     }
 
     private fun convertStreamToString(inputStream: InputStream?): String {
