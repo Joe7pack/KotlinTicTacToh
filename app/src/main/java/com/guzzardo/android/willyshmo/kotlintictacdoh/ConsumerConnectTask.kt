@@ -26,7 +26,7 @@ class ConsumerConnectTask {
         mToastMessage = toastMessage
         mResources = resources
         mSource = source
-        writeToLog("Consumer Connect Task", "QueueName: $queueName")
+        writeToLog("ConsumerConnectTask", "QueueName: $queueName")
 
         if (mMessageConsumer!!.channel == null) {
             try { // Connect to broker

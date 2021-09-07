@@ -101,15 +101,23 @@ class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private va
                         mLastMessage = delivery.body
                         writeToLog("RabbitMQMessageConsumer", "last message: " + String(mLastMessage))
                         mMessageHandler.post(mReturnMessage)
+                        val lastMessage = String(mLastMessage)
+                        if (lastMessage.startsWith("finishConsuming")) {
+                            mConsumerRunning = false
+                        }
                     } catch (ie: InterruptedException) {
                         writeToLog("RabbitMQMessageConsumer", "InterruptedException: " + ie.message)
                         toastMessage.sendToastMessage(ie.message)
+                        mConsumerRunning = false
                     } catch (sse: ShutdownSignalException) {
                         writeToLog("RabbitMQMessageConsumer", "ShutdownSignalException: $sse")
+                        mConsumerRunning = false
                     } catch (cce: ConsumerCancelledException) {
                         writeToLog("RabbitMQMessageConsumer", "ConsumerCancelledException: $cce")
+                        mConsumerRunning = false
                     } catch (e: Exception) {
                         writeToLog("RabbitMQMessageConsumer", "Some other Exception: $e")
+                        mConsumerRunning = false
                     } finally {
                         writeToLog("RabbitMQMessageConsumer", "run finally completed")
                     }
@@ -121,10 +129,9 @@ class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private va
     }
 
     fun dispose() {
-        mConsumerRunning = false
         writeToLog("RabbitMQMessageConsumer", "dispose called")
         try {
-            if (channel != null) channel!!.abort()
+            if (channel != null) channel!!.close()
             if (connection != null) connection!!.close()
         } catch (e: Exception) {
             writeToLog("RabbitMQMessageConsumer", "dispose() function error: $e")
@@ -140,7 +147,6 @@ class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private va
 
     fun setUpMessageConsumer(qNameQualifier: String, player1Id: Int?, activity: ToastMessage, resources: Resources, source: String) {
         val qName = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") + "-" + qNameQualifier + "-" + player1Id
-
         CoroutineScope(Dispatchers.Default).launch {
             val consumerConnectTask = ConsumerConnectTask()
             consumerConnectTask.main(

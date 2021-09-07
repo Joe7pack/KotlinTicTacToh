@@ -13,6 +13,8 @@ class CloseRabbitMQConnection {
             mResources = resources
             rabbitMQConnection.channel?.close()
             rabbitMQConnection.connection?.close()
+            rabbitMQConnection.channel = null
+            rabbitMQConnection.connection = null
         } catch (e: Exception) {
             writeToLog("CloseRabbitMQConnection", "Exception: " + e.message)
             mCallingActivity!!.sendToastMessage(e.message)

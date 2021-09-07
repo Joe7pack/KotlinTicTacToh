@@ -25,10 +25,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
-    private var mUsersOnline: String? = null
-    private var mMessageConsumer: RabbitMQMessageConsumer? = null
-    //private var mWaitForPlayerThread: WaitForPlayerThread? = null
-    //private var mRabbitMQResponse: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,30 +120,15 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         if (mSelectedPosition == -1) {
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&opponentId=0&userName=$mPlayer1Name"
             val messageResponse = CoroutineScope(Dispatchers.Default).async {
-                val sendMessageToAppServer = SendMessageToAppServer
-                sendMessageToAppServer.main(
+                SendMessageToAppServer.main(
                     urlData,
                     mPlayersOnlineActivity as ToastMessage,
                     mResources,
                     false
                     )
-                }
+            }
             writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false $messageResponse")
         }
-        if (mMessageConsumer != null) {
-            runBlocking {
-                CoroutineScope(Dispatchers.Default).async {
-                    val disposeRabbitMQTask = DisposeRabbitMQTask()
-                    disposeRabbitMQTask.main(
-                        mMessageConsumer,
-                        mResources,
-                        mPlayersOnlineActivity as ToastMessage
-                    )
-                }.await()
-            }
-        }
-        //GameActivity.isClientRunning = false
-        //isThreadRunning = false
         finish()
     }
 
@@ -164,31 +145,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     override fun onDestroy() {
         super.onDestroy()
         writeToLog("PlayersOnlineActivity", "onDestroy called from main class")
-    }
-
-    // I don't think we really need to run the ResponseHandler in a Thread, since its waiting only to receive a letsPlay message from the client
-    private inner class WaitForPlayerThread: Thread() {
-        override fun run() {
-            try {
-                writeToLog("PlayersOnlineActivity","WaitForPlayerThread run method started")
-                while (isThreadRunning) {
-                    if (mRabbitMQResponse != null) {
-                        writeToLog("PlayersOnlineActivity","Retrieving command in WaitForPlayerThread: $mRabbitMQResponse")
-                        if (mRabbitMQResponse!!.startsWith("letsPlay")) {
-                            isThreadRunning = false
-                        }
-                        mRabbitMQResponse = null
-                    }
-                    sleep(THREAD_SLEEP_INTERVAL.toLong())
-                } // while end
-                writeToLog("PlayersOnlineActivity","WaitForPlayerThread run method finished")
-            } catch (e: Exception) {
-                writeToLog("PlayersOnlineActivity","error in WaitForPlayerThread: " + e.message)
-            } finally {
-                isThreadRunning = false
-                writeToLog("PlayersOnlineActivity","WaitForPlayerThread finally done")
-            }
-        }
     }
 
     /**
@@ -225,7 +181,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             startGame()
         }
 
-        private fun startGame() {
+        private fun startGame() { //this function should be removed and replaced with something more appropriate to indicate we've started a new game
             mSelectedPosition = -1
             writeToLog("PlayersOnlineFragment", "startGame() called, old game request = $mRabbitMQResponse")
             //mRabbitMQPlayerResponseHandler!!.rabbitMQResponse = null // get rid of any old game requests
@@ -234,10 +190,10 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         override fun onPause() { // pause the PlayersOnlineFragment
             super.onPause()
             writeToLog("PlayersOnlineFragment", "onPause called from PlayersOnlineFragment")
-            //isThreadRunning = false
             if (mRabbitMQConnection != null) {
                 closeRabbitMQConnection(mRabbitMQConnection!!)
             }
+            writeToLog("PlayersOnlineFragment", "onPause completed from PlayersOnlineFragment mSelectedPosition = $mSelectedPosition")
         }
 
         override fun onStop() {
@@ -257,7 +213,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
         override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
             setUpClientAndServer(position)
-            //val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "startGame" + "-" + mUserIds[position]
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + mUserIds[position]
             mRabbitMQConnection = setUpRabbitMQConnection(qName)
             mSelectedPosition = position
@@ -266,7 +221,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
             writeToLog("PlayersOnlineActivity", "============> onListItemClick called  at: $dateTime")
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
-            return runBlocking {
+            runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
                     sendMessageToRabbitMQ.main(
@@ -294,13 +249,37 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
         //TODO: think about closing connection in GameActivity and closing it here only if we never start GameActivity
         private fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
-            writeToLog("PlayersOnlineActivity", "about to close RabbitMQ connection")
+            // terminate run loop in RabbitMQMessageConsumer
+            writeToLog("PlayersOnlineActivity", "at start of closeRabbitMQConnection()")
             return runBlocking {
+                writeToLog("PlayersOnlineActivity", "about to stop RabbitMQ consume thread")
+                val messageToSelf = "finishConsuming,$mPlayer1Name,$mPlayer1Id"
+                val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + mPlayer1Id
+                CoroutineScope(Dispatchers.Default).async {
+                    val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
+                    sendMessageToRabbitMQ.main(
+                        Companion.mRabbitMQConnection,
+                        myQName,
+                        messageToSelf,
+                        mPlayersOnlineActivity as ToastMessage,
+                        mResources
+                    )
+                }.await()
+                writeToLog("PlayersOnlineActivity", "about to close RabbitMQ connection")
                 CoroutineScope(Dispatchers.Default).async {
                     CloseRabbitMQConnection().main(
                         mRabbitMQConnection,
                         mPlayersOnlineActivity as ToastMessage,
                         resources
+                    )
+                }.await()
+                writeToLog("PlayersOnlineActivity", "about to Dispose RabbitMQ consumer")
+                CoroutineScope(Dispatchers.Default).async {
+                    val disposeRabbitMQTask = DisposeRabbitMQTask()
+                    disposeRabbitMQTask.main(
+                        mMessageConsumer,
+                        mResources,
+                        mPlayersOnlineActivity as ToastMessage
                     )
                 }.await()
             }
@@ -430,6 +409,8 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var isThreadRunning: Boolean = false
         private const val THREAD_SLEEP_INTERVAL = 300 //milliseconds
         private var mRabbitMQResponse: String? = null
+        private var mMessageConsumer: RabbitMQMessageConsumer? = null
+        private var mUsersOnline: String? = null
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {

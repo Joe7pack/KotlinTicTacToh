@@ -11,7 +11,7 @@ class SendMessageToRabbitMQ {
             mCallingActivity = callerActivity
             mResources = resources
             val channel = rabbitMQConnection?.channel
-            channel?.queueDeclare(qName, false, false, false, null)
+            //channel?.queueDeclare(qName, false, false, false, null)
             //channel?.queueDeclare(qName, false, false, true, null) //autodelete queue
             channel?.basicPublish("", qName, null, message.toByteArray())
             writeToLog("SendMessageToRabbitMQ", "message: $message to queue: $qName")

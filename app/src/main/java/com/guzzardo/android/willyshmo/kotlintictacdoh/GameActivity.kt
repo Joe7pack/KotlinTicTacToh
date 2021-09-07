@@ -186,7 +186,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID) //clientOpponentId
             mClientThread = ClientThread()
             mMessageClientConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
-            //mRabbitMQClientResponse = "clientStarting"
+            mRabbitMQClientResponse = "clientStarting"
             mMessageClientConsumer!!.setUpMessageConsumer("client", mPlayer1Id, this, resources, "GameActivityClient")
             mMessageClientConsumer!!.setOnReceiveMessageHandler(object: OnReceiveMessageHandler {
                 override fun onReceiveMessage(message: ByteArray?) {
@@ -1598,8 +1598,23 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
 
         fun closeRabbitMQConnection(rabbitMQConnection: RabbitMQConnection) {
+            writeToLog("ServerThread", "about to stop RabbitMQ server side consume thread")
+            val messageToSelf = "finishConsuming,${mPlayer1Name},${mPlayer1Id}"
+            val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "server" + "-" + mPlayer1Id
+            runBlocking {
+                CoroutineScope(Dispatchers.Default).async {
+                    SendMessageToRabbitMQ().main(
+                        rabbitMQConnection,
+                        myQName,
+                        messageToSelf,
+                        this@GameActivity as ToastMessage,
+                        Companion.resources
+                    )
+                }.await()
+            }
+
             writeToLog("ServerThread", "about to close server side RabbitMQ connection")
-            return runBlocking {
+            runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     CloseRabbitMQConnection().main(
                         rabbitMQConnection,
@@ -1743,8 +1758,22 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
         //FIXME - consolidate client side and server side methods with a single shared method
         fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
+            writeToLog("ClientThread", "about to stop RabbitMQ client side consume thread")
+            val messageToSelf = "finishConsuming,${mPlayer1Name},${mPlayer1Id}"
+            val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + mPlayer1Id
+            runBlocking {
+                CoroutineScope(Dispatchers.Default).async {
+                    SendMessageToRabbitMQ().main(
+                        rabbitMQConnection,
+                        myQName,
+                        messageToSelf,
+                        this@GameActivity as ToastMessage,
+                        Companion.resources
+                    )
+                }.await()
+            }
             writeToLog("ClientThread", "about to close client side RabbitMQ connection")
-            return runBlocking {
+            runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     CloseRabbitMQConnection().main(
                         mRabbitMQConnection,

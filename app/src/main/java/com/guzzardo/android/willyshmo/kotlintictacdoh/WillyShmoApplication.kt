@@ -36,7 +36,7 @@ class WillyShmoApplication : MultiDexApplication() {
         var androidId: String? = null
         var willyShmoApplicationContext: Context? = null
         //private var mGoogleApiClient: GoogleApiClient? = null
-        @JvmStatic
+
         var prizeNames: Array<String?>
         get() = mPrizeNames
         set(prizeNames) {
@@ -83,11 +83,8 @@ class WillyShmoApplication : MultiDexApplication() {
             mConfigMap!![key] = value
         }
 
-        @JvmStatic
         fun getConfigMap(key: String?): String? {
             return mConfigMap!![key]
         }
-
     }
-
 }
