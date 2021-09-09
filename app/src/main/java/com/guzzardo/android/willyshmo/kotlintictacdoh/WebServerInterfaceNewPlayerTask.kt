@@ -13,7 +13,7 @@ import org.json.JSONObject
 
 class WebServerInterfaceNewPlayerTask {
     private var mCallerActivity: Context? = null
-    private lateinit var mToastMessage: ToastMessage //? = mCallerActivity as ToastMessage
+    private lateinit var mToastMessage: ToastMessage
     private var mPlayerName: String? = null
     private var mPlayerId: Int? = null
 
@@ -56,7 +56,7 @@ class WebServerInterfaceNewPlayerTask {
         }
     }
 
-    private fun getNewUserId(newUser: String?): Int {
+    private fun getNewUserId(newUser: String): Int {
         try {
             val jsonObject = JSONObject(newUser)
             val userObject = jsonObject.getJSONObject("User")
