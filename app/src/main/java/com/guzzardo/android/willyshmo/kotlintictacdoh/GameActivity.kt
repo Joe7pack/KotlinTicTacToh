@@ -186,7 +186,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID) //clientOpponentId
             mClientThread = ClientThread()
             mMessageClientConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
-            mRabbitMQClientResponse = "clientStarting"
+            //mRabbitMQClientResponse = "clientStarting" //this causes clientThread to DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER
             mMessageClientConsumer!!.setUpMessageConsumer("client", mPlayer1Id, this, resources, "GameActivityClient")
             mMessageClientConsumer!!.setOnReceiveMessageHandler(object: OnReceiveMessageHandler {
                 override fun onReceiveMessage(message: ByteArray?) {
