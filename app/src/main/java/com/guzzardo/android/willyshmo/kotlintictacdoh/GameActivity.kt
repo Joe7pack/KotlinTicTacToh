@@ -1831,9 +1831,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         }
                         if (mRabbitMQClientResponse!!.startsWith("noPlay")) {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 0)
+                            mClientRunning = false
                         }
                         if (mRabbitMQClientResponse!!.startsWith("leftGame") && isGameStarted) {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 1)
+                            mClientRunning = false
                         }
                         mRabbitMQClientResponse = null
                     }
