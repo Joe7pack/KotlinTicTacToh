@@ -65,6 +65,8 @@ class PlayOverNetwork: Activity(), ToastMessage {
         if (mPlayer1Id == 0) {
             //setSharedPreferences()
             addMyselfToPlayerList()
+            writeToLog("PlayOverNetwork", "onResume() added brand new player")
+            finish()
         } else {
             var returnMessage: String? = null
             runBlocking {
