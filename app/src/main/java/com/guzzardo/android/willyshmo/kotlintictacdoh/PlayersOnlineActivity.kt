@@ -223,8 +223,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
             runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
-                    val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
-                    sendMessageToRabbitMQ.main(
+                    SendMessageToRabbitMQ().main(
                         mRabbitMQConnection,
                         qName,
                         messageToOpponent,
@@ -233,6 +232,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                     )
                 }.await()
             }
+            onPause()
         }
 
         private fun setUpRabbitMQConnection(qName: String): RabbitMQConnection {
