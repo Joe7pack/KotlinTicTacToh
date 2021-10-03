@@ -1644,7 +1644,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                             parseLine(mRabbitMQServerResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_SERVER_TURN)
                         }
-                        if (mRabbitMQServerResponse!!.startsWith("leftGame") && isGameStarted) {
+                        if (mRabbitMQServerResponse!!.startsWith("leftGame")) { // && isGameStarted) {
                             playerNotPlaying("client", mRabbitMQServerResponse!!, 1)
                         }
                         if (mRabbitMQServerResponse!!.startsWith("noPlay")) {
@@ -1688,10 +1688,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mServerIsPlayingNow = false
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
-                //This is taken care of in onDestroy function
-                //val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&playingNow=false&opponentId=0"
-                //val messageResponse = sendMessageToAppServer(urlData, false)
-                //writeToLog("ServerThread", "server run method finally done, messageResponse: $messageResponse")
                 writeToLog("ServerThread", "server run method finally done")
             }
         }
@@ -1833,7 +1829,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 0)
                             mClientRunning = false
                         }
-                        if (mRabbitMQClientResponse!!.startsWith("leftGame") && isGameStarted) {
+                        if (mRabbitMQClientResponse!!.startsWith("leftGame")) { //&& isGameStarted) {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 1)
                             mClientRunning = false
                         }
@@ -1934,6 +1930,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mHandler.sendEmptyMessage(NEW_GAME_FROM_CLIENT)
             mServerIsPlayingNow = true
             mServerThread!!.setMessageToClient("serverAccepted")
+            val messageResponse = sendMessageToAppServer(urlData, !start)
+            writeToLog("GameActivity", "setNetworkGameStatusAndResponse start guy messageResponse: $messageResponse")
         } else {
             writeToLog("GameActivity", "setNetworkGameStatusAndResponse sendNoPlay: $sendNoPlay")
             urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
@@ -1947,10 +1945,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     mServerThread!!.setMessageToClient("noPlay, $mPlayer1Name")
                 }
             }
+            val messageResponse = sendMessageToAppServer(urlData, !start)
+            writeToLog("GameActivity", "setNetworkGameStatusAndResponse finish guy messageResponse: $messageResponse")
             finish()
         }
-        val messageResponse = sendMessageToAppServer(urlData, !start)
-        writeToLog("GameActivity", "messageResponse: $messageResponse")
     }
 
     private val newNetworkGameHandler = object: Handler(Looper.getMainLooper()) {
