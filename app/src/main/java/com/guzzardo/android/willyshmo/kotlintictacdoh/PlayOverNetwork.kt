@@ -15,35 +15,16 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
 import kotlinx.coroutines.*
-import android.os.StrictMode
-import android.os.StrictMode.ThreadPolicy
-import android.os.StrictMode.VmPolicy
-
 
 class PlayOverNetwork: Activity(), ToastMessage {
     private lateinit var mPlayer1Name: String
     private lateinit var mCallerActivity: PlayOverNetwork
 
     public override fun onCreate(savedInstanceState: Bundle?) {
-        /*
-            StrictMode.setThreadPolicy(
-                ThreadPolicy.Builder()
-                    .detectNetwork()
-                    .penaltyLog()
-                    .build()
-            )
-            StrictMode.setVmPolicy(
-                VmPolicy.Builder()
-                    .detectLeakedSqlLiteObjects()
-                    .detectLeakedClosableObjects()
-                    .penaltyLog()
-                    .penaltyDeath()
-                    .build()
-            )
-         */
         super.onCreate(savedInstanceState)
         mCallerActivity = this
         mApplicationContext = applicationContext
+        mPlayOverNetwork = this
         mErrorHandler = ErrorHandler()
         mResources = resources
         sharedPreferences
@@ -55,6 +36,8 @@ class PlayOverNetwork: Activity(), ToastMessage {
     override fun onStart() {
         super.onStart()
         writeToLog("PlayOverNetwork", "onStart() called")
+        val cleanUpRabbitMQQueue = CleanUpRabbitMQQueue(mPlayer1Id, mPlayer1Name, mResources!!, this )
+        cleanUpRabbitMQQueue.main()
     }
 
     override fun onResume() {
@@ -184,6 +167,7 @@ class PlayOverNetwork: Activity(), ToastMessage {
         var mErrorHandler: ErrorHandler? = null
         private var mHostWaitDialog: AlertDialog? = null
         private var mHostUnavailableDialog: AlertDialog? = null
+        private var mPlayOverNetwork: PlayOverNetwork? = null
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)

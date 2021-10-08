@@ -201,11 +201,12 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     /**
      * This is the "top-level" fragment, showing a list of items that the
      * user can pick.  Upon picking an item, it takes care of displaying the
-     * data to the user as appropriate based on the currrent UI layout.
+     * data to the user as appropriate based on the current UI layout.
      */
     class PlayersOnlineFragment : ListFragment() {
         private val mDualPane = false
         private var mCurCheckPosition = 0
+        private var mAlreadySelected = false
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
@@ -229,13 +230,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         override fun onResume() { //only called when at least one opponent is online to select
             super.onResume()
             writeToLog("PlayersOnlineFragment", "onResume called from PlayersOnlineFragment")
-            startGame()
-        }
-
-        private fun startGame() { //this function should be removed and replaced with something more appropriate to indicate we've started a new game
             mSelectedPosition = -1
-            writeToLog("PlayersOnlineFragment", "startGame() called, old game request = $mRabbitMQResponse")
-            //mRabbitMQPlayerResponseHandler!!.rabbitMQResponse = null // get rid of any old game requests
         }
 
         override fun onPause() { // pause the PlayersOnlineFragment
@@ -267,6 +262,13 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
             super.onListItemClick(l, v, position, id)
             writeToLog("PlayersOnlineActivity", ">>>>>>>>>>>> onListItemClick position: $position")
+            if (mAlreadySelected) {
+                // not sure if this is really needed
+                // may want to reconsider making this class a distinct Rabbit MQ queue
+                writeToLog("PlayersOnlineActivity", "<<<<<<<<<<<<<< onListItemClick already selected, I'm returning")
+                return
+            }
+            mAlreadySelected = true
             setUpClientAndServer(position)
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + mUserIds[position]
             mRabbitMQConnection = setUpRabbitMQConnection(qName)
@@ -303,7 +305,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 }
             }
         }
-
 
         private fun setUpClientAndServer(which: Int) {
             val settings = mApplicationContext!!.getSharedPreferences(UserPreferences.PREFS_NAME, 0)
