@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    
-	<!-- these elements need to be changed before going to production -->
+
+	<!-- following elements need to be changed before going to production -->
+	<string name="debug" translatable="false">true</string>
+	<string name="prizesAvailable" translatable="false">true</string>
+	<string name="showAds" translatable="false">true</string>
+	<!-- above elements need to be changed before going to production -->
 
 	<!-- increment version number to match values found in app/build.gradle -->
-	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Kotlin Version 32 (1.301.32)</string>
+	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Kotlin Version 33 (1.301.33)</string>
     <string name="about_2" translatable="false">Copyright © 1986&#8211;2021 &#8211; Tom Volpert and
 		Joe Guzzardo. All rights reserved.</string>
 
@@ -13,18 +17,11 @@
 	<string name="domainName">http://player.alterrigo.com</string>
 	<!-- string name="domainName">http://player.willyshmo.com</string -->
 	<!-- string name="domainName" translatable="false">http://willyshmo.com:8080</string --> 
-
 	<string name="RabbitMQQueuePrefixx" translatable="false">test</string>
 	<string name="RabbitMQHostNamex" translatable="false">3.16.84.32</string>
 	<string name="RabbitMQPortNumberx" translatable="false">5672</string>
 	<!--string name="RabbitMQHostName" translatable="false">rabbitMq.willyshmo.com</string -->
 	<!--string name="RabbitMQHostName" translatable="false">24.148.41.245</string -->
-		
-	<string name="debug" translatable="false">true</string>
-	<string name="prizesAvailable" translatable="false">true</string>
-
-	<!-- above elements need to be changed before going to production -->
-    
 	<string name="start_comp" translatable="false">Start &#812;&#812; Willy goes first</string>
 	<string name="start_player" translatable="false">Start &#812;&#812; You go first</string>
 	<string name="ok" translatable="false">@android:string/ok</string>
@@ -95,7 +92,6 @@
 	<string name="start_o" translatable="false">Start as O</string>
 	<string name="start_x" translatable="false">Start as X</string>
 
-
 	<string name="would_like_to_play" translatable="false">would like to play</string>
 	<string name="network_not_available" translatable="false">Prizes and network play not available</string>
 	<string name="prizes_you_can_win" translatable="false">"Prizes you can win!"</string>
@@ -131,7 +127,6 @@
 	<string name="location_settings_inadequate_warning">You were already warned once!</string>
     <string name="appbar_scrolling_view_behavior">well behaved</string>
 	<string name="prize_list_wait">Please wait while we load your prize list</string>
-
 
 </resources>
 
