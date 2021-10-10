@@ -34,21 +34,22 @@
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.SplashScreen"
         android:label="@string/splash_name"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyTheme" >
+        android:theme="@style/WillyTheme"
+        android:exported="true">
         <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
         </intent-filter>
     </activity>
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity"
         android:label="@string/app_name"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyTheme" >
+        android:theme="@style/WillyTheme"
+        android:exported="true">
         <intent-filter>
-            <action android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity" />
-
-            <category android:name="android.intent.category.DEFAULT" />
+            <action android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity"/>
+            <category android:name="android.intent.category.DEFAULT"/>
         </intent-filter>
     </activity>
 
@@ -56,10 +57,10 @@
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.FusedLocationActivity"
         android:parentActivityName=".SplashScreen"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyTheme" >
+        android:theme="@style/WillyTheme">
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
-            android:value=".SplashScreen" />
+            android:value=".SplashScreen"/>
     </activity>
 
     <activity
@@ -76,28 +77,28 @@
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.OnePlayerActivity"
         android:label="@string/one_player_name"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyTheme" >
+        android:theme="@style/WillyTheme">
     </activity>
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.TwoPlayerActivity"
         android:label="@string/two_player_name"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyTheme" >
+        android:theme="@style/WillyTheme">
     </activity>
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity"
         android:noHistory="true"
-        android:screenOrientation="landscape" />
+        android:screenOrientation="landscape"/>
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.SettingsDialogs"
         android:label="@string/settings"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyTheme" >
+        android:theme="@style/WillyTheme">
     </activity>
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.PlayOverNetwork"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyListTheme" >
+        android:theme="@style/WillyListTheme">
     </activity>
     <activity
         android:name=".PlayersOnlineActivity"
@@ -109,7 +110,7 @@
         android:label="@string/show_prizes"
         android:noHistory="true"
         android:screenOrientation="landscape"
-        android:theme="@style/WillyListTheme" />
+        android:theme="@style/WillyListTheme"/>
 
     <!--activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.GetConfigurationActivity" /-->
