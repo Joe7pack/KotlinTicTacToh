@@ -36,8 +36,7 @@ class PlayOverNetwork: Activity(), ToastMessage {
     override fun onStart() {
         super.onStart()
         writeToLog("PlayOverNetwork", "onStart() called")
-        val cleanUpRabbitMQQueue = CleanUpRabbitMQQueue(mPlayer1Id, mPlayer1Name, mResources!!, this )
-        cleanUpRabbitMQQueue.main()
+        CleanUpRabbitMQQueue(mPlayer1Id, mPlayer1Name, mResources!!, this).main()
     }
 
     override fun onResume() {

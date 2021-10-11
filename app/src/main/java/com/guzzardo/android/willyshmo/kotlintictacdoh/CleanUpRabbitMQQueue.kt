@@ -1,47 +1,53 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.content.Context
-import android.util.Log
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.nio.charset.StandardCharsets
 
-class CleanUpRabbitMQQueue(val player1Id: Int, val player1Name: String, val resources: Resources, val toastMessage: ToastMessage) : HandleRabbitMQMessage {
+class CleanUpRabbitMQQueue(private val player1Id: Int, private val player1Name: String, val resources: Resources, val toastMessage: ToastMessage) : HandleRabbitMQMessage {
 
     fun main() {
         mResources = resources
-        mMessageConsumer = RabbitMQMessageConsumer(toastMessage, mResources)
-        mMessageConsumer!!.setUpMessageConsumer("client", player1Id, toastMessage, mResources, "CleanUpRabbitMQQueue")
-        mMessageConsumer!!.setOnReceiveMessageHandler(object:
-            RabbitMQMessageConsumer.OnReceiveMessageHandler {
-            override fun onReceiveMessage(message: ByteArray?) {
-                try {
-                    val text = String(message!!, StandardCharsets.UTF_8)
-                    writeToLog("CleanUpRabbitMQQueue", "OnReceiveMessageHandler has received message: $text")
-                    handleRabbitMQMessage(text)
-                } catch (e: Exception) {
-                    writeToLog("CleanUpRabbitMQQueue", "exception in onReceiveMessage: $e")
-                }
-            } // end onReceiveMessage
-        }) // end setOnReceiveMessageHandler
+        val queueNameList: Array<String> = arrayOf("client", "server")
+        val messageConsumerList: MutableList<RabbitMQMessageConsumer> = ArrayList()
+        val rabbitMQConnectionList: MutableList<RabbitMQConnection> = ArrayList()
+        for (x in queueNameList.indices) {
+            val queueNameQualifier = queueNameList[x]
+            messageConsumerList.add(RabbitMQMessageConsumer(toastMessage, mResources))
+            messageConsumerList[x].setUpMessageConsumer(queueNameQualifier, player1Id, toastMessage, mResources, "CleanUpRabbitMQQueue")
+            messageConsumerList[x].setOnReceiveMessageHandler(object :
+                RabbitMQMessageConsumer.OnReceiveMessageHandler {
+                override fun onReceiveMessage(message: ByteArray?) {
+                    try {
+                        val text = String(message!!, StandardCharsets.UTF_8)
+                        writeToLog("CleanUpRabbitMQQueue","OnReceiveMessageHandler has received message: $text")
+                        handleRabbitMQMessage(text)
+                    } catch (e: Exception) {
+                        writeToLog("CleanUpRabbitMQQueue", "exception in onReceiveMessage: $e")
+                    }
+                } // end onReceiveMessage
+            }) // end setOnReceiveMessageHandler
 
-        mRabbitMQConnection = setUpRabbitMQConnection()
-        mClearQueueThread = ClearQueueThread()
-        mClearQueueThread!!.start()
-        mClearQueueThreadRunning = true
+            rabbitMQConnectionList.add(setUpRabbitMQConnection(queueNameQualifier))
+            mClearQueueThread = ClearQueueThread(queueNameQualifier, messageConsumerList[x], rabbitMQConnectionList[x])
+            mClearQueueThread!!.start()
+            mClearQueueThreadRunning = true
+        }
     }
 
-    inner class ClearQueueThread: Thread() {
+    inner class ClearQueueThread(private val queueNameQualifier: String, private val messageConsumer: RabbitMQMessageConsumer, private val rabbitMQConnection: RabbitMQConnection): Thread() {
         override fun run() {
             try {
-                writeToLog("CleanUpRabbitMQQueue", "ClearQueueThread started")
+                writeToLog("CleanUpRabbitMQQueue", "ClearQueueThread started for $queueNameQualifier")
                 while (mClearQueueThreadRunning) {
                     if (mMessageRetrieved == null) {
                         mClearQueueThreadRunning = false
@@ -51,44 +57,44 @@ class CleanUpRabbitMQQueue(val player1Id: Int, val player1Name: String, val reso
                     }
                     sleep(THREAD_SLEEP_INTERVAL.toLong())
                 } // while end
-                closeRabbitMQConnection(mRabbitMQConnection!!)
+                closeRabbitMQConnection(rabbitMQConnection, queueNameQualifier, messageConsumer)
             } catch (e: Exception) {
                 writeToLog("CleanUpRabbitMQQueue", "error in ClearQueueThread: " + e.message)
                 sendToastMessage(e.message)
             } finally {
-                writeToLog("CleanUpRabbitMQQueue", "ClearQueueThread finally done")
+                writeToLog("CleanUpRabbitMQQueue", "ClearQueueThread finally done for $queueNameQualifier")
             }
         }
     }
 
-    private fun setUpRabbitMQConnection(): RabbitMQConnection {
-        val qName = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + player1Id
+    private fun setUpRabbitMQConnection(queueNameQualifier: String): RabbitMQConnection {
+        val qName = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") + "-" + queueNameQualifier + "-" + player1Id
         return runBlocking {
-            CoroutineScope(Dispatchers.Default).async {
+            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 SetUpRabbitMQConnection().main(qName, toastMessage, mResources)
-            }.await()
+            }
         }
     }
 
-    fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
-        writeToLog("CleanUpRabbitMQQueue", "at start of closeRabbitMQConnection()")
+    fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection, queueNameQualifier: String, messageConsumer: RabbitMQMessageConsumer) {
+        writeToLog("CleanUpRabbitMQQueue", "at start of closeRabbitMQConnection() for $queueNameQualifier")
         return runBlocking {
-            writeToLog("CleanUpRabbitMQQueue", "about to stop RabbitMQ consume thread")
+            writeToLog("CleanUpRabbitMQQueue", "about to stop RabbitMQ consume thread for $queueNameQualifier")
             val messageToSelf = "finishConsuming,${player1Name},${player1Id}"
-            CoroutineScope(Dispatchers.Default).async {
-                val qName = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + player1Id
+            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
+                val qName = WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix") + "-" + queueNameQualifier + "-" + player1Id
                 val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
                 sendMessageToRabbitMQ.main(mRabbitMQConnection, qName, messageToSelf, toastMessage, mResources)
-            }.await()
-            writeToLog("CleanUpRabbitMQQueue", "about to close RabbitMQ connection")
-            CoroutineScope(Dispatchers.Default).async {
+            }
+            writeToLog("CleanUpRabbitMQQueue", "about to close RabbitMQ connection for $queueNameQualifier")
+            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 CloseRabbitMQConnection().main(mRabbitMQConnection, toastMessage, mResources)
-            }.await()
-            writeToLog("CleanUpRabbitMQQueue", "about to Dispose RabbitMQ consumer")
-            CoroutineScope(Dispatchers.Default).async {
+            }
+            writeToLog("CleanUpRabbitMQQueue", "about to Dispose RabbitMQ consumer for $queueNameQualifier")
+            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 val disposeRabbitMQTask = DisposeRabbitMQTask()
-                disposeRabbitMQTask.main(mMessageConsumer, mResources, toastMessage)
-            }.await()
+                disposeRabbitMQTask.main(messageConsumer, mResources, toastMessage)
+            }
         }
     }
 
@@ -111,14 +117,12 @@ class CleanUpRabbitMQQueue(val player1Id: Int, val player1Name: String, val reso
 
     companion object {
         private lateinit var mResources: Resources
-        private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mErrorHandler: ErrorHandler? = null
         private var mApplicationContext: Context? = null
         private var mMessageRetrieved: String? = "seed message"
         private var mClearQueueThread: ClearQueueThread? = null
         private var mClearQueueThreadRunning = false
-        private const val THREAD_SLEEP_INTERVAL = 300 //milliseconds
-        private var mRabbitMQConnection: RabbitMQConnection? = null
+        private const val THREAD_SLEEP_INTERVAL = 200 //milliseconds
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg)
