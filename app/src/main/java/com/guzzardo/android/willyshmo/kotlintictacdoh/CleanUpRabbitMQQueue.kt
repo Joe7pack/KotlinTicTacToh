@@ -17,7 +17,7 @@ class CleanUpRabbitMQQueue(private val player1Id: Int, private val player1Name: 
 
     fun main() {
         mResources = resources
-        val queueNameList: Array<String> = arrayOf("client", "server")
+        val queueNameList: Array<String> = arrayOf("client", "server", "playerList")
         val messageConsumerList: MutableList<RabbitMQMessageConsumer> = ArrayList()
         val rabbitMQConnectionList: MutableList<RabbitMQConnection> = ArrayList()
         for (x in queueNameList.indices) {

@@ -60,7 +60,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             } else {
                 mMessageConsumer = RabbitMQMessageConsumer(this, mResources)
                 mMessageConsumer!!.setUpMessageConsumer(
-                    "client",
+                    "playerList",
                     mPlayer1Id,
                     this,
                     mResources,
@@ -152,8 +152,8 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         return runBlocking {
             writeToLog("PlayersOnlineActivity", "about to stop RabbitMQ consume thread")
             val messageToSelf = "finishConsuming,$mPlayer1Name,$mPlayer1Id"
-            val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + mPlayer1Id
-            CoroutineScope(Dispatchers.Default).async {
+            val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "playerList" + "-" + mPlayer1Id
+            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
                 sendMessageToRabbitMQ.main(
                     Companion.mRabbitMQConnection,
@@ -162,24 +162,24 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                     mPlayersOnlineActivity as ToastMessage,
                     mResources
                 )
-            }.await()
+            }
             writeToLog("PlayersOnlineActivity", "about to close RabbitMQ connection")
-            CoroutineScope(Dispatchers.Default).async {
+            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 CloseRabbitMQConnection().main(
                     mRabbitMQConnection,
                     mPlayersOnlineActivity as ToastMessage,
                     resources
                 )
-            }.await()
+            }
             writeToLog("PlayersOnlineActivity", "about to Dispose RabbitMQ consumer")
-            CoroutineScope(Dispatchers.Default).async {
+            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 val disposeRabbitMQTask = DisposeRabbitMQTask()
                 disposeRabbitMQTask.main(
                     mMessageConsumer,
                     mResources,
                     mPlayersOnlineActivity as ToastMessage
                 )
-            }.await()
+            }
         }
     }
 
@@ -270,7 +270,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             }
             mAlreadySelected = true
             setUpClientAndServer(position)
-            val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "client" + "-" + mUserIds[position]
+            val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "playerList" + "-" + mUserIds[position]
             mRabbitMQConnection = setUpRabbitMQConnection(qName)
             mSelectedPosition = position
             //FIXME - clean up this code once fully debugged
@@ -279,7 +279,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "============> onListItemClick called  at: $dateTime")
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
             runBlocking {
-                CoroutineScope(Dispatchers.Default).async {
+                withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                     SendMessageToRabbitMQ().main(
                         mRabbitMQConnection,
                         qName,
@@ -287,7 +287,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                         mPlayersOnlineActivity as ToastMessage,
                         mResources
                     )
-                }.await()
+                }
             }
             //onPause()
             //finish() - don't work here
