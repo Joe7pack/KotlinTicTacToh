@@ -41,40 +41,27 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             sendToastMessage("Sorry unable to retrieve Users online, please try again")
             finish()
         } else {
-
             playersOnline
             setNumberOfPlayersOnline()
-
             if (mUserNames.isEmpty()) {
                 writeToLog("PlayersOnlineActivity", "starting server only")
-                val i = Intent(mApplicationContext, GameActivity::class.java)
-
+                val intent = Intent(mApplicationContext, GameActivity::class.java)
                 val item = GameActivity.ParcelItems(123456789, "Cannabis")
-                i.putExtra(GameActivity.PARCELABLE_VALUES, item)
-
-                i.putExtra(GameActivity.START_SERVER, "true")
-                i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
-                i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-                startActivity(i)
+                intent.putExtra(GameActivity.PARCELABLE_VALUES, item)
+                intent.putExtra(GameActivity.START_SERVER, "true")
+                intent.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
+                intent.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
+                startActivity(intent)
                 finish()
             } else {
                 mMessageConsumer = RabbitMQMessageConsumer(this, mResources)
-                mMessageConsumer!!.setUpMessageConsumer(
-                    "playerList",
-                    mPlayer1Id,
-                    this,
-                    mResources,
-                    "PlayersOnlineActivity"
-                )
+                mMessageConsumer!!.setUpMessageConsumer("playerList", mPlayer1Id, this, mResources, "PlayersOnlineActivity")
                 mMessageConsumer!!.setOnReceiveMessageHandler(object :
                     RabbitMQMessageConsumer.OnReceiveMessageHandler {
                     override fun onReceiveMessage(message: ByteArray?) {
                         try {
                             val text = String(message!!, StandardCharsets.UTF_8)
-                            writeToLog(
-                                "PlayersOnlineActivity",
-                                "OnReceiveMessageHandler has received message: $text"
-                            )
+                            writeToLog("PlayersOnlineActivity", "OnReceiveMessageHandler has received message: $text")
                             handleRabbitMQMessage(text)
                         } catch (e: Exception) {
                             writeToLog("PlayersOnlineActivity", "exception in onReceiveMessage: $e")
@@ -82,9 +69,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                     } // end onReceiveMessage
                 }) // end setOnReceiveMessageHandler
                 setContentView(R.layout.players_online) //this starts up the list view
-                //mWaitForPlayerThread = WaitForPlayerThread()
-                //isThreadRunning = true
-                //mWaitForPlayerThread!!.start()
             }
             setContext(this)
             writeToLog("PlayersOnlineActivity", "onCreate taskId: $taskId")
@@ -119,7 +103,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "got LetsPlay response received message: $message at: " +
                 SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
             )
-            //finish()
         }
         finish()
     }
@@ -129,20 +112,16 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         writeToLog("PlayersOnlineActivity", "onPause called from Main Activity")
         if (mRabbitMQConnection != null) {
             closeRabbitMQConnection(mRabbitMQConnection!!)
+            writeToLog("PlayersOnlineActivity", "closeRabbitMQConnection() all done")
         }
         if (mSelectedPosition == -1) {
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&opponentId=0&userName=$mPlayer1Name"
             val messageResponse = CoroutineScope(Dispatchers.Default).async {
-                SendMessageToAppServer.main(
-                    urlData,
-                    mPlayersOnlineActivity as ToastMessage,
-                    mResources,
-                    false
-                    )
+                SendMessageToAppServer.main(urlData, mPlayersOnlineActivity as ToastMessage, mResources, false)
             }
             writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false $messageResponse")
         }
-        //finish()
+        writeToLog("PlayersOnlineActivity", "onPause all done")
     }
 
     //TODO: think about closing connection in GameActivity and closing it here only if we never start GameActivity
@@ -155,30 +134,16 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "playerList" + "-" + mPlayer1Id
             withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
-                sendMessageToRabbitMQ.main(
-                    Companion.mRabbitMQConnection,
-                    myQName,
-                    messageToSelf,
-                    mPlayersOnlineActivity as ToastMessage,
-                    mResources
-                )
+                sendMessageToRabbitMQ.main(Companion.mRabbitMQConnection, myQName, messageToSelf, mPlayersOnlineActivity as ToastMessage, mResources)
             }
             writeToLog("PlayersOnlineActivity", "about to close RabbitMQ connection")
             withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
-                CloseRabbitMQConnection().main(
-                    mRabbitMQConnection,
-                    mPlayersOnlineActivity as ToastMessage,
-                    resources
-                )
+                CloseRabbitMQConnection().main(mRabbitMQConnection, mPlayersOnlineActivity as ToastMessage, resources)
             }
             writeToLog("PlayersOnlineActivity", "about to Dispose RabbitMQ consumer")
             withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                 val disposeRabbitMQTask = DisposeRabbitMQTask()
-                disposeRabbitMQTask.main(
-                    mMessageConsumer,
-                    mResources,
-                    mPlayersOnlineActivity as ToastMessage
-                )
+                disposeRabbitMQTask.main(mMessageConsumer, mResources, mPlayersOnlineActivity as ToastMessage)
             }
         }
     }
@@ -235,12 +200,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
         override fun onPause() { // pause the PlayersOnlineFragment
             super.onPause()
-            writeToLog("PlayersOnlineFragment", "onPause called from PlayersOnlineFragment")
-            /*
-            if (mRabbitMQConnection != null) {
-                closeRabbitMQConnection(mRabbitMQConnection!!)
-            }
-            */
             writeToLog("PlayersOnlineFragment", "onPause completed from PlayersOnlineFragment mSelectedPosition = $mSelectedPosition")
         }
 
@@ -289,8 +248,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                     )
                 }
             }
-            //onPause()
-            //finish() - don't work here
             writeToLog("PlayersOnlineActivity", "onListItemClick() completed selected opponent:  $position")
         }
 
@@ -311,20 +268,20 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val editor = settings.edit()
             editor.putString("ga_opponent_screenName", mUserNames[which])
             editor.apply()
-            val i = Intent(mApplicationContext, GameActivity::class.java)
-            i.putExtra(GameActivity.START_SERVER, "true")
-            i.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
-            i.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
-            i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-            i.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, mUserIds[which])
-            i.putExtra(GameActivity.PLAYER2_NAME, mUserNames[which])
-            i.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
+            val intent = Intent(mApplicationContext, GameActivity::class.java)
+            intent.putExtra(GameActivity.START_SERVER, "true")
+            intent.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
+            intent.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
+            intent.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
+            intent.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, mUserIds[which])
+            intent.putExtra(GameActivity.PLAYER2_NAME, mUserNames[which])
+            intent.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
             writeToLog("PlayersOnlineActivity", "starting client and server")
 
             val item = GameActivity.ParcelItems(123456789, "Dr. Strangelove")
-            i.putExtra(GameActivity.PARCELABLE_VALUES, item)
+            intent.putExtra(GameActivity.PARCELABLE_VALUES, item)
 
-            startActivity(i)
+            startActivity(intent)
         }
 
         private fun showDetails(index: Int) {
@@ -427,8 +384,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var mPlayersOnlineActivity: PlayersOnlineActivity? = null
         private var mSelectedPosition = -1
         private var mRabbitMQConnection: RabbitMQConnection? = null
-        private var isThreadRunning: Boolean = false
-        private const val THREAD_SLEEP_INTERVAL = 300 //milliseconds
         private var mRabbitMQResponse: String? = null
         private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mUsersOnline: String? = null
