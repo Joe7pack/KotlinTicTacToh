@@ -166,13 +166,16 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         mPlayer2TokenChoice = player2TokenChoice
     }
 
-    fun setGamePrize() {
-        prizeLocation = -1
-        if (isNetworkAvailable && prizesAreAvailable) {
-            prizeLocation = mRandom.nextInt(BoardSpaceValues.BOARDSIZE)
-            //mPrizeLocation = 11; //set prize to a fixed location
-            mPrizeXBoardLocation = mPrizeXBoardLocationArray[prizeLocation]
-            mPrizeYBoardLocation = mPrizeYBoardLocationArray[prizeLocation]
+    fun setGamePrize(prize: Boolean) {
+        if (prize) {
+            if (isNetworkAvailable && prizesAreAvailable) {
+                prizeLocation = mRandom.nextInt(BoardSpaceValues.BOARDSIZE)
+                //mPrizeLocation = 11; //set prize to a fixed location
+                mPrizeXBoardLocation = mPrizeXBoardLocationArray[prizeLocation]
+                mPrizeYBoardLocation = mPrizeYBoardLocationArray[prizeLocation]
+            }
+        } else {
+            prizeLocation = -1
         }
     }
 

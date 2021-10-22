@@ -121,7 +121,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
         val opponentName = if (mPlayer2Name == null) "Waiting for player to connect..." else "Waiting for $mPlayer2Name to connect..."
         val hostingDescription = if (mPlayer2Name == null) "Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)" else "Hosting..."
-        mGameView!!.setGamePrize()
+        mGameView!!.setGamePrize(true)
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(hostingDescription)
@@ -155,6 +155,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         mGameView!!.setGameActivity(this)
         mGameView!!.setClient(null)
         mServer = java.lang.Boolean.valueOf(intent.getStringExtra(START_SERVER))
+        HUMAN_VS_WILLY = intent.getStringExtra(PLAY_AGAINST_WILLY) == "true"
         if (mServer && !isServerRunning) {
             mPlayer1Id = intent.getIntExtra(PLAYER1_ID, 0)
             mServerThread = ServerThread()
@@ -244,7 +245,13 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 selectTurn(player)
             }
         }
-        mGameView!!.setGamePrize() //works only from client side but server side never call onResume when starting a game
+        writeToLog("GameActivity", "HUMAN_VS_HUMAN: $HUMAN_VS_HUMAN HUMAN_VS_WILLY: $HUMAN_VS_WILLY")
+        if (HUMAN_VS_HUMAN or HUMAN_VS_WILLY) {
+            mGameView!!.setGamePrize(false) //works only from client side but server side never call onResume when starting a game
+            writeToLog("GameActivity", "setGamePrize() false called")
+        } else {
+            mGameView!!.setGamePrize(true)
+        }
         //but if we just play against Willy then onResume is called
         mPlayer2NetworkScore = 0
         mPlayer1NetworkScore = mPlayer2NetworkScore
@@ -1503,11 +1510,13 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     override fun onDestroy() {
         super.onDestroy()
         writeToLog("GameActivity", "GameActivity onDestroy() called - client thread: $mClientThread server thread: $mServerThread")
+        /*
         if (!HUMAN_VS_NETWORK) {
             return
         }
         setNetworkGameStatusAndResponse(false, false)
-
+        */
+        /*
         if (mClientThread != null) {
             mClientThread!!.closeRabbitMQConnection(mClientThread!!.rabbitMQConnection)
             writeToLog("GameActivity", " onDestroy about to call clientThread DisposeRabbitMQTask()")
@@ -1523,7 +1532,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             mClientThread = null
         }
-
+        */
+        /*
         if (mServerThread != null) {
             mServerThread!!.closeRabbitMQConnection(mServerThread!!.rabbitMQConnection)
             writeToLog("GameActivity", "onDestroy about to call serverThread DisposeRabbitMQTask()")
@@ -1539,7 +1549,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             mServerThread = null
         }
-
+        */
         if (mClientWaitDialog != null)
             mClientWaitDialog!!.dismiss()
         if (mLikeToPlayDialog != null)
@@ -1684,6 +1694,18 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 writeToLog("ServerThread", "error in Server Thread: " + e.message)
                 sendToastMessage(e.message)
             } finally {
+                mServerThread!!.closeRabbitMQConnection(mServerThread!!.rabbitMQConnection)
+                writeToLog("GameActivity", "about to call serverThread DisposeRabbitMQTask()")
+                runBlocking {
+                    CoroutineScope(Dispatchers.Default).async {
+                        val disposeRabbitMQTask = DisposeRabbitMQTask()
+                        disposeRabbitMQTask.main(
+                            mMessageServerConsumer,
+                            resources,
+                            this@GameActivity as ToastMessage
+                        )
+                    }.await()
+                }
                 isServerRunning = false
                 mServerIsPlayingNow = false
                 mPlayer2NetworkScore = 0
@@ -1842,12 +1864,25 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 writeToLog("ClientThread", "error in Client Thread: "+e.message)
                 sendToastMessage(e.message)
             } finally {
+                mClientThread!!.closeRabbitMQConnection(mClientThread!!.rabbitMQConnection)
+                writeToLog("GameActivity", " onDestroy about to call clientThread DisposeRabbitMQTask()")
+                runBlocking {
+                    CoroutineScope(Dispatchers.Default).async {
+                        val disposeRabbitMQTask = DisposeRabbitMQTask()
+                        disposeRabbitMQTask.main(
+                            mMessageClientConsumer,
+                            resources,
+                            this@GameActivity as ToastMessage
+                        )
+                    }.await()
+                }
                 val urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
                 val messageResponse = sendMessageToAppServer(urlData,false)
                 mPlayer2NetworkScore = 0
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mClientRunning = false
                 writeToLog("ClientThread", "client run method finally done, messageResponse: $messageResponse")
+                finish()
             }
         }
     }
@@ -2131,6 +2166,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         const val START_PLAYER_HUMAN = "$packageName.GameActivity.START_PLAYER_HUMAN"
         const val PLAYER1_NAME = "$packageName.GameActivity.PLAYER1_NAME"
         const val PLAYER2_NAME = "$packageName.GameActivity.PLAYER2_NAME"
+        const val PLAY_AGAINST_WILLY = "$packageName.GameActivity.PLAY_AGAINST_WILLY"
         const val PLAYER1_SCORE = "$packageName.GameActivity.PLAYER1_SCORE"
         const val PLAYER2_SCORE = "$packageName.GameActivity.PLAYER2_SCORE"
         const val WILLY_SCORE = "$packageName.GameActivity.WILLY_SCORE"
@@ -2199,6 +2235,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private const val REJECT_GAME = 2
         private var mGameStarted = false
         private var mStartSource: String? = null
+        private var HUMAN_VS_WILLY: Boolean = false
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(resources.getString(R.string.debug), ignoreCase = true)) {

@@ -36,6 +36,7 @@ class OnePlayerActivity : Activity() {
         )
         i.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
         i.putExtra(GameActivity.PLAYER2_NAME, mPlayer2Name)
+        i.putExtra(GameActivity.PLAY_AGAINST_WILLY, "true")
         startActivity(i)
     }
 
