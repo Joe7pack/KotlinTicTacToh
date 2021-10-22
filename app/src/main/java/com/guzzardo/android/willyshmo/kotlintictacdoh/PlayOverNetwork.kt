@@ -30,6 +30,11 @@ class PlayOverNetwork: Activity(), ToastMessage {
         sharedPreferences
         val player1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
         mPlayer1Name = player1Name ?: "Corriander"
+        if (WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix").equals(null)) {
+            writeToLog("PlayOverNetwork", "onCreate() unable to communicate with host server, gonna finish")
+            sendToastMessage("Unable to communicate with host server, please try again later.")
+            finish()
+        }
         writeToLog("PlayOverNetwork", "onCreate() finished")
     }
 
