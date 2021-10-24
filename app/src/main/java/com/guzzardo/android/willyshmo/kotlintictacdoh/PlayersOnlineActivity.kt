@@ -8,10 +8,13 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.ListFragment
@@ -32,6 +35,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         mResources = resources
         mErrorHandler = ErrorHandler()
         mApplicationContext = applicationContext
+        mCallerActivity = this
         sharedPreferences
         mPlayersOnlineActivity = this
         mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
@@ -68,7 +72,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                         }
                     } // end onReceiveMessage
                 }) // end setOnReceiveMessageHandler
-                setContentView(R.layout.players_online) //this starts up the list view
+                setContentView(R.layout.players_online_fragment) //this starts up the list view
             }
             setContext(this)
             writeToLog("PlayersOnlineActivity", "onCreate taskId: $taskId")
@@ -110,10 +114,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     public override fun onPause() {
         super.onPause()
         writeToLog("PlayersOnlineActivity", "onPause called from Main Activity")
-        if (mRabbitMQConnection != null) {
-            closeRabbitMQConnection(mRabbitMQConnection!!)
-            writeToLog("PlayersOnlineActivity", "closeRabbitMQConnection() all done")
-        }
         if (mSelectedPosition == -1) {
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id&onlineNow=false&opponentId=0&userName=$mPlayer1Name"
             val messageResponse = CoroutineScope(Dispatchers.Default).async {
@@ -122,30 +122,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "onPause from Main Activity called to set onlineNow to false $messageResponse")
         }
         writeToLog("PlayersOnlineActivity", "onPause all done")
-    }
-
-    //TODO: think about closing connection in GameActivity and closing it here only if we never start GameActivity
-    private fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
-        // terminate run loop in RabbitMQMessageConsumer
-        writeToLog("PlayersOnlineActivity", "at start of closeRabbitMQConnection()")
-        return runBlocking {
-            writeToLog("PlayersOnlineActivity", "about to stop RabbitMQ consume thread")
-            val messageToSelf = "finishConsuming,$mPlayer1Name,$mPlayer1Id"
-            val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "playerList" + "-" + mPlayer1Id
-            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
-                val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
-                sendMessageToRabbitMQ.main(Companion.mRabbitMQConnection, myQName, messageToSelf, mPlayersOnlineActivity as ToastMessage, mResources)
-            }
-            writeToLog("PlayersOnlineActivity", "about to close RabbitMQ connection")
-            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
-                CloseRabbitMQConnection().main(mRabbitMQConnection, mPlayersOnlineActivity as ToastMessage, resources)
-            }
-            writeToLog("PlayersOnlineActivity", "about to Dispose RabbitMQ consumer")
-            withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
-                val disposeRabbitMQTask = DisposeRabbitMQTask()
-                disposeRabbitMQTask.main(mMessageConsumer, mResources, mPlayersOnlineActivity as ToastMessage)
-            }
-        }
     }
 
     override fun onResume() { //only called when at least one opponent is online to select
@@ -168,28 +144,19 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
      * user can pick.  Upon picking an item, it takes care of displaying the
      * data to the user as appropriate based on the current UI layout.
      */
-    class PlayersOnlineFragment : ListFragment() {
-        private val mDualPane = false
+    class PlayersOnlineFragment : ListFragment(), ToastMessage {
         private var mCurCheckPosition = 0
         private var mAlreadySelected = false
 
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            writeToLog("PlayersOnlineActivity", "onCreate called from PlayersOnlineFragment")
-
-            // Populate list with our array of players.
-            listAdapter = ArrayAdapter(mApplicationContext!!, android.R.layout.simple_list_item_activated_1, mUserNames)
-
-            if (savedInstanceState != null) {
-                // Restore last state for checked position.
-                mCurCheckPosition = savedInstanceState.getInt("curChoice", 0)
-            }
-            if (mDualPane) {
-                // In dual-pane mode, the list view highlights the selected item.
-                listView.choiceMode = ListView.CHOICE_MODE_SINGLE
-                // Make sure our UI is in the correct state.
-                showDetails(mCurCheckPosition)
-            }
+        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+            val view: View = inflater.inflate(R.layout.player_list_content, container, false)
+            val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
+                inflater.context,
+                android.R.layout.simple_list_item_1,
+                mUserNames
+            )
+            listAdapter = adapter
+            return view
         }
 
         override fun onResume() { //only called when at least one opponent is online to select
@@ -213,6 +180,19 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineFragment", "onDestroy called")
         }
 
+        override fun onDestroyView() {
+            super.onDestroyView()
+            writeToLog("PlayersOnlineFragment", "onDestroyView() called")
+        }
+
+        override fun onDestroyOptionsMenu() {
+            super.onDestroyOptionsMenu()
+        }
+
+        override fun onDetach() {
+            super.onDetach()
+        }
+
         override fun onSaveInstanceState(outState: Bundle) {
             super.onSaveInstanceState(outState)
             outState.putInt("curChoice", mCurCheckPosition)
@@ -225,6 +205,8 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 // not sure if this is really needed
                 // may want to reconsider making this class a distinct Rabbit MQ queue
                 writeToLog("PlayersOnlineActivity", "<<<<<<<<<<<<<< onListItemClick already selected, I'm returning")
+                //showCancelDialog()
+                sendToastMessage("Please press the Back button to search for other cool players!")
                 return
             }
             mAlreadySelected = true
@@ -237,8 +219,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
             writeToLog("PlayersOnlineActivity", "============> onListItemClick called  at: $dateTime")
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
-            runBlocking {
-                withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
+            GlobalScope.launch {
                     SendMessageToRabbitMQ().main(
                         mRabbitMQConnection,
                         qName,
@@ -246,9 +227,35 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                         mPlayersOnlineActivity as ToastMessage,
                         mResources
                     )
-                }
+            }
+            if (mRabbitMQConnection != null) {
+                closeRabbitMQConnection(mRabbitMQConnection!!)
+                writeToLog("PlayersOnlineActivity", "closeRabbitMQConnection() all done")
             }
             writeToLog("PlayersOnlineActivity", "onListItemClick() completed selected opponent:  $position")
+        }
+
+        private fun showCancelDialog() {
+            if (mCancelDialog == null) {
+                mCancelDialog = createCancelDialog()
+                mCancelDialog!!.show()
+            } else {
+                mCancelDialog!!.show()
+            }
+        }
+
+        private fun createCancelDialog(): AlertDialog {
+            if (mCancelDialog != null) {
+                mCancelDialog!!.dismiss()
+            }
+
+            return AlertDialog.Builder(mApplicationContext!!)
+                .setIcon(R.drawable.willy_shmo_small_icon)
+                .setTitle("Trouble connecting?")
+                .setMessage("Please press the Back button to search again")
+                .setCancelable(false)
+                .setNegativeButton("Cancel") { _, _ -> createCancelDialog() }
+                .create()
         }
 
         private fun setUpRabbitMQConnection(qName: String): RabbitMQConnection {
@@ -263,29 +270,49 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             }
         }
 
+        private fun closeRabbitMQConnection(mRabbitMQConnection: RabbitMQConnection) {
+            // terminate run loop in RabbitMQMessageConsumer
+            writeToLog("PlayersOnlineActivity", "at start of closeRabbitMQConnection()")
+            return runBlocking {
+                writeToLog("PlayersOnlineActivity", "about to stop RabbitMQ consume thread")
+                val messageToSelf = "finishConsuming,$mPlayer1Name,$mPlayer1Id"
+                val myQName = getConfigMap("RabbitMQQueuePrefix") + "-" + "playerList" + "-" + mPlayer1Id
+                withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
+                    val sendMessageToRabbitMQ = SendMessageToRabbitMQ()
+                    sendMessageToRabbitMQ.main(Companion.mRabbitMQConnection, myQName, messageToSelf, mPlayersOnlineActivity as ToastMessage, mResources)
+                }
+                writeToLog("PlayersOnlineActivity", "about to close RabbitMQ connection")
+                withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
+                    CloseRabbitMQConnection().main(mRabbitMQConnection, mPlayersOnlineActivity as ToastMessage, resources)
+                }
+                writeToLog("PlayersOnlineActivity", "about to Dispose RabbitMQ consumer")
+                withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
+                    val disposeRabbitMQTask = DisposeRabbitMQTask()
+                    disposeRabbitMQTask.main(mMessageConsumer, mResources, mPlayersOnlineActivity as ToastMessage)
+                }
+            }
+        }
+
         private fun setUpClientAndServer(which: Int) {
             val settings = mApplicationContext!!.getSharedPreferences(UserPreferences.PREFS_NAME, 0)
             val editor = settings.edit()
             editor.putString("ga_opponent_screenName", mUserNames[which])
             editor.apply()
-            val intent = Intent(mApplicationContext, GameActivity::class.java)
-            intent.putExtra(GameActivity.START_SERVER, "true")
-            intent.putExtra(GameActivity.START_CLIENT, "true") //this will send the new game to the client
-            intent.putExtra(GameActivity.PLAYER1_ID, mPlayer1Id)
-            intent.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-            intent.putExtra(GameActivity.START_CLIENT_OPPONENT_ID, mUserIds[which])
-            intent.putExtra(GameActivity.PLAYER2_NAME, mUserNames[which])
-            intent.putExtra(GameActivity.START_FROM_PLAYER_LIST, "true")
-            writeToLog("PlayersOnlineActivity", "starting client and server")
 
-            val item = GameActivity.ParcelItems(123456789, "Dr. Strangelove")
-            intent.putExtra(GameActivity.PARCELABLE_VALUES, item)
-
-            startActivity(intent)
+            val opponentUserId = mUserIds[which]
+            CoroutineScope( Dispatchers.Default).launch {
+                StartGameTask().main(mCallerActivity, mPlayer1Id!!, mPlayer1Name!!, opponentUserId!!, mUserNames[which]!!, resources)
+            }
         }
 
         private fun showDetails(index: Int) {
             mCurCheckPosition = index
+        }
+
+        override fun sendToastMessage(message: String?) {
+            val msg = SplashScreen.mErrorHandler!!.obtainMessage()
+            msg.obj = message
+            SplashScreen.mErrorHandler!!.sendMessage(msg)
         }
     }
 
@@ -373,7 +400,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         fun getContext(): Context {
             return appContext
         }
-
+        private lateinit var mCallerActivity: PlayersOnlineActivity
         private lateinit var mUserNames: Array<String?>
         private lateinit var mUserIds: Array<String?>
         private var mPlayer1Id: Int? = null
@@ -387,6 +414,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var mRabbitMQResponse: String? = null
         private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mUsersOnline: String? = null
+        private var mCancelDialog: AlertDialog? = null
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
