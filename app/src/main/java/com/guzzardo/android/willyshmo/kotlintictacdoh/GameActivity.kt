@@ -1882,7 +1882,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mPlayer1NetworkScore = mPlayer2NetworkScore
                 mClientRunning = false
                 writeToLog("ClientThread", "client run method finally done, messageResponse: $messageResponse")
-                finish()
             }
         }
     }
