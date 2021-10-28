@@ -902,6 +902,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         mServerThread!!.setMessageToClient("moveFirst")
                 }
                 mGameView!!.invalidate()
+                if (mClientWaitDialog != null) {
+                    mClientWaitDialog!!.dismiss()
+                }
                 return true
             }
             if (msg.what == MSG_NETWORK_CLIENT_TURN) {
@@ -1449,16 +1452,20 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     private fun showPlayerTokenChoice() {
         if (mPlayer1TokenChoice == GameView.BoardSpaceValues.CROSS) {
-            mGameTokenPlayer1!!.setImageResource(R.drawable.cross_small)
+            val mBmpCrossPlayer1 = GameView.mBmpCrossPlayer1
+            mGameTokenPlayer1!!.setImageBitmap(mBmpCrossPlayer1)
         } else if (mPlayer1TokenChoice == GameView.BoardSpaceValues.CIRCLE) {
-            mGameTokenPlayer1!!.setImageResource(R.drawable.circle_small)
+            val mBmpCirclePlayer1 = GameView.mBmpCirclePlayer1
+            mGameTokenPlayer1!!.setImageBitmap(mBmpCirclePlayer1)
         } else {
             mGameTokenPlayer1!!.setImageResource(R.drawable.reset_token_selection)
         }
         if (mPlayer2TokenChoice == GameView.BoardSpaceValues.CROSS) {
-            mGameTokenPlayer2!!.setImageResource(R.drawable.cross_small)
+            val mBmpCrossPlayer2 = GameView.mBmpCrossPlayer2
+            mGameTokenPlayer2!!.setImageBitmap(mBmpCrossPlayer2)
         } else if (mPlayer2TokenChoice == GameView.BoardSpaceValues.CIRCLE) {
-            mGameTokenPlayer2!!.setImageResource(R.drawable.circle_small)
+            val mBmpCirclePlayer2 = GameView.mBmpCirclePlayer2
+            mGameTokenPlayer2!!.setImageBitmap(mBmpCirclePlayer2)
         } else {
             mGameTokenPlayer2!!.setImageResource(R.drawable.reset_token_selection)
         }
@@ -1654,7 +1661,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                             parseLine(mRabbitMQServerResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_SERVER_TURN)
                         }
-                        if (mRabbitMQServerResponse!!.startsWith("leftGame")) { // && isGameStarted) {
+                        if (mRabbitMQServerResponse!!.startsWith("leftGame")) {
                             playerNotPlaying("client", mRabbitMQServerResponse!!, 1)
                         }
                         if (mRabbitMQServerResponse!!.startsWith("noPlay")) {
@@ -1832,14 +1839,12 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         writeToLog("ClientThread", "read response: $mRabbitMQClientResponse")
                         if (mClientWaitDialog != null ) {
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
-                            //mClientRunning = false
-                            //finish()
                         }
                         if (mRabbitMQClientResponse!!.startsWith("serverAccepted")) {
                             mGameStarted = true
                         }
                         if (mRabbitMQClientResponse!!.startsWith("moved")) {
-                            mGameStarted = true //I think we can comment out this line??
+                            //mGameStarted = true //I think we can comment out this line??
                             parseMove(mRabbitMQClientResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_CLIENT_TURN)
                         }
@@ -1851,7 +1856,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 0)
                             mClientRunning = false
                         }
-                        if (mRabbitMQClientResponse!!.startsWith("leftGame")) { //&& isGameStarted) {
+                        if (mRabbitMQClientResponse!!.startsWith("leftGame")) {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 1)
                             mClientRunning = false
                         }

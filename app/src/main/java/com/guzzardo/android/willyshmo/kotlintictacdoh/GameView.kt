@@ -66,11 +66,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     private val mLinePaint: Paint
     private val mBmpPaint: Paint
     private val mBmpCrossCenter: Bitmap?
-    private val mBmpCrossPlayer1: Bitmap?
-    private val mBmpCrossPlayer2: Bitmap?
     private val mBmpCircleCenter: Bitmap?
-    private val mBmpCirclePlayer1: Bitmap?
-    private val mBmpCirclePlayer2: Bitmap?
     private val mBmpCircleCrossCenter: Bitmap?
     private val mBmpCircleCrossPlayer1: Bitmap?
     private val mBmpCircleCrossPlayer2: Bitmap?
@@ -1404,6 +1400,12 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 Log.d(filter, msg)
             }
         }
+
+        var mBmpCrossPlayer1: Bitmap? = null
+        var mBmpCrossPlayer2: Bitmap? = null
+        var mBmpCirclePlayer1: Bitmap? = null
+        var mBmpCirclePlayer2: Bitmap? = null
+
     }
 
     init {
@@ -1430,7 +1432,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         mBmpCircleCrossCenter = getResBitmap(R.drawable.lib_circlecrossgreen)
         mBmpAvailableMove = getResBitmap(R.drawable.allowed_move)
         mBmpTakenMove = getResBitmap(R.drawable.taken_move)
-        mSrcRect[0, 0, mBmpCrossPlayer1.width - 1] = mBmpCrossPlayer1.height - 1
+        mSrcRect[0, 0, mBmpCrossPlayer1!!.width - 1] = mBmpCrossPlayer1!!.height - 1
         if (mBmpAvailableMove != null) {
             mTakenRect[0, 0, mBmpAvailableMove.width - 1] = mBmpAvailableMove.height - 1
         }
