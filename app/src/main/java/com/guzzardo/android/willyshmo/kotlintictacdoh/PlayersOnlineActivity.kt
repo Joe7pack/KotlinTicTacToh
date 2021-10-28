@@ -27,6 +27,42 @@ import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
 
+/*
+We can start GameActivity from PlayersOnlineActivity 3 different ways:
+
+1. In onCreate, if there are no other users online, starts server only - Cannabis.
+   In this scenario, GameActivity will listen on queue test-client-xx.
+
+2. When an opposing player is selected from the Fragment List, starts client and server - Dr. Strangelove.
+   In this scenario PlayersOnlineActivity will send a letsPlay message to the opposing player's PlayersOnlineActivity.
+
+3. When a letsPlay message is received from an opposing player, starts server only - Shakespeare.
+
+Only PlayersOnlineActivity is primed to accept messages using the qName prefix of test-playerList-XX where XX is the PlayerID of the opposing player.
+
+Note - letsPlay message is sent from one place only, PlayersOnlineFragment and is accepted only by PlayersOnlineActivity.
+leftGame only comes from onPause in GameActivity.
+
+Willy Shmo play over web messaging sequence:
+
+1. Player selects name from list of users online - client sends letsPlay message to server from PlayersOnlineActivity
+2. Server picks up this message in PlayersOnlineActivity
+3. client sends tokenList to server:
+   PlayersOnlineActivity sends intent to GameActivity: intent.putExtra(GameActivity.START_CLIENT, "true")
+   This will send the new game to the client in a tokenList message.
+
+If no one else is online, then starting a new game will start the server side, display the game board and wait for a tokenList message from the opponent.
+
+D/SendMessageToRabbitMQTask: message: letsPlay,Evelyn,81, 738, 2021-08-08 22:54:22 to queue: test-startGame-90
+D/GameActivity: client message consumer listening on queue: test-client-81
+D/PlayersOnlineActivity: startGame message consumer listening on queue: test-startGame-81
+
+Message sequence:
+D/GameActivity: server OnReceiveMessageHandler received message: {"tokenList"... - received from opposing player
+D/ServerThread: Server responded to client completed, queue: test-client-202, message: serverAccepted
+GameActivity commences game play
+*/
+
 class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
     override fun onCreate(savedInstanceState: Bundle?) {
