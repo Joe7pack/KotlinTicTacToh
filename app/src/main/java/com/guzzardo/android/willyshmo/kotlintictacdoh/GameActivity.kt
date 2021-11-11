@@ -1906,6 +1906,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             setNetworkGameStatusAndResponse(false, false)
         } else if (isServerRunning) {
             isServerRunning = false
+            setNetworkGameStatusAndResponse(false, false)
         }
     }
 

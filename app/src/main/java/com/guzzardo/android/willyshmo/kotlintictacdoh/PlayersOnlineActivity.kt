@@ -330,7 +330,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         }
 
         private fun setUpClientAndServer(which: Int) {
-            val settings = mApplicationContext!!.getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+            val settings = mApplicationContext!!.getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
             val editor = settings.edit()
             editor.putString("ga_opponent_screenName", mUserNames[which])
             editor.apply()
@@ -406,7 +406,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         }
 
     private fun setNumberOfPlayersOnline() {
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
         editor.putInt("ga_users_online_number",  mUserNames.size)
         editor.apply()

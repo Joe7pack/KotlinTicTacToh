@@ -36,6 +36,8 @@ class WillyShmoApplication : MultiDexApplication() {
         var androidId: String? = null
         var willyShmoApplicationContext: Context? = null
         //private var mGoogleApiClient: GoogleApiClient? = null
+        lateinit var mPlayer1Name: String
+        lateinit var mPlayer2Name: String
 
         var prizeNames: Array<String?>
         get() = mPrizeNames

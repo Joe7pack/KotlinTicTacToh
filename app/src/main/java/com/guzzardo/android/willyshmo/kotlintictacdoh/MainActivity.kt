@@ -32,12 +32,12 @@ import com.google.firebase.appindexing.builders.Actions
 import com.google.firebase.appindexing.builders.Indexables
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.isNetworkAvailable
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.prizesAreAvailable
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mPlayer1Name
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mPlayer2Name
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : Activity(), ToastMessage {
-    private var mPlayer1Name: String? = null
-    private var mPlayer2Name: String? = null
     private var mPrizeButton: Button? = null
     private val mText = "Joes text here"
     private val mUrl = "Joes url here"
@@ -90,7 +90,6 @@ class MainActivity : Activity(), ToastMessage {
     // Called when the activity is first created.
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-       // requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
         setContentView(R.layout.main)
         mErrorHandler = ErrorHandler()
         findViewById<View>(R.id.rules).setOnClickListener { showRules() }
@@ -98,8 +97,9 @@ class MainActivity : Activity(), ToastMessage {
         findViewById<View>(R.id.two_player).setOnClickListener { showTwoPlayers() }
         findViewById<View>(R.id.one_player).setOnClickListener { showOnePlayer() }
         findViewById<View>(R.id.settings_dialog).setOnClickListener { showDialogs() }
-        mPrizeButton = findViewById<View>(R.id.prizes_dialog) as Button
-        mPrizeButton!!.setOnClickListener { showPrizes() }
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
+        mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "Player 1").toString()
+        mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "Player 2").toString()
         mStatusText = findViewById<View>(R.id.status_text) as TextView
         mCheckLicenseButton = findViewById<View>(R.id.check_license_button) as Button
         mCheckLicenseButton!!.setOnClickListener { doCheck() }
@@ -108,6 +108,8 @@ class MainActivity : Activity(), ToastMessage {
         anim.startOffset = 20
         anim.repeatMode = Animation.REVERSE
         anim.repeatCount = Animation.INFINITE
+        mPrizeButton = findViewById<View>(R.id.prizes_dialog) as Button
+        mPrizeButton!!.setOnClickListener { showPrizes() }
         mPrizeButton!!.background = AppCompatResources.getDrawable(applicationContext, R.drawable.backwithgreenborder)
         mPrizeButton!!.startAnimation(anim)
         if (isNetworkAvailable && prizesAreAvailable) {
@@ -126,15 +128,12 @@ class MainActivity : Activity(), ToastMessage {
 
         // Start loading the ad in the background.
         mAdView!!.loadAd(adRequest)
-
         //adRequest.addTestDevice(AdRequest.TEST_EMULATOR);             // Android emulator
         //adRequest.addTestDevice("5F310740585B99B1179370AC1B4490C4"); // My T-Mobile G1 Test Phone
         //adRequest.addTestDevice("EE90BD2A7578BC19014DE8617761F10B");  // My Samsung Note
         mHandler = Handler(Looper.getMainLooper())
-
         // Try to use more data here. ANDROID_ID is a single point of attack.
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-
         // Library calls this when it's done.
         mLicenseCheckerCallback = MyLicenseCheckerCallback()
         // Construct the LicenseChecker with a policy.
@@ -188,24 +187,16 @@ class MainActivity : Activity(), ToastMessage {
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
         super.onSaveInstanceState(savedInstanceState)
-        savedInstanceState.putString("gm_player1_name", mPlayer1Name)
-        savedInstanceState.putString("gm_player2_name", mPlayer2Name)
     }
 
     public override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         // Restore UI state from the savedInstanceState.
         // This bundle has also been passed to onCreate.
-        mPlayer1Name = savedInstanceState.getString("gm_player1_name")
-        mPlayer2Name = savedInstanceState.getString("gm_player2_name")
     }
 
     override fun onResume() {
         super.onResume()
-        // Restore preferences
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
-        mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "Player 1")
-        mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "Player 2")
     }
 
     override fun onPause() {
@@ -226,7 +217,6 @@ class MainActivity : Activity(), ToastMessage {
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         writeToLog("MainActivity", "MainActivity onActivityResult")
-
     }
 
     private fun writeToLog(filter: String, msg: String) {

@@ -16,9 +16,12 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -27,10 +30,10 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AlertDialog
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mPlayer1Name
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mPlayer2Name
 
 class SettingsDialogs : Activity() {
-    private var mPlayer1Name: String? = null
-    private var mPlayer2Name: String? = null
     private var mButtonPlayer1: Button? = null
     private var mButtonPlayer2: Button? = null
     private var mSeekBar: SeekBar? = null
@@ -46,22 +49,22 @@ class SettingsDialogs : Activity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
-        mPlayer2Name = intent.getStringExtra(GameActivity.PLAYER2_NAME)
+        Companion.resources = resources
         setContentView(R.layout.settings_dialog)
-        mPlayer1Name = if (mPlayer1Name == null) " " else mPlayer1Name
-        mPlayer2Name = if (mPlayer2Name == null) " " else mPlayer2Name
-        mButtonPlayer1 = findViewById<View>(R.id.text_entry_button_player1_name) as Button
-        mButtonPlayer1!!.text = "Player 1 Name: $mPlayer1Name"
-        mButtonPlayer2 = findViewById<View>(R.id.text_entry_button_player2_name) as Button
-        mButtonPlayer2!!.text = "Player 2 Name: $mPlayer2Name"
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
+        mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "").toString()
+        mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "").toString()
         mMoveModeTouch = settings.getBoolean(GameActivity.MOVE_MODE, false)
+        mSoundMode = settings.getBoolean(GameActivity.SOUND_MODE, true)
         mTokenSize = settings.getInt(GameActivity.TOKEN_SIZE, 50)
         mTokenColor1 = settings.getInt(GameActivity.TOKEN_COLOR_1, Color.RED)
         mTokenColor2 = settings.getInt(GameActivity.TOKEN_COLOR_2, Color.BLUE)
         mMoveModeChecked = if (!mMoveModeTouch) 0 else 1
         mSoundModeChecked = if (mSoundMode) 0 else 1
+        mButtonPlayer1 = findViewById<View>(R.id.text_entry_button_player1_name) as Button
+        mButtonPlayer1!!.text = "Player 1 Name: $mPlayer1Name"
+        mButtonPlayer2 = findViewById<View>(R.id.text_entry_button_player2_name) as Button
+        mButtonPlayer2!!.text = "Player 2 Name: $mPlayer2Name"
 
         /* Display a text message with yes/no buttons and handle each message as well as the cancel action */
         val twoButtonsTitle = findViewById<View>(R.id.reset_scores) as Button
@@ -72,14 +75,12 @@ class SettingsDialogs : Activity() {
 
         /* Display a text entry dialog for entry of player 1 name */
         mButtonPlayer1!!.setOnClickListener {
-            val playerNameDialog = showPlayerNameDialog(1)
-            playerNameDialog.show()
+            showPlayerNameDialog(1)
         }
 
         /* Display a text entry dialog for entry of player 2 name */
         mButtonPlayer2!!.setOnClickListener {
-            val playerNameDialog = showPlayerNameDialog(2)
-            playerNameDialog.show()
+            showPlayerNameDialog(2)
         }
 
         /* Display a radio button group */
@@ -143,7 +144,7 @@ class SettingsDialogs : Activity() {
             .create()
     }
 
-    private fun showPlayerNameDialog(playerId: Int): AlertDialog {
+    private fun showPlayerNameDialog(playerId: Int) {
         // This example shows how to add a custom layout to an AlertDialog
         var titleId = R.string.alert_dialog_text_entry_player1_name
         if (playerId == 2) {
@@ -151,7 +152,7 @@ class SettingsDialogs : Activity() {
         }
         val factory = LayoutInflater.from(this)
         val textEntryViewPlayer = factory.inflate(R.layout.name_dialog_text_entry, null)
-        return AlertDialog.Builder(this@SettingsDialogs)
+        AlertDialog.Builder(this@SettingsDialogs)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(titleId)
             .setView(textEntryViewPlayer)
@@ -162,20 +163,27 @@ class SettingsDialogs : Activity() {
                 val userNameLength = if (userNameText.length > 15) 15 else userNameText.length
                 val userNameChars = CharArray(userNameLength)
                 userNameText.getChars(0, userNameLength, userNameChars, 0)
+                val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
+                val editor = settings.edit()
                 val intent = Intent(applicationContext, SettingsDialogs::class.java)
                 if (playerId == 1) {
-                    mPlayer1Name = String(userNameChars)
+                    val player1Name = String(userNameChars)
                     intent.putExtra(GameActivity.PLAYER1_ID, 0)
+                    intent.putExtra(GameActivity.PLAYER1_NAME, player1Name)
+                    editor.putString(GameActivity.PLAYER1_NAME, player1Name)
+                    mPlayer1Name = player1Name
+                    mButtonPlayer1!!.text = "Player 1 Name: $mPlayer1Name"
                 } else {
-                    mPlayer2Name = String(userNameChars)
+                    val player2Name = String(userNameChars)
+                    intent.putExtra(GameActivity.PLAYER1_NAME, player2Name)
+                    editor.putString(GameActivity.PLAYER2_NAME, player2Name)
+                    mPlayer2Name = player2Name
+                    mButtonPlayer2!!.text = "Player 2 Name: $mPlayer2Name"
                 }
-                intent.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-                intent.putExtra(GameActivity.PLAYER2_NAME, mPlayer2Name)
-                startActivityForResult(intent, 1)
-                finish()
+                editor.commit()
             }
             .setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked cancel so do some stuff */ }
-            .create()
+            .show()
     }
 
     private fun showTokenSizeDialog(): AlertDialog {
@@ -232,25 +240,27 @@ class SettingsDialogs : Activity() {
 
     override fun onResume() {
         super.onResume()
-        mPlayer1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
-        mPlayer2Name = intent.getStringExtra(GameActivity.PLAYER2_NAME)
     }
 
     override fun onPause() {
         super.onPause()
-        intent.putExtra(GameActivity.PLAYER1_NAME, mPlayer1Name)
-        intent.putExtra(GameActivity.PLAYER2_NAME, mPlayer2Name)
     }
 
     override fun onStop() {
         super.onStop()
         // We need an Editor object to make preference changes.
         // All objects are from android.context.Context
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
         val editor = settings.edit()
         editor.putString(GameActivity.PLAYER1_NAME, mPlayer1Name)
         editor.putString(GameActivity.PLAYER2_NAME, mPlayer2Name)
+        editor.putBoolean(GameActivity.MOVE_MODE, mMoveModeTouch)
+        editor.putBoolean(GameActivity.SOUND_MODE, mSoundMode)
+        editor.putInt(GameActivity.TOKEN_SIZE, mTokenSize)
+        editor.putInt(GameActivity.TOKEN_COLOR_1, mTokenColor1)
+        editor.putInt(GameActivity.TOKEN_COLOR_2, mTokenColor2)
         editor.commit()
+        writeToLog("SettingsDialog", "onStop() called mPlayer1Name: $mPlayer1Name")
     }
 
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
@@ -258,24 +268,34 @@ class SettingsDialogs : Activity() {
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
         super.onSaveInstanceState(savedInstanceState)
+        writeToLog("SettingsDialog", "onSaveInstanceState() called mPlayer1Name: $mPlayer1Name")
+        savedInstanceState.putString("gDialog_player1_name", mPlayer1Name)
+        savedInstanceState.putString("gDialog_player2_name", mPlayer2Name)
         savedInstanceState.putBoolean("gDialog_move_mode", mMoveModeTouch)
         savedInstanceState.putBoolean("gDialog_sound_mode", mSoundMode)
         savedInstanceState.putInt("gDialog_token_size", mTokenSize)
+        savedInstanceState.putInt("gDialog_player1_token_color", mTokenColor1)
+        savedInstanceState.putInt("gDialog_player2_token_color", mTokenColor2)
     }
 
     public override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         // Restore UI state from the savedInstanceState.
-        // This bundle has also been passed to onCreate.	
+        // This bundle has also been passed to onCreate.
+        mPlayer1Name = savedInstanceState.getString("gDialog_player1_name").toString()
+        mPlayer2Name = savedInstanceState.getString("gDialog_player2_name").toString()
         mMoveModeTouch = savedInstanceState.getBoolean("gDialog_move_mode")
         mSoundMode = savedInstanceState.getBoolean("gDialog_sound_mode")
         mTokenSize = savedInstanceState.getInt("gDialog_token_size")
+        mTokenColor1 = savedInstanceState.getInt("gDialog_player1_token_color")
+        mTokenColor2 = savedInstanceState.getInt("gDialog_player2_token_color")
+        writeToLog("SettingsDialog", "onRestoreInstanceState() called mPlayer1Name: $mPlayer1Name")
     }
 
     private fun resetScores() {
         // We need an Editor object to make preference changes.
         // All objects are from android.context.Context
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
         editor.putInt(GameActivity.PLAYER1_SCORE, 0)
         editor.putInt(GameActivity.PLAYER2_SCORE, 0)
@@ -288,21 +308,21 @@ class SettingsDialogs : Activity() {
     }
 
     private fun setMoveMode() {
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
         editor.putBoolean(GameActivity.MOVE_MODE, mMoveModeTouch)
         editor.commit()
     }
 
     private fun setTokenSize() {
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
         editor.putInt(GameActivity.TOKEN_SIZE, mTokenSize)
         editor.commit()
     }
 
     private fun setTokenColor(playerNumber: Int) {
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
         if (playerNumber == 1) {
             editor.putInt(GameActivity.TOKEN_COLOR_1, mTokenColor)
@@ -317,13 +337,20 @@ class SettingsDialogs : Activity() {
     }
 
     private fun setSoundMode() {
-        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
         editor.putBoolean(GameActivity.SOUND_MODE, mSoundMode)
         editor.commit()
     }
 
+    private fun writeToLog(filter: String, msg: String) {
+        if ("true".equals(resources.getString(R.string.debug), ignoreCase = true)) {
+            Log.d(filter, msg)
+        }
+    }
+
     companion object {
+        private lateinit var resources: Resources
         private var mMoveModeTouch = false //false = drag move mode; true = touch move mode
         private var mMoveModeChecked = 0 // 0 = drag move mode; 1 = touch move mode
         private var mSoundModeChecked = 0 // 0 = sound on; 1 = sound off

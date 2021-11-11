@@ -41,7 +41,7 @@ class WebServerInterfaceNewPlayerTask {
                 mToastMessage.sendToastMessage("findOtherPlayersCurrentlyOnline() returned null, this is very bad!!")
                 return
             }
-            val settings = mCallerActivity!!.getSharedPreferences(UserPreferences.PREFS_NAME, 0)
+            val settings = mCallerActivity!!.getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
             val editor = settings.edit()
             editor.putInt(GameActivity.PLAYER1_ID, mPlayerId!!)
             // Commit the edits!
