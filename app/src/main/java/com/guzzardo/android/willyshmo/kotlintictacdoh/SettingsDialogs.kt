@@ -28,12 +28,15 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mPlayer1Name
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mPlayer2Name
 
-class SettingsDialogs : Activity() {
+class SettingsDialogs : Activity(), ToastMessage {
     private var mButtonPlayer1: Button? = null
     private var mButtonPlayer2: Button? = null
     private var mSeekBar: SeekBar? = null
@@ -41,6 +44,7 @@ class SettingsDialogs : Activity() {
     private var mTokenColor = 0
     private var mTokenColor1 = 0
     private var mTokenColor2 = 0
+    private var mAdView: AdView? = null
 
     /**
      * Initialization of the Activity after it is first created.  Must at least
@@ -53,7 +57,11 @@ class SettingsDialogs : Activity() {
         setContentView(R.layout.settings_dialog)
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
         mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "").toString()
+        if (mPlayer1Name.trim().length.equals(0))
+            mPlayer1Name = "Player 1"
         mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "").toString()
+        if (mPlayer2Name.trim().length.equals(0))
+            mPlayer2Name = "Player 2"
         mMoveModeTouch = settings.getBoolean(GameActivity.MOVE_MODE, false)
         mSoundMode = settings.getBoolean(GameActivity.SOUND_MODE, true)
         mTokenSize = settings.getInt(GameActivity.TOKEN_SIZE, 50)
@@ -111,6 +119,9 @@ class SettingsDialogs : Activity() {
             val tokenColorDialog2 = showTokenColorDialog(2)
             tokenColorDialog2.show()
         }
+        mAdView = findViewById<View>(R.id.ad_settings) as AdView
+        val adRequest = AdRequest.Builder().build()
+        mAdView!!.loadAd(adRequest)
     }
 
     private fun showMoveModeDialog(): AlertDialog {
@@ -168,19 +179,29 @@ class SettingsDialogs : Activity() {
                 val intent = Intent(applicationContext, SettingsDialogs::class.java)
                 if (playerId == 1) {
                     val player1Name = String(userNameChars)
-                    intent.putExtra(GameActivity.PLAYER1_ID, 0)
-                    intent.putExtra(GameActivity.PLAYER1_NAME, player1Name)
-                    editor.putString(GameActivity.PLAYER1_NAME, player1Name)
-                    mPlayer1Name = player1Name
-                    mButtonPlayer1!!.text = "Player 1 Name: $mPlayer1Name"
+                    if (player1Name.trim().length.equals(0) or player1Name.trim().lowercase().contains("player")) {
+                        sendToastMessage("Please enter a name for Player 1")
+                    } else {
+                        intent.putExtra(GameActivity.PLAYER1_ID, 0)
+                        intent.putExtra(GameActivity.PLAYER1_NAME, player1Name)
+                        editor.putString(GameActivity.PLAYER1_NAME, player1Name)
+                        mPlayer1Name = player1Name
+                        mButtonPlayer1!!.text = "Player 1 Name: $mPlayer1Name"
+                        editor.commit()
+                    }
                 } else {
                     val player2Name = String(userNameChars)
-                    intent.putExtra(GameActivity.PLAYER1_NAME, player2Name)
-                    editor.putString(GameActivity.PLAYER2_NAME, player2Name)
-                    mPlayer2Name = player2Name
-                    mButtonPlayer2!!.text = "Player 2 Name: $mPlayer2Name"
+                    if (player2Name.trim().length.equals(0) or player2Name.trim().lowercase().contains("player")) {
+                        sendToastMessage("Please enter a name for Player 2")
+                    } else {
+                        intent.putExtra(GameActivity.PLAYER1_NAME, player2Name)
+                        editor.putString(GameActivity.PLAYER2_NAME, player2Name)
+                        mPlayer2Name = player2Name
+                        mButtonPlayer2!!.text = "Player 2 Name: $mPlayer2Name"
+                        editor.commit()
+                    }
                 }
-                editor.commit()
+
             }
             .setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked cancel so do some stuff */ }
             .show()
@@ -341,6 +362,11 @@ class SettingsDialogs : Activity() {
         val editor = settings.edit()
         editor.putBoolean(GameActivity.SOUND_MODE, mSoundMode)
         editor.commit()
+    }
+
+    override fun sendToastMessage(message: String?) {
+        writeToLog("SettingsDialogs", "sendToastMessage message: $message")
+        runOnUiThread { Toast.makeText(this, message, Toast.LENGTH_LONG).show() }
     }
 
     private fun writeToLog(filter: String, msg: String) {

@@ -17,8 +17,6 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
-
-    android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
@@ -27,8 +25,7 @@
         android:text="@string/start_player"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dip"        
-        />
+        android:layout_marginBottom="10dip"/>
         
     <Button
         android:id="@+id/start_comp"
@@ -36,22 +33,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dip"
-        android:layout_below="@id/start_player"
-        />
+        android:layout_below="@id/start_player"/>
      
-    <com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
+    <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
         android:id="@+id/ad_one_player"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        ads:adUnitId="a14c4786f7a05ac"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         ads:adSize="BANNER"
-        android:layout_alignParentBottom="true" />
-        <!-- ads:testDevices="TEST_EMULATOR, TEST_DEVICE_ID"
-        ads:loadAdOnCreate="true" -->
+        ads:adUnitId="ca-app-pub-0452251857239552/6208880274"/>
 
-
-     
-        
 </RelativeLayout>
 

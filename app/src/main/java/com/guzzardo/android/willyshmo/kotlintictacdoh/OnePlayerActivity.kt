@@ -5,12 +5,15 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 
 class OnePlayerActivity : Activity() {
     private var mPlayer1Name = "Player 1"
     private val mPlayer2Name = "Willy"
     private var mButtonPlayer1MoveFirst: Button? = null
     private var mButtonPlayer2MoveFirst: Button? = null
+    private var mAdView: AdView? = null
 
     /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +29,10 @@ class OnePlayerActivity : Activity() {
 
         findViewById<View>(R.id.start_player).setOnClickListener { startGame(true) }
         findViewById<View>(R.id.start_comp).setOnClickListener { startGame(false) }
+
+        mAdView = findViewById<View>(R.id.ad_one_player) as AdView
+        val adRequest = AdRequest.Builder().build()
+        mAdView!!.loadAd(adRequest)
     }
 
     private fun startGame(startWithHuman: Boolean) {

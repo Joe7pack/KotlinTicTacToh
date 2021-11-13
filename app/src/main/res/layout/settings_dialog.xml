@@ -15,12 +15,6 @@
      limitations under the License.
 
 -->
-
-<!--
-     Demonstrates different uses of the android.app.AlertDialog.
-     See corresponding Java code com.example.android.apis.app.AlertDialogSamples.java.
--->
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
     android:id="@+id/relativeLayoutBase"
@@ -31,77 +25,75 @@
         android:id="@+id/move_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="5dip"
-        android:text="@string/move_mode" />
+        android:layout_marginStart="5dip"
+        android:text="@string/move_mode"/>
 
     <Button
         android:id="@+id/sound_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/move_mode"
-        android:layout_marginLeft="5dip"
-        android:text="@string/sound_mode" />
+        android:layout_marginStart="5dip"
+        android:text="@string/sound_mode"/>
 
     <Button
         android:id="@+id/reset_scores"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/sound_mode"
-        android:layout_marginLeft="5dip"
-        android:text="@string/reset_scores" />
+        android:layout_marginStart="5dip"
+        android:text="@string/reset_scores"/>
 
     <Button
         android:id="@+id/seeker_entry_token_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/reset_scores"
-        android:layout_marginLeft="5dip"
-        android:text="@string/alert_dialog_seeker_entry_token_settings" />
+        android:layout_marginStart="5dip"
+        android:text="@string/alert_dialog_seeker_entry_token_settings"/>
 
     <Button
         android:id="@+id/text_entry_button_player1_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="5dip"
-        android:text="@string/alert_dialog_text_entry_player1_name" />
+        android:layout_marginEnd="5dip"
+        android:text="@string/alert_dialog_text_entry_player1_name"/>
 
     <Button
         android:id="@+id/seeker_entry_token_color_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@id/text_entry_button_player1_name"
+        android:layout_alignEnd="@id/text_entry_button_player1_name"
         android:layout_below="@id/text_entry_button_player1_name"
-        android:text="@string/alert_dialog_seeker_entry_token_color_1" />
+        android:text="@string/alert_dialog_seeker_entry_token_color_1"/>
 
     <Button
         android:id="@+id/text_entry_button_player2_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@id/seeker_entry_token_color_1"
+        android:layout_alignEnd="@id/seeker_entry_token_color_1"
         android:layout_below="@id/seeker_entry_token_color_1"
-        android:text="@string/alert_dialog_text_entry_player2_name" />
+        android:text="@string/alert_dialog_text_entry_player2_name"/>
 
     <Button
         android:id="@+id/seeker_entry_token_color_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@id/text_entry_button_player2_name"
+        android:layout_alignEnd="@id/text_entry_button_player2_name"
         android:layout_below="@id/text_entry_button_player2_name"
-        android:text="@string/alert_dialog_seeker_entry_token_color_2" />
+        android:text="@string/alert_dialog_seeker_entry_token_color_2"/>
 
-    <com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/ad_two_player"
-        android:layout_width="fill_parent"
+    <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/ad_settings"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         ads:adSize="BANNER"
-        ads:adUnitId="a14c4786f7a05ac" />
-        <!-- ads:loadAdOnCreate="true"
-        ads:testDevices="TEST_EMULATOR, TEST_DEVICE_ID" -->
+        ads:adUnitId="ca-app-pub-0452251857239552/3610120170"/>
 
 </RelativeLayout>

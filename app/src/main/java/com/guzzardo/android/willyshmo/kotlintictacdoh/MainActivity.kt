@@ -117,20 +117,9 @@ class MainActivity : Activity(), ToastMessage {
         } else {
             mPrizeButton!!.visibility = View.GONE
         }
-        mAdView = findViewById<View>(R.id.adView) as AdView
-        val adRequest =
-            AdRequest.Builder() //.addTestDevice("EE90BD2A7578BC19014DE8617761F10B") //Samsung Galaxy Note
-                // Create an ad request. Check your logcat output for the hashed device ID to
-                // get test ads on a physical device. e.g.
-                // "Use AdRequest.Builder.addTestDevice("ABCDEF012345") to get test ads on this device."
-                //.addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                .build() //mAdView.loadAd(adRequest);
-
-        // Start loading the ad in the background.
+        mAdView = findViewById<View>(R.id.ad_main) as AdView
+        val adRequest = AdRequest.Builder().build()
         mAdView!!.loadAd(adRequest)
-        //adRequest.addTestDevice(AdRequest.TEST_EMULATOR);             // Android emulator
-        //adRequest.addTestDevice("5F310740585B99B1179370AC1B4490C4"); // My T-Mobile G1 Test Phone
-        //adRequest.addTestDevice("EE90BD2A7578BC19014DE8617761F10B");  // My Samsung Note
         mHandler = Handler(Looper.getMainLooper())
         // Try to use more data here. ANDROID_ID is a single point of attack.
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)

@@ -11,6 +11,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.guzzardo.android.willyshmo.kotlintictacdoh.PlayersOnlineActivity.Companion.getContext
 
 /*
@@ -27,13 +29,14 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.PlayersOnlineActivity.Comp
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ //import android.support.v7.app.AlertDialog;
+ */
 class TwoPlayerActivity : Activity() {
     private var mPlayer1Name = "Player 1"
     private var mPlayer2Name = "Player 2"
     private var mButtonPlayer1: Button? = null
     private var mButtonPlayer2: Button? = null
     private var mButtonPlayOverNetwork: Button? = null
+    private var mAdView: AdView? = null
 
     /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,13 +59,9 @@ class TwoPlayerActivity : Activity() {
         mButtonPlayOverNetwork = findViewById<View>(R.id.play_over_network) as Button
         mButtonPlayOverNetwork!!.setOnClickListener { playOverNetwork() }
 
-        /*
-        if (WillyShmoApplication.isNetworkAvailable) {
-            mButtonPlayOverNetwork!!.visibility = View.VISIBLE
-        } else {
-            mButtonPlayOverNetwork!!.visibility = View.GONE
-        }
-        */
+        mAdView = findViewById<View>(R.id.ad_two_player) as AdView
+        val adRequest = AdRequest.Builder().build()
+        mAdView!!.loadAd(adRequest)
     }
 
     private fun startGame(player: Int) {
