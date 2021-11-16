@@ -47,9 +47,9 @@ class TwoPlayerActivity : Activity() {
         val player2Name = intent.getStringExtra(GameActivity.PLAYER2_NAME)
         if (player2Name != null) mPlayer2Name = player2Name
         mButtonPlayer1 = findViewById<View>(R.id.player_1) as Button
-        mButtonPlayer1!!.text = "$mPlayer1Name moves first?"
+        mButtonPlayer1!!.text = String.format(resources.getString(R.string.player_moves_first), mPlayer1Name)
         mButtonPlayer2 = findViewById<View>(R.id.player_2) as Button
-        mButtonPlayer2!!.text = "$mPlayer2Name moves first?"
+        mButtonPlayer2!!.text = String.format(resources.getString(R.string.player_moves_first), mPlayer2Name)
         findViewById<View>(R.id.player_1).setOnClickListener {
             startGame(1)
         }
@@ -93,7 +93,7 @@ class TwoPlayerActivity : Activity() {
         try {
             AlertDialog.Builder(this@TwoPlayerActivity)
                 .setTitle("Please enter your name in the settings menu")
-                .setNeutralButton("OK") { _, which -> finish() }
+                .setNeutralButton("OK") { _, _ -> finish() }
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .show()
         } catch (e: Exception) {
