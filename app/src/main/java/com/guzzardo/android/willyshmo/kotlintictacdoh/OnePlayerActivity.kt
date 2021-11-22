@@ -9,23 +9,26 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 
 class OnePlayerActivity : Activity() {
-    private var mPlayer1Name = "Player 1"
-    private val mPlayer2Name = "Willy"
+    private var mPlayer1Name: String? = null //getString(R.string.player_1) //"Player 1"
+    private var mPlayer2Name: String? = null //getString(R.string.willy_name) //"Willy"
     private var mButtonPlayer1MoveFirst: Button? = null
     private var mButtonPlayer2MoveFirst: Button? = null
     private var mAdView: AdView? = null
 
-    /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.one_player)
+
+        mPlayer1Name = getString(R.string.player_1) //"Player 1"
+        mPlayer2Name = getString(R.string.willy_name) //"Willy"
+
         val player1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
         if (player1Name != null) mPlayer1Name = player1Name
 
         mButtonPlayer1MoveFirst = findViewById<View>(R.id.start_player) as Button
-        mButtonPlayer1MoveFirst!!.text = "$mPlayer1Name moves first?"
+        mButtonPlayer1MoveFirst!!.text = getString(R.string.moves_first, mPlayer1Name);
         mButtonPlayer2MoveFirst = findViewById<View>(R.id.start_comp) as Button
-        mButtonPlayer2MoveFirst!!.text = "$mPlayer2Name moves first?"
+        mButtonPlayer2MoveFirst!!.text = getString(R.string.moves_first, mPlayer2Name);
 
         findViewById<View>(R.id.start_player).setOnClickListener { startGame(true) }
         findViewById<View>(R.id.start_comp).setOnClickListener { startGame(false) }

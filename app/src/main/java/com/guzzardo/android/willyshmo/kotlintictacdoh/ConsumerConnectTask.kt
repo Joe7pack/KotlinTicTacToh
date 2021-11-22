@@ -57,15 +57,6 @@ class ConsumerConnectTask {
         mMessageConsumer!!.startConsuming(mConnection, mChannel, mQueueName, mConsumer)
     }
 
-    /*
-    override fun onPostExecute(res: Void?) {
-        mMessageConsumer!!.channel = mChannel
-        mMessageConsumer!!.connection = mConnection
-        mMessageConsumer!!.startConsuming(mConnection, mChannel, mQueueName, mConsumer)
-    }
-
-     */
-
     companion object {
         private var mResources: Resources? = null
         private fun writeToLog(filter: String, msg: String) {

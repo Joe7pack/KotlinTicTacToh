@@ -11,7 +11,6 @@ class DisposeRabbitMQTask {
             mResources = resources
             writeToLog("DisposeRabbitMQTask", "about to call rabbitMQMessageConsumer?.dispose()")
             rabbitMQMessageConsumer?.dispose()
-            //FIXME - maybe add some logic here to get rid of any old messages in Queue?
         } catch (e: Exception) {
             writeToLog("DisposeRabbitMQTask", e.message)
             activity.sendToastMessage(e.message)

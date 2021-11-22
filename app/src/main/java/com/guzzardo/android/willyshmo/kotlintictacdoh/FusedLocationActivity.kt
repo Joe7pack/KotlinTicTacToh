@@ -82,6 +82,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
     val PRIZES_LOADED = 5
     val PRIZE_LOAD_IN_PROGRESS = 6
     val PRIZES_READY_TO_DISPLAY = 7
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.splash_with_guidelines)
@@ -108,8 +109,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
             setStartLocationLookup()
             location
         }
-        writeToLog("FusedLocationActivity", "onCreate finished"
-        )
+        writeToLog("FusedLocationActivity", "onCreate finished")
     }
 
     /**
@@ -122,9 +122,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
             if (savedInstanceState.keySet().contains(KEY_REQUESTING_LOCATION_UPDATES)) {
-                mRequestingLocationUpdates = savedInstanceState.getBoolean(
-                    KEY_REQUESTING_LOCATION_UPDATES
-                )
+                mRequestingLocationUpdates = savedInstanceState.getBoolean(KEY_REQUESTING_LOCATION_UPDATES)
             }
 
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
@@ -157,10 +155,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             REQUEST_CHECK_SETTINGS -> when (resultCode) {
-                RESULT_OK -> writeToLog(
-                    "FusedLocationActivity",
-                    "User agreed to make required location settings changes."
-                )
+                RESULT_OK -> writeToLog("FusedLocationActivity", "User agreed to make required location settings changes.")
                 RESULT_CANCELED -> {
                     writeToLog("FusedLocationActivity", "User chose not to make required location settings changes.")
                     mRequestingLocationUpdates = false
@@ -213,8 +208,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
             })
     } // Got last known location. In some rare situations this can be null.
 
-    // TODO: Consider calling
-    //    ActivityCompat#requestPermissions
+    // TODO: Consider calling ActivityCompat#requestPermissions
     // here to request the missing permissions, and then overriding
     //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
     //                                          int[] grantResults)
@@ -228,8 +222,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
+                // TODO: Consider calling ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
                 //                                          int[] grantResults)
@@ -264,12 +257,6 @@ class FusedLocationActivity : Activity(), ToastMessage {
         super.onResume()
     }
 
-    override fun onPause() {
-        super.onPause()
-        // Remove location updates to save battery.
-        //stopLocationUpdates();
-    }
-
     // Stores activity data in the Bundle.
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
         savedInstanceState.putBoolean(KEY_REQUESTING_LOCATION_UPDATES, mRequestingLocationUpdates!!)
@@ -285,10 +272,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
      * @param actionStringId   The text of the action item.
      * @param listener         The listener associated with the Snackbar action.
      */
-    private fun showSnackbar(
-        mainTextStringId: Int, actionStringId: Int,
-        listener: View.OnClickListener
-    ) {
+    private fun showSnackbar(mainTextStringId: Int, actionStringId: Int, listener: View.OnClickListener) {
         Snackbar.make(
             findViewById(android.R.id.content),
             getString(mainTextStringId),
@@ -302,8 +286,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
     }
 
     private fun requestPermissions() {
-        val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(
-            this, Manifest.permission.ACCESS_COARSE_LOCATION)
+        val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)
         // Provide an additional rationale to the user. This would happen if the user denied the
         // request previously, but didn't check the "Don't ask again" checkbox.
         if (shouldProvideRationale) {
@@ -367,7 +350,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
                 }
             }
         } catch (e: Exception) {
-            println("onRequestPermissionsResult exception: $e")
+            writeToLog("FusedLocationActivity","onRequestPermissionsResult exception: $e")
         }
     }
 

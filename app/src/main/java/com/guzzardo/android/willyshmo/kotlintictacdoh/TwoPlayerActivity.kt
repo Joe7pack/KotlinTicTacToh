@@ -31,17 +31,18 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.PlayersOnlineActivity.Comp
  * limitations under the License.
  */
 class TwoPlayerActivity : Activity() {
-    private var mPlayer1Name = "Player 1"
-    private var mPlayer2Name = "Player 2"
+    private var mPlayer1Name: String? = null
+    private var mPlayer2Name: String? = null
     private var mButtonPlayer1: Button? = null
     private var mButtonPlayer2: Button? = null
     private var mButtonPlayOverNetwork: Button? = null
     private var mAdView: AdView? = null
 
-    /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.two_player)
+        mPlayer1Name = getString(R.string.player_1)
+        mPlayer2Name = getString(R.string.willy_name)
         val player1Name = intent.getStringExtra(GameActivity.PLAYER1_NAME)
         if (player1Name != null) mPlayer1Name = player1Name
         val player2Name = intent.getStringExtra(GameActivity.PLAYER2_NAME)
@@ -74,7 +75,7 @@ class TwoPlayerActivity : Activity() {
         i.putExtra(GameActivity.PLAYER2_NAME, mPlayer2Name)
         i.putExtra(GameActivity.PLAY_AGAINST_WILLY, "false")
         startActivity(i)
-        finish()
+        //finish()
     }
 
     private fun playOverNetwork() {
@@ -92,8 +93,8 @@ class TwoPlayerActivity : Activity() {
     private fun displayNameRequiredAlert() {
         try {
             AlertDialog.Builder(this@TwoPlayerActivity)
-                .setTitle("Please enter your name in the settings menu")
-                .setNeutralButton("OK") { _, _ -> finish() }
+                .setTitle(getString(R.string.enter_player_name_in_settings))
+                .setNeutralButton(R.string.ok) { _, _ -> finish() }
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .show()
         } catch (e: Exception) {

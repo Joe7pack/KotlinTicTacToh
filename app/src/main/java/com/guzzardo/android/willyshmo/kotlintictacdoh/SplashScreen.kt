@@ -2,10 +2,8 @@ package com.guzzardo.android.willyshmo.kotlintictacdoh
 
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.callerActivity
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.willyShmoApplicationContext
 import android.app.Activity
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.widget.TextView
@@ -21,10 +19,7 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.GooglePlayServicesUtil
-import com.google.android.gms.common.GooglePlayServicesUtil.getErrorDialog
 import java.lang.Exception
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.coroutines.*
 
@@ -41,9 +36,7 @@ LoadPrizesTask is no longer used
 class SplashScreen : Activity(), ToastMessage {
     protected var mActive = true
     var MSG_KEY = "message key"
-
     lateinit var mCallerActivity: Activity //= null //= super.getCallingActivity()
-
     /**
      * perform the action in `handleMessage` when the thread calls
      * `mHandler.sendMessage(msg)`
@@ -58,7 +51,6 @@ class SplashScreen : Activity(), ToastMessage {
         }
     }
 
-    /** Called when the activity is first created.  */
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mApplicationContext = applicationContext
@@ -124,11 +116,11 @@ class SplashScreen : Activity(), ToastMessage {
         return AlertDialog.Builder(this@SplashScreen)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.google_play_service_error)
-            .setPositiveButton(R.string.alert_dialog_ok) { dialog, whichButton -> /* User clicked OK so do some stuff */
+            .setPositiveButton(R.string.ok) { _, _ ->
                 callGooglePlayServicesUtil(isPlayAvailable)
                 setSplashActive(false)
             }
-            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, whichButton -> /* User clicked Cancel so do some stuff */
+            .setNegativeButton(R.string.alert_dialog_cancel) { _, _ ->
                 setSplashActive(false)
             }
             .setMessage(playErrorMessage)

@@ -15,33 +15,20 @@
 -->
 
 <resources>
-    <!-- Used in View/Spinner1.java -->
-
-    <!-- Used in View/Spinner1.java -->
-
-    <!-- Used in App/SearchInvoke.java -->
-
-    <!-- Used in app/dialog examples -->
-
 
     <string-array name="select_starting_token" translatable="false">
-        <item>Start as O</item>
-        <item>Start as X</item>
+        <item>@string/start_as_o</item>
+        <item>@string/start_as_x</item>
     </string-array>
 
     <string-array name="select_move_mode" translatable="false">
-        <item>Drag</item>
-        <item>Touch</item>
+        <item>@string/play_mode_drag</item>
+        <item>@string/play_mode_touch</item>
     </string-array>
 
-    
-    <!-- Used in app/menu examples -->
-
-    <!-- Used in app/menu examples -->
-
     <string-array name="select_sound_mode" translatable="false">
-        <item>On</item>
-        <item>Off</item>
+        <item>@string/sound_on</item>
+        <item>@string/sound_off</item>
    </string-array>
 
 </resources>

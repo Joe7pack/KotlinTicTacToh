@@ -283,7 +283,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 mTokenColor2
             )
         }
-        if (isClientRunning) { // && GameActivity.isGameStarted) { //mOpposingPlayerId != GameActivity.player2Id) { //
+        if (isClientRunning) {
             sendTokensToServer()
         }
 

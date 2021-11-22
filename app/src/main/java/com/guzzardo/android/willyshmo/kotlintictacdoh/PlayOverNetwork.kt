@@ -32,7 +32,7 @@ class PlayOverNetwork: Activity(), ToastMessage {
         mPlayer1Name = player1Name ?: "Corriander"
         if (WillyShmoApplication.getConfigMap("RabbitMQQueuePrefix").equals(null)) {
             writeToLog("PlayOverNetwork", "onCreate() unable to communicate with host server, gonna finish")
-            sendToastMessage("Unable to communicate with host server, please try again later.")
+            sendToastMessage(getString(R.string.communication_lost))
             finish()
         }
         writeToLog("PlayOverNetwork", "onCreate() finished")
@@ -102,12 +102,12 @@ class PlayOverNetwork: Activity(), ToastMessage {
         if (mHostWaitDialog != null) {
             mHostWaitDialog!!.dismiss()
         }
-        val hostingDescription = "Please wait while we find someone online to play against..."
+        val hostingDescription = getString(R.string.wait_for_opponent)
         return AlertDialog.Builder(this@PlayOverNetwork)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(hostingDescription)
             .setCancelable(false)
-            .setNegativeButton("Cancel") { _, _ -> finish() }
+            .setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> finish() }
             .create()
     }
 
@@ -115,12 +115,12 @@ class PlayOverNetwork: Activity(), ToastMessage {
         if (mHostUnavailableDialog != null) {
             mHostUnavailableDialog!!.dismiss()
         }
-        val hostingDescription = "Unable to connect to host, please try again later."
+        val hostingDescription = getString(R.string.host_connect_failure)
         return AlertDialog.Builder(this@PlayOverNetwork)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(hostingDescription)
             .setCancelable(false)
-            .setNegativeButton("Cancel") { _, _ -> finish() }
+            .setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> finish() }
             .create()
     }
 

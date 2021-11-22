@@ -39,8 +39,8 @@ object SendMessageToAppServer {
             result = convertStreamToString(inputStream) // convert the Bytes read to a String.
             networkAvailable = true
         } catch (e: Exception) {
-            writeToLog("SendMessageToAppServer", "response code: $responseCode error: ${e.message}  message error at: $errorAt url: $url")
-            mToastMessage!!.sendToastMessage("SendMessageToAppServer error: " + e.message + " at $errorAt")
+            writeToLog("SendMessageToAppServer", "response code: $responseCode error: ${e.message} at: $errorAt url: $url")
+            mToastMessage!!.sendToastMessage("SendMessageToAppServer response code: $responseCode error: ${e.message} at $errorAt url: $url")
         } finally {
             try {
                 httpUrlConnection?.disconnect()
@@ -63,17 +63,17 @@ object SendMessageToAppServer {
             sb.append(allText)
         } catch (e: IOException) {
             writeToLog("SendMessageToAppServer", "IOException: " + e.message)
-            mToastMessage!!.sendToastMessage(e.message)
+            mToastMessage!!.sendToastMessage("SendMessageToAppServer convertStreamToString IOException error: ${e.message}")
         } catch (e: Exception) {
             writeToLog("SendMessageToAppServer", "Exception: " + e.message)
-            mToastMessage!!.sendToastMessage(e.message)
+            mToastMessage!!.sendToastMessage("SendMessageToAppServer convertStreamToString Exception error: ${e.message}")
         } finally {
             try {
                 reader.close()
                 inputStream!!.close()
             } catch (e: Exception) {
-                writeToLog("SendMessageToAppServer", "is close Exception: " + e.message)
-                mToastMessage!!.sendToastMessage(e.message)
+                writeToLog("SendMessageToAppServer", "InputStream close Exception: " + e.message)
+                mToastMessage!!.sendToastMessage("SendMessageToAppServer convertStreamToString InputStream close Exception: ${e.message}")
             }
         }
         return sb.toString()

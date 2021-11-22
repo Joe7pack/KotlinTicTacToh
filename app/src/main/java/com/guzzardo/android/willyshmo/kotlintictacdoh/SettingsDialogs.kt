@@ -58,10 +58,10 @@ class SettingsDialogs : Activity(), ToastMessage {
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
         mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "").toString()
         if (mPlayer1Name.trim().length.equals(0))
-            mPlayer1Name = "Player 1"
+            mPlayer1Name = getString(R.string.player_1) //"Player 1"
         mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "").toString()
         if (mPlayer2Name.trim().length.equals(0))
-            mPlayer2Name = "Player 2"
+            mPlayer2Name = getString(R.string.player_2) //"Player 2"
         mMoveModeTouch = settings.getBoolean(GameActivity.MOVE_MODE, false)
         mSoundMode = settings.getBoolean(GameActivity.SOUND_MODE, true)
         mTokenSize = settings.getInt(GameActivity.TOKEN_SIZE, 50)
@@ -70,9 +70,11 @@ class SettingsDialogs : Activity(), ToastMessage {
         mMoveModeChecked = if (!mMoveModeTouch) 0 else 1
         mSoundModeChecked = if (mSoundMode) 0 else 1
         mButtonPlayer1 = findViewById<View>(R.id.text_entry_button_player1_name) as Button
-        mButtonPlayer1!!.text = "Player 1 Name: $mPlayer1Name"
+        val nameValuePlayer1 = getString(R.string.alert_dialog_text_entry_player1_name) + " " + mPlayer1Name
+        mButtonPlayer1!!.text = nameValuePlayer1 //"Player 1 Name: $mPlayer1Name"
         mButtonPlayer2 = findViewById<View>(R.id.text_entry_button_player2_name) as Button
-        mButtonPlayer2!!.text = "Player 2 Name: $mPlayer2Name"
+        val nameValuePlayer2 = getString(R.string.alert_dialog_text_entry_player2_name) + " " + mPlayer2Name
+        mButtonPlayer2!!.text = nameValuePlayer2 //"Player 2 Name: $mPlayer2Name"
 
         /* Display a text message with yes/no buttons and handle each message as well as the cancel action */
         val twoButtonsTitle = findViewById<View>(R.id.reset_scores) as Button
@@ -129,7 +131,7 @@ class SettingsDialogs : Activity(), ToastMessage {
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.move_mode)
             .setSingleChoiceItems(R.array.select_move_mode, mMoveModeChecked) { _, whichButton -> setMoveModeSelection(whichButton) }
-            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> setMoveMode() }
+            .setPositiveButton(R.string.ok) { _, _ -> setMoveMode() }
             .setNegativeButton(R.string.alert_dialog_cancel) { dialog, _ -> dialog.cancel() }
             .create()
     }
@@ -139,7 +141,7 @@ class SettingsDialogs : Activity(), ToastMessage {
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.sound_mode)
             .setSingleChoiceItems(R.array.select_sound_mode, mSoundModeChecked) { _, whichButton -> setSoundModeSelection(whichButton) }
-            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> setSoundMode() }
+            .setPositiveButton(R.string.ok) { _, _ -> setSoundMode() }
             .setNegativeButton(R.string.alert_dialog_cancel) { dialog, _ -> dialog.cancel() }
             .create()
     }
@@ -148,7 +150,7 @@ class SettingsDialogs : Activity(), ToastMessage {
         return AlertDialog.Builder(this@SettingsDialogs)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(R.string.alert_dialog_reset_scores)
-            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
+            .setPositiveButton(R.string.ok) { _, _ -> /* User clicked OK so do some stuff */
                 resetScores()
             }
             .setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked Cancel so do some stuff */ }
@@ -157,6 +159,7 @@ class SettingsDialogs : Activity(), ToastMessage {
 
     private fun showPlayerNameDialog(playerId: Int) {
         // This example shows how to add a custom layout to an AlertDialog
+        val playerCheckString = getString(R.string.player_check_string)
         var titleId = R.string.alert_dialog_text_entry_player1_name
         if (playerId == 2) {
             titleId = R.string.alert_dialog_text_entry_player2_name
@@ -168,7 +171,7 @@ class SettingsDialogs : Activity(), ToastMessage {
             .setTitle(titleId)
             .setView(textEntryViewPlayer)
             .setCancelable(false)
-            .setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
+            .setPositiveButton(R.string.ok) { _, _ -> /* User clicked OK so do some stuff */
                 val userName = textEntryViewPlayer.findViewById<View>(R.id.username_edit) as EditText
                 val userNameText = userName.text
                 val userNameLength = if (userNameText.length > 15) 15 else userNameText.length
@@ -179,25 +182,27 @@ class SettingsDialogs : Activity(), ToastMessage {
                 val intent = Intent(applicationContext, SettingsDialogs::class.java)
                 if (playerId == 1) {
                     val player1Name = String(userNameChars)
-                    if (player1Name.trim().length.equals(0) or player1Name.trim().lowercase().contains("player")) {
-                        sendToastMessage("Please enter a name for Player 1")
+                    if (player1Name.trim().length.equals(0) or player1Name.trim().lowercase().contains(playerCheckString)) {
+                        sendToastMessage(getString(R.string.enter_player1_name))
                     } else {
                         intent.putExtra(GameActivity.PLAYER1_ID, 0)
                         intent.putExtra(GameActivity.PLAYER1_NAME, player1Name)
                         editor.putString(GameActivity.PLAYER1_NAME, player1Name)
                         mPlayer1Name = player1Name
-                        mButtonPlayer1!!.text = "Player 1 Name: $mPlayer1Name"
+                        val player1TitleAndName = getString(R.string.alert_dialog_text_entry_player1_name) + ": $mPlayer1Name"
+                        mButtonPlayer1!!.text = player1TitleAndName //"Player 1 Name: $mPlayer1Name"
                         editor.commit()
                     }
                 } else {
                     val player2Name = String(userNameChars)
-                    if (player2Name.trim().length.equals(0) or player2Name.trim().lowercase().contains("player")) {
-                        sendToastMessage("Please enter a name for Player 2")
+                    if (player2Name.trim().length.equals(0) or player2Name.trim().lowercase().contains(playerCheckString)) {
+                        sendToastMessage(getString(R.string.enter_player2_name))
                     } else {
                         intent.putExtra(GameActivity.PLAYER1_NAME, player2Name)
                         editor.putString(GameActivity.PLAYER2_NAME, player2Name)
                         mPlayer2Name = player2Name
-                        mButtonPlayer2!!.text = "Player 2 Name: $mPlayer2Name"
+                        val player2TitleAndName = getString(R.string.alert_dialog_text_entry_player2_name) + ": $mPlayer2Name"
+                        mButtonPlayer2!!.text = player2TitleAndName //"Player 2 Name: $mPlayer2Name"
                         editor.commit()
                     }
                 }
@@ -209,7 +214,7 @@ class SettingsDialogs : Activity(), ToastMessage {
 
     private fun showTokenSizeDialog(): AlertDialog {
         val tokenSizeDialog = AlertDialog.Builder(this)
-        val titleId = R.string.alert_dialog_seeker_entry_token_size
+        val titleId = R.string.alert_dialog_entry_token_size
         val factory = LayoutInflater.from(this)
         val tokenSizeEntryView = factory.inflate(R.layout.token_size_dialog_entry, null)
         tokenSizeDialog.setView(tokenSizeEntryView)
@@ -225,7 +230,7 @@ class SettingsDialogs : Activity(), ToastMessage {
         tokenSizeDialog.setIcon(R.drawable.willy_shmo_small_icon)
         tokenSizeDialog.setTitle(titleId)
         tokenSizeDialog.setCancelable(false)
-        tokenSizeDialog.setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
+        tokenSizeDialog.setPositiveButton(R.string.ok) { _, _ -> /* User clicked OK so do some stuff */
             setTokenSize()
             val intent = Intent(applicationContext, SettingsDialogs::class.java)
             startActivityForResult(intent, 1)
@@ -249,7 +254,7 @@ class SettingsDialogs : Activity(), ToastMessage {
         tokenColorDialog.setIcon(R.drawable.willy_shmo_small_icon)
         tokenColorDialog.setTitle(titleId)
         tokenColorDialog.setCancelable(false)
-        tokenColorDialog.setPositiveButton(R.string.alert_dialog_ok) { _, _ -> /* User clicked OK so do some stuff */
+        tokenColorDialog.setPositiveButton(R.string.ok) { _, _ -> /* User clicked OK so do some stuff */
             setTokenColor(playerNumber)
             val intent = Intent(applicationContext, SettingsDialogs::class.java)
             startActivityForResult(intent, 1)

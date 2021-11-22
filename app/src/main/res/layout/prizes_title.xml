@@ -13,7 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        app:srcCompat="@drawable/icon" />
+        app:srcCompat="@drawable/icon"
+        android:contentDescription="@string/prize_image" />
 
     <TextView
         android:id="@+id/prize_title_description"
@@ -27,7 +28,7 @@
         android:id="@+id/prize_title_distance"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="right"
+        android:gravity="end"
         android:text="@string/distance_in_miles"
         android:textColor="#000000"
         android:textSize="20sp" />

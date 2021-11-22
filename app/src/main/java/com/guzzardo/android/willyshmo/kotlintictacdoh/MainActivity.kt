@@ -39,8 +39,6 @@ import java.util.*
 
 class MainActivity : Activity(), ToastMessage {
     private var mPrizeButton: Button? = null
-    private val mText = "Joes text here"
-    private val mUrl = "Joes url here"
     private var mAdView: AdView? = null
     private var mStatusText: TextView? = null
     private var mCheckLicenseButton: Button? = null
@@ -54,9 +52,9 @@ class MainActivity : Activity(), ToastMessage {
         mApplicationContext = applicationContext
         val indexableNotes = ArrayList<Indexable>()
         val noteToIndex = Indexables.noteDigitalDocumentBuilder()
-            .setName("Joes name Note")
-            .setText("Joes text here")
-            .setUrl("joe.guzzardo.com")
+            .setName(getString(R.string.note_to_index))
+            .setText(getString(R.string.action_string))
+            .setUrl(getString(R.string.action_url))
             .build()
         indexableNotes.add(noteToIndex)
         var notesArr = arrayOfNulls<Indexable>(indexableNotes.size)
@@ -64,11 +62,11 @@ class MainActivity : Activity(), ToastMessage {
         FirebaseApp.initializeApp(this)
         FirebaseAppIndex.getInstance(this).update(*notesArr)
         FirebaseUserActions.getInstance(this).start(action)
-        Log.d("MainActivity", "onStart called at " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+        writeToLog("MainActivity", "onStart called at " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
     }
 
     private val action: Action
-        get() = Actions.newView(mText, mUrl)
+        get() = Actions.newView(getString(R.string.action_string), getString(R.string.action_url))
 
     public override fun onStop() {
         FirebaseUserActions.getInstance(this).end(action)
@@ -98,8 +96,8 @@ class MainActivity : Activity(), ToastMessage {
         findViewById<View>(R.id.one_player).setOnClickListener { showOnePlayer() }
         findViewById<View>(R.id.settings_dialog).setOnClickListener { showDialogs() }
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
-        mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "Player 1").toString()
-        mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "Player 2").toString()
+        mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, getString(R.string.player_1)).toString()
+        mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, getString(R.string.player_2)).toString()
         mStatusText = findViewById<View>(R.id.status_text) as TextView
         mCheckLicenseButton = findViewById<View>(R.id.check_license_button) as Button
         mCheckLicenseButton!!.setOnClickListener { doCheck() }
@@ -246,15 +244,12 @@ class MainActivity : Activity(), ToastMessage {
     private fun displayResult(result: String) {
         mHandler!!.post {
             mStatusText!!.text = result
-            //setProgressBarIndeterminateVisibility(false)
             mCheckLicenseButton!!.isEnabled = true
         }
     }
 
     private fun displayDialog(showRetry: Boolean) {
         mHandler!!.post {
-            //setProgressBarIndeterminateVisibility(false)
-            //showDialog(if (showRetry) 1 else 0)
             mCheckLicenseButton!!.isEnabled = true
         }
     }
@@ -295,8 +290,8 @@ class MainActivity : Activity(), ToastMessage {
             // This is a polite way of saying the developer made a mistake
             // while setting up or calling the license checker library.
             // Please examine the error code and fix the error.
-            //String result = String.format(getString(R.string.application_error, errorCode);
-            val result = " applicationError: $errorCode"
+            val result = String.format(getString(R.string.application_error, errorCode.toString()))
+            //val result = " applicationError: $errorCode"
             displayResult(result)
         }
     }

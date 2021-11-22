@@ -39,7 +39,6 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_marginTop="0dip"
             android:orientation="horizontal">
@@ -60,9 +59,9 @@
                 android:inputType="none"
                 android:gravity="start"
                 android:padding="8dip"
-                android:text="Player 1"
+                android:text="@string/player_1"
                 android:clickable="true"
-                android:focusable="false"
+                android:focusable="true"
                 android:textColor="#000000" />
 
             <ImageView
@@ -87,12 +86,11 @@
             android:layout_marginLeft="5dip"
             android:layout_marginRight="5dip"
             android:minEms="10"
-            android:text="I&apos;m done" />
+            android:text="@string/im_done" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="0dip"
             android:orientation="horizontal">
@@ -117,9 +115,9 @@
                 android:inputType="none"
                 android:gravity="end"
                 android:padding="8dip"
-                android:text="Player 2"
+                android:text="@string/player_2"
                 android:clickable="true"
-                android:focusable="false"
+                android:focusable="true"
                 android:textColor="#000000" />
 
             <TextView

@@ -18,7 +18,7 @@ class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private va
     private val mExchange = "test"
     var channel: Channel? = null
     var connection: Connection? = null
-    private val mExchangeType = "fanout"
+    //private val mExchangeType = "fanout"
     private var queue: String? = null //The Queue name for this consumer
     var consumer: QueueingConsumer? = null
     private var mConsumerRunning = false
@@ -73,7 +73,7 @@ class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private va
             channel!!.queueBind(queue, mExchange, routingKey)
         } catch (e: IOException) {
             //e.printStackTrace();
-            toastMessage.sendToastMessage("queuePurge " + e.message)
+            toastMessage.sendToastMessage("RabbitMQMessageConsumer addBinding  " + e.message)
         }
     }
 
@@ -86,7 +86,7 @@ class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private va
             channel!!.queueUnbind(queue, mExchange, routingKey)
         } catch (e: IOException) {
             //e.printStackTrace();
-            toastMessage.sendToastMessage("queuePurge " + e.message)
+            toastMessage.sendToastMessage("RabbitMQMessageConsumer removeBinding " + e.message)
         }
     }
 
@@ -135,7 +135,7 @@ class RabbitMQMessageConsumer(private val toastMessage: ToastMessage, private va
             if (connection != null) connection!!.close()
         } catch (e: Exception) {
             writeToLog("RabbitMQMessageConsumer", "dispose() function error: $e")
-            toastMessage.sendToastMessage("queuePurge " + e.message)
+            toastMessage.sendToastMessage("RabbitMQMessageConsumer dispose " + e.message)
         }
     }
 

@@ -18,10 +18,7 @@ object PermissionUtil {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
     }
 
-    private fun shouldAskPermission(
-        context: Context,
-        permission: String
-    ): Boolean {
+    private fun shouldAskPermission(context: Context, permission: String): Boolean {
         if (shouldAskPermission()) {
             val permissionResult = ActivityCompat.checkSelfPermission(context, permission)
             if (permissionResult != PackageManager.PERMISSION_GRANTED) {
@@ -31,13 +28,8 @@ object PermissionUtil {
         return false
     }
 
-    @JvmStatic
     @RequiresApi(api = Build.VERSION_CODES.M)
-    fun checkPermission(
-        context: Context,
-        permission: String,
-        listener: PermissionAskListener
-    ) {
+    fun checkPermission(context: Context, permission: String, listener: PermissionAskListener) {
         // If permission is not granted
         if (shouldAskPermission(context, permission)) {
             // If permission denied previously

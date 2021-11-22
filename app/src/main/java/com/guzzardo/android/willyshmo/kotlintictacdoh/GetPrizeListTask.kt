@@ -11,11 +11,10 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-// A Coroutine task (formerly an AsyncTask task, since deprecated) that will be used to get a list of available prizes
+// A Coroutine task that will be used to get a list of available prizes
 
 class GetPrizeListTask {
     private lateinit var mCallerActivity: FusedLocationActivity
-    //private var applicationContext: Context? = null
     private var mPrizesAvailable: String? = null
 
     fun main(callerActivity: FusedLocationActivity, resources: Resources) = runBlocking {
@@ -25,10 +24,8 @@ class GetPrizeListTask {
         val longitude = WillyShmoApplication.longitude
         val latitude = WillyShmoApplication.latitude
         mCallerActivity.setGettingPrizesCalled()
-        //val url = mResources!!.getString(R.string.domainName) + "/prize/getPrizesByDistance/?longitude=" + longitude + "&latitude=" + latitude
-        val urlData = "/prize/getPrizesByDistance/?longitude=" + longitude + "&latitude=" + latitude
+        val urlData = "/prize/getPrizesByDistance/?longitude=$longitude&latitude=$latitude"
         try {
-            //mPrizesAvailable = converseWithWebServer(url, null, mCallerActivity, mResources!!)
             mPrizesAvailable = SendMessageToAppServer.main(
                 urlData,
                 mCallerActivity as ToastMessage,
@@ -38,7 +35,7 @@ class GetPrizeListTask {
             mCallerActivity.setPrizesRetrievedFromServer()
         } catch (e: Exception) {
             writeToLog("GetPrizeListTask", "doInBackground: " + e.message)
-            mCallerActivity.sendToastMessage("Playing without host server")
+            mCallerActivity.sendToastMessage("GetPrizeListTask playing without host server")
         }
         writeToLog("GetPrizeListTask", "Prizes available: $mPrizesAvailable")
         if (mPrizesAvailable != null && mPrizesAvailable!!.length > 20) {

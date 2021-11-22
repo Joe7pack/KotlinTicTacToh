@@ -9,20 +9,14 @@
 
 	<!-- increment version number to match values found in app/build.gradle -->
 	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Kotlin Version 41 (1.301.41)</string>
-    <string name="about_2" translatable="false">Copyright © 1986&#8211;2021 &#8211; Tom Volpert and
-		Joe Guzzardo. All rights reserved.</string>
+	<string name="willy_name" translatable="false">Willy</string>
 	<string name="domainName">http://player.alterrigo.com</string>
 	<string name="start_comp" translatable="false">Start &#812;&#812; Willy goes first</string>
 	<string name="start_player" translatable="false">Start &#812;&#812; You go first</string>
 	<string name="player_moves_first" translatable="false">%1$s moves first?</string>
 	<string name="ok" translatable="false">@android:string/ok</string>
-	<string name="about_ok" translatable="false">@android:string/ok</string>
 	<string name="rules" translatable="false">Rules</string>
 	<string name="about" translatable="false">About</string>
-	<string name="one_player" translatable="false">1 Player</string>
-	<string name="two_player" translatable="false">2 Players</string>
-	<string name="player_1" translatable="false">Player 1</string>
-	<string name="player_2" translatable="false">Player 2</string>
 	<string name="settings" translatable="false">Settings</string>
 	<string name="explain1" translatable="false">This game is played just like Tic Tac Toe with the
 		following additional rules:</string>
@@ -41,54 +35,94 @@
 	<string name="app_name" translatable="false">Willy Shmo\'s Kotlin Tic Tac Toe</string>
 	<string name="splash_screen" translatable="false">Can you outwit your opponent?</string>
 	<string name="splash_name" translatable="false">Willy Shmo\'s Tic Tac Toe Game</string>
-	<string name="rules_name" translatable="false">Rules</string>
-	<string name="about_name" translatable="false">About</string>
 	<string name="one_player_name" translatable="false">One Player</string>
 	<string name="two_player_name" translatable="false">Two Players</string>
+	<string name="one_player" translatable="false">1 Player</string>
+	<string name="two_player" translatable="false">2 Players</string>
+	<string name="player_1" translatable="false">Player 1</string>
+	<string name="player_2" translatable="false">Player 2</string>
+	<string name="alert_dialog_text_entry_player1_name" translatable="false">Player 1 Name:</string>
+	<string name="alert_dialog_text_entry_player2_name" translatable="false">Player 2 Name:</string>
 	<string name="select_player" translatable="false">Select Player</string>
+	<string name="enter_player1_name" translatable="false">Please enter a name for Player 1</string>
+	<string name="enter_player2_name" translatable="false">Please enter a name for Player 2</string>
+	<string name="alert_dialog_seeker_entry_token_color_1" translatable="false">Player 1 game token color</string>
+	<string name="alert_dialog_seeker_entry_token_color_2" translatable="false">Player 2 game token color</string>
+	<string name="player_check_string">player</string>
 	<string name="prizes" translatable="false">Win Prizes!</string>
 	<string name="show_prizes" translatable="false">Prizes you can win!</string>
 	<!-- string name="about_2">Copyright © 1986&#8211;2013 &#8211; Tom Volpert and
 		Joe Guzzardo. U.S. Patent number 4,813,681. All rights reserved.</string -->
-		
+	<string name="about_2" translatable="false">Copyright © 1986&#8211;2021 &#8211; Tom Volpert and
+		Joe Guzzardo. All rights reserved.</string>
 	<string name="about_3" translatable="false">Check your score and meet Willy and the rest of the Hobo
 		gang at WillyShmo.com</string>
-	<string name="about_4" translatable="false"></string>
+	<string name="about_4" translatable="false">    </string>
 	<string name="google_play_service_error" translatable="false">Google Play service error</string>
-	<string name="alert_dialog_ok" translatable="false">OK</string>
-	<string name="alert_dialog_cancel" translatable="false">Cancel</string>
+	<string name="alert_dialog_cancel" translatable="false">@android:string/cancel</string>
+	<string name="alert_dialog_accept" translatable="false">Accept</string>
+	<string name="alert_dialog_reject" translatable="false">Reject</string>
+	<string name="alert_dialog_waiting" translatable="false">Waiting for player to connect...</string>
+	<string name="alert_dialog_connecting" translatable="false">Connecting, please wait...</string>
+	<string name="alert_dialog_to_connect" translatable="false">to connect</string>
+	<string name="alert_dialog_waiting_player2" translatable="false">Waiting for</string>
+	<string name="action_string" translatable="false">Joes text here</string>
+	<string name="action_url" translatable="false">Joe.Guzzardo.com</string>
+	<string name="note_to_index" translatable="false">Joes Note</string>
 	<string name="alert_dialog_username" translatable="false">Name: </string>
-	<string name="alert_dialog_text_entry_player1_name" translatable="false">Player 1 Name: </string>
-	<string name="alert_dialog_text_entry_player2_name" translatable="false">Player 2 Name: </string>
+	<string name="player_wins" translatable="false">wins!</string>
+	<string name="player_sorry" translatable="false">Sorry,</string>
+	<string name="users_online_failure" translatable="false">Sorry, I\'m unable to retrieve Users that are currently online, please try again.</string>
+	<string name="host_connect_failure" translatable="false">Sorry, I\'m unable to connect to the Host, please try again later.</string>
+	<string name="search_players_again" translatable="false">Please press the Back button to search for other cool players!</string>
+	<string name="enter_player_name_in_settings" translatable="false">Please enter your name in the settings menu</string>
+	<string name="has_left_game" translatable="false">side has left the game</string>
+	<string name="server_side" translatable="false">server</string>
+	<string name="trouble_connecting" translatable="false">Trouble connecting?</string>
+	<string name="search_again" translatable="false">Please press the Back button to search again.</string>
+	<string name="communication_lost" translatable="false">Sorry, but I\'m unable to communicate with the host server, please try again later.</string>
+	<string name="wait_for_opponent" translatable="false">Please wait while we find someone online to play against...</string>
+	<string name="prize_list_inflator_error" translatable="false">PrizeListAdapter inflater error:</string>
+	<string name="prizes_available_create_error" translatable="false">PrizesAvailableActivity onCreate error:</string>
+	<string name="prize_list_adapter_create_error" translatable="false">error constructing PrizeListAdapter:</string>
+	<string name="alert_dialog_hosting_friend" translatable="false">Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)</string>
+	<string name="alert_dialog_hosting" translatable="false">Hosting...</string>
+	<string name="alert_dialog_lets_see" translatable="false">Let\'s see if</string>
+	<string name="alert_dialog_wants_to_play" translatable="false">really wants to play.</string>
+	<string name="play_again_string" translatable="false">Play Again?</string>
+	<string name="torqued_up_really_well" translatable="false">You torqued this up really well Joe, I\'m proud of you!</string>
 	<string name="move_mode" translatable="false">Move mode</string>
+	<string name="moves_first" translatable="false">%1$s moves first?</string>
 	<string name="sound_mode" translatable="false">Sound</string>
 	<string name="reset_scores" translatable="false">Reset scores</string>
 	<string name="alert_dialog_reset_scores" translatable="false">Reset scores?</string>
 	<string name="play_over_network" translatable="false">Play Over Network?</string>
 	<string name="alert_dialog_starting_token_value" translatable="false">You must choose to start as O or X</string>
-	<string name="alert_dialog_seeker_entry_token_settings" translatable="false">Game token size</string>
-	<string name="alert_dialog_seeker_entry_token_size" translatable="false">Game token size</string>
-	<string name="alert_dialog_seeker_entry_token_color_1" translatable="false">Player 1 game token color</string>
-	<string name="alert_dialog_seeker_entry_token_color_2" translatable="false">Player 2 game token color</string>
+	<string name="alert_dialog_entry_token_size" translatable="false">Game token size</string>
 	<string name="token_size_smallest" translatable="false">Small</string>
 	<string name="token_size_medium" translatable="false">Medium</string>
 	<string name="token_size_largest" translatable="false">Large</string>
 	<string name="tie" translatable="false">This is a tie! Play Again?</string>
+	<string name="playAgain" translatable="false">Play Again?</string>
+	<string name="playAgainWin" translatable="false">wins! Play Again?</string>
 	<string name="wild_card_explanation" translatable="false">You must choose to Start as either X or O</string>
 	<string name="start_o" translatable="false">Start as O</string>
 	<string name="start_x" translatable="false">Start as X</string>
 	<string name="would_like_to_play" translatable="false">would like to play</string>
 	<string name="network_not_available" translatable="false">Prizes and network play not available</string>
-	<string name="prizes_you_can_win" translatable="false">"Prizes you can win!"</string>
-	<string name="distance_in_miles" translatable="false">"Distance (miles)"</string>
-	<string name="not_applicable" translatable="false">"N/A"</string>
-	<string name="multiple_locations" translatable="false">"Multiple locations"</string>
+	<string name="prizes_you_can_win" translatable="false">Prizes you can win!</string>
+	<string name="won_a_prize" translatable="false">Congratulations, you won a prize!</string>
+	<string name="distance_in_miles" translatable="false">Distance (miles)</string>
+	<string name="not_applicable" translatable="false">N/A</string>
+	<string name="multiple_locations" translatable="false">Multiple locations</string>
+	<string name="distance_unknown" translatable="false">Unknown</string>
 	<!-- License checking status messages -->
 	<string name="check_license">Check license</string>
 	<string name="checking_license">Checking license…</string>
 	<string name="dont_allow">Don\'t allow the user access</string>
 	<string name="allow">Allow the user access</string>
 	<string name="application_error">Application error: %1$s</string>
+	<string name="prize_won_error">Prize won error: </string>
 	<!-- Unlicensed dialog messages -->
 	<string name="unlicensed_dialog_title">Application not licensed</string>
 	<string name="unlicensed_dialog_body">This application is not licensed. Please purchase it from Android Market.</string>
@@ -105,11 +139,20 @@
 	<string name="last_update_time_label">Last updated at</string>
 	<string name="permission_rationale">To win prizes we would like to know your location</string>
 	<string name="permission_denied_explanation">Location permission denied.</string>
-	<string name="start_updates">location updates started</string>
-	<string name="stop_updates">location updates stopped</string>
+	<string name="start_updates">Location updates started</string>
+	<string name="stop_updates">Location updates stopped</string>
 	<string name="location_settings_inadequate_warning">You were already warned once!</string>
     <string name="appbar_scrolling_view_behavior">well behaved</string>
 	<string name="prize_list_wait">Please wait while we load your prize list</string>
+	<string name="im_done">I\'m done</string>
+	<string name="start_as_o">Start as O</string>
+	<string name="start_as_x">Start as X</string>
+	<string name="play_mode_drag">Drag</string>
+	<string name="play_mode_touch">Touch</string>
+	<string name="sound_on">On</string>
+	<string name="sound_off">Off</string>
+	<string name="loading">Loading…</string>
+	<string name="prize_image">image description</string>
 
 </resources>
 

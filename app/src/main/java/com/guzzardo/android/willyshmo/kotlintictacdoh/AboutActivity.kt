@@ -31,10 +31,8 @@ class AboutActivity : Activity() {
         findViewById<View>(R.id.about_ok).setOnClickListener {
             finish()
         }
-        /*
         mAdView = findViewById<View>(R.id.ad_about) as AdView
         val adRequest = AdRequest.Builder().build()
         mAdView!!.loadAd(adRequest)
-        */
     }
 }

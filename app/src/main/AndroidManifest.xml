@@ -65,12 +65,12 @@
 
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.RulesActivity"
-        android:label="@string/rules_name"
+        android:label="@string/rules"
         android:screenOrientation="landscape">
     </activity>
     <activity
         android:name="com.guzzardo.android.willyshmo.kotlintictacdoh.AboutActivity"
-        android:label="@string/about_name"
+        android:label="@string/about"
         android:screenOrientation="landscape">
     </activity>
     <activity

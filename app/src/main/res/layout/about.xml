@@ -9,24 +9,28 @@
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="2dip"
         android:layout_marginBottom="20dip"
         android:text="@string/about_1" />
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="2dip"
         android:layout_marginBottom="20dip"
         android:text="@string/about_2" />
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="2dip"
         android:layout_marginBottom="20dip"
         android:text="@string/about_3" />
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="2dip"
         android:layout_marginBottom="20dip"
         android:text="@string/about_4" />
 
@@ -35,17 +39,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dip"
-        android:text="@string/about_ok" />
+        android:text="@string/ok" />
 
     <com.google.android.gms.ads.AdView
         xmlns:ads="http://schemas.android.com/apk/res-auto"
         android:id="@+id/ad_about"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         ads:adSize="BANNER"
         ads:adUnitId="ca-app-pub-0452251857239552/3983489080" />
-        <!-- ads:loadAdOnCreate="true"
-        ads:testDevices="TEST_EMULATOR, TEST_DEVICE_ID" / -->
 
 </LinearLayout>

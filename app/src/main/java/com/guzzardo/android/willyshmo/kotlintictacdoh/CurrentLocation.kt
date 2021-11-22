@@ -16,8 +16,7 @@ class CurrentLocation {
         // Check whether the new location fix is newer or older
         val timeDelta = location.time - currentBestLocation.time
         val isSignificantlyNewer = timeDelta > TWO_MINUTES
-        val isSignificantlyOlder =
-            timeDelta < -TWO_MINUTES
+        val isSignificantlyOlder = timeDelta < -TWO_MINUTES
         val isNewer = timeDelta > 0
 
         // If it's been more than two minutes since the current location, use the new location
@@ -36,10 +35,7 @@ class CurrentLocation {
         val isSignificantlyLessAccurate = accuracyDelta > 200
 
         // Check if the old and new location are from the same provider
-        val isFromSameProvider = isSameProvider(
-            location.provider,
-            currentBestLocation.provider
-        )
+        val isFromSameProvider = isSameProvider(location.provider, currentBestLocation.provider)
 
         // Determine location quality using a combination of timeliness and accuracy
         if (isMoreAccurate) {
@@ -53,13 +49,10 @@ class CurrentLocation {
     }
 
     /** Checks whether two providers are the same  */
-    private fun isSameProvider(
-        provider1: String?,
-        provider2: String?
-        ): Boolean {
-            return if (provider1 == null) {
-                provider2 == null
-            } else provider1 == provider2
+    private fun isSameProvider(provider1: String?, provider2: String?): Boolean {
+        return if (provider1 == null) {
+            provider2 == null
+        } else provider1 == provider2
     }
 
     companion object {

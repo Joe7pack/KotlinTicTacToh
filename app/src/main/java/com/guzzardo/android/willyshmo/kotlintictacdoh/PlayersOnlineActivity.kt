@@ -78,7 +78,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
         if (mUsersOnline.isNullOrEmpty()) {
             writeToLog("PlayersOnlineActivity", "onCreate() mUsersOnline == null")
-            sendToastMessage("Sorry unable to retrieve Users online, please try again")
+            sendToastMessage(getString(R.string.users_online_failure))
             finish()
         } else {
             playersOnline
@@ -241,8 +241,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 // not sure if this is really needed
                 // may want to reconsider making this class a distinct Rabbit MQ queue
                 writeToLog("PlayersOnlineActivity", "<<<<<<<<<<<<<< onListItemClick already selected, I'm returning")
-                //showCancelDialog()
-                sendToastMessage("Please press the Back button to search for other cool players!")
+                sendToastMessage(getString(R.string.search_players_again))
                 return
             }
             mAlreadySelected = true
@@ -255,6 +254,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
             writeToLog("PlayersOnlineActivity", "============> onListItemClick called  at: $dateTime")
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
+            //FIXME - see if we can replace GlobalScope with something less delicate
             GlobalScope.launch {
                     SendMessageToRabbitMQ().main(
                         mRabbitMQConnection,
@@ -287,10 +287,10 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
 
             return AlertDialog.Builder(mApplicationContext!!)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setTitle("Trouble connecting?")
-                .setMessage("Please press the Back button to search again")
+                .setTitle(getString(R.string.trouble_connecting))
+                .setMessage(getString(R.string.search_again))
                 .setCancelable(false)
-                .setNegativeButton("Cancel") { _, _ -> createCancelDialog() }
+                .setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> createCancelDialog() }
                 .create()
         }
 
@@ -392,7 +392,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             }
         } catch (e: JSONException) {
             writeToLog("PlayersOnlineActivity", "parseUserList: " + e.message)
-            sendToastMessage(e.message)
+            sendToastMessage("PlayersOnlineActivity parseUserList: " + e.message)
         }
         return userTreeMap
     }

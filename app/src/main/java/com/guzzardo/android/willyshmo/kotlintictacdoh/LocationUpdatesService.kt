@@ -73,20 +73,15 @@ class LocationUpdatesService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name: CharSequence = getString(R.string.app_name)
             // Create the channel for the notification
-            val mChannel =
-                NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT)
-
+            val mChannel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT)
             // Set the Notification Channel for the Notification Manager.
             mNotificationManager!!.createNotificationChannel(mChannel)
         }
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i(TAG, "Service started")
-        val startedFromNotification = intent.getBooleanExtra(
-            EXTRA_STARTED_FROM_NOTIFICATION,
-            false
-        )
+        writeToLog(TAG, "Service started")
+        val startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION, false)
 
         // We got here because the user decided to remove location updates from the notification.
         if (startedFromNotification) {
@@ -106,7 +101,7 @@ class LocationUpdatesService : Service() {
         // Called when a client (MainActivity in case of this sample) comes to the foreground
         // and binds with this service. The service should cease to be a foreground service
         // when that happens.
-        Log.i(TAG, "in onBind()")
+        writeToLog(TAG, "in onBind()")
         stopForeground(true)
         mChangingConfiguration = false
         return mBinder
@@ -116,20 +111,20 @@ class LocationUpdatesService : Service() {
         // Called when a client (MainActivity in case of this sample) returns to the foreground
         // and binds once again with this service. The service should cease to be a foreground
         // service when that happens.
-        Log.i(TAG, "in onRebind()")
+        writeToLog(TAG, "in onRebind()")
         stopForeground(true)
         mChangingConfiguration = false
         super.onRebind(intent)
     }
 
     override fun onUnbind(intent: Intent): Boolean {
-        Log.i(TAG, "Last client unbound from service")
+        writeToLog(TAG, "Last client unbound from service")
 
         // Called when the last client (MainActivity in case of this sample) unbinds from this
         // service. If this method is called due to a configuration change in MainActivity, we
         // do nothing. Otherwise, we make this service a foreground service.
         if (!mChangingConfiguration && requestingLocationUpdates(this)) {
-            Log.i(TAG, "Starting foreground service")
+            writeToLog(TAG, "Starting foreground service")
             /*
             // TODO(developer). If targeting O, use the following code.
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
@@ -152,7 +147,7 @@ class LocationUpdatesService : Service() {
      * [SecurityException].
      */
     fun requestLocationUpdates() {
-        Log.i(TAG, "Requesting location updates")
+        writeToLog(TAG, "Requesting location updates")
         setRequestingLocationUpdates(this, true)
         startService(Intent(applicationContext, LocationUpdatesService::class.java))
         try {
@@ -162,7 +157,7 @@ class LocationUpdatesService : Service() {
             )
         } catch (unlikely: SecurityException) {
             setRequestingLocationUpdates(this, false)
-            Log.e(TAG, "Lost location permission. Could not request updates. $unlikely")
+            writeToLog(TAG, "Lost location permission. Could not request updates. $unlikely")
         }
     }
 
@@ -171,14 +166,14 @@ class LocationUpdatesService : Service() {
      * [SecurityException].
      */
     fun removeLocationUpdates() {
-        Log.i(TAG, "Removing location updates")
+        writeToLog(TAG, "Removing location updates")
         try {
             mFusedLocationClient!!.removeLocationUpdates(mLocationCallback)
             setRequestingLocationUpdates(this, false)
             stopSelf()
         } catch (unlikely: SecurityException) {
             setRequestingLocationUpdates(this, true)
-            Log.e(TAG, "Lost location permission. Could not remove updates. $unlikely")
+            writeToLog(TAG, "Lost location permission. Could not remove updates. $unlikely")
         }
     }
 
@@ -191,10 +186,7 @@ class LocationUpdatesService : Service() {
             intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true)
 
             // The PendingIntent that leads to a call to onStartCommand() in this service.
-            val servicePendingIntent = PendingIntent.getService(
-                this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
+            val servicePendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             // The PendingIntent to launch activity.
             val activityPendingIntent = PendingIntent.getActivity(
@@ -203,14 +195,8 @@ class LocationUpdatesService : Service() {
             )
 
             val builder = NotificationCompat.Builder(this, "abcd")
-                .addAction(
-                    R.drawable.ic_launcher_foreground, getString(R.string.launch_activity),
-                    activityPendingIntent
-                )
-                .addAction(
-                    R.drawable.ic_launcher_foreground, getString(R.string.remove_location_updates),
-                    servicePendingIntent
-                )
+                .addAction(R.drawable.ic_launcher_foreground, getString(R.string.launch_activity), activityPendingIntent)
+                .addAction(R.drawable.ic_launcher_foreground, getString(R.string.remove_location_updates), servicePendingIntent)
                 .setContentText(text)
                 .setContentTitle(getLocationTitle(this))
                 .setOngoing(true)
@@ -243,7 +229,7 @@ class LocationUpdatesService : Service() {
         }
 
     private fun onNewLocation(location: Location) {
-        Log.i(TAG, "New location: $location")
+        writeToLog(TAG, "New location: $location")
         mLocation = location
 
         // Notify anyone listening for broadcasts about the new location.
@@ -259,14 +245,12 @@ class LocationUpdatesService : Service() {
 
     // Sets the location request parameters.
     private fun createLocationRequest() {
-
-        var locationRequest = LocationRequest.create().apply {
+        val locationRequest = LocationRequest.create().apply {
             interval = 100
             fastestInterval = 50
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
             maxWaitTime= 100
         }
-
         mLocationRequest = locationRequest
         mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS
         mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
@@ -295,17 +279,21 @@ class LocationUpdatesService : Service() {
         return false
     }
 
+    private fun writeToLog(filter: String, msg: String) {
+        if ("true".equals(resources.getString(R.string.debug), ignoreCase = true)) {
+            Log.d(filter, msg)
+        }
+    }
+
     companion object {
-        private const val PACKAGE_NAME =
-            "com.google.android.gms.location.sample.locationupdatesforegroundservice"
+        private const val PACKAGE_NAME = "com.google.android.gms.location.sample.locationupdatesforegroundservice"
         private val TAG = LocationUpdatesService::class.java.simpleName
 
         // The name of the channel for notifications.
         private const val CHANNEL_ID = "channel_01"
         const val ACTION_BROADCAST = PACKAGE_NAME + ".broadcast"
         const val EXTRA_LOCATION = PACKAGE_NAME + ".location"
-        private const val EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
-                ".started_from_notification"
+        private const val EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME + ".started_from_notification"
 
         // The desired interval for location updates. Inexact. Updates may be more or less frequent.
         private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000

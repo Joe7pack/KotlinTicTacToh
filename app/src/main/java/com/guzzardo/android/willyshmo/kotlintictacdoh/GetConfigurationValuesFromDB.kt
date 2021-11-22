@@ -9,7 +9,7 @@ import kotlinx.coroutines.*
 
 // An AsyncTask that will be used to load Configuration values from the DB
 
-class GetConfigurationValuesFromDB { // : AsyncTask<Any?, Void?, String?>() {
+class GetConfigurationValuesFromDB {
     private lateinit var mCallerActivity: ToastMessage
     private var applicationContext: Context? = null
 
@@ -50,9 +50,8 @@ class GetConfigurationValuesFromDB { // : AsyncTask<Any?, Void?, String?>() {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            writeToLog("GetConfigurationValuesFromDB", "onPostExecute exception called " + e.message)
-            mCallerActivity.sendToastMessage(e.message)
+            writeToLog("GetConfigurationValuesFromDB", "setConfigValues exception called " + e.message)
+            mCallerActivity.sendToastMessage("GetConfigurationValuesFromDB setConfigValues error: " + e.message)
         }
     }
 

@@ -29,7 +29,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
                 window.setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.prizes_title)
             }
         } catch (e: Exception) {
-            sendToastMessage("PrizesAvailableActivity onCreate error: $e.message")
+            sendToastMessage(getString(R.string.prizes_available_create_error) + " " + e.message)
         }
     }
 
@@ -45,6 +45,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
             super.onCreate(savedInstanceState)
             try {
                 listAdapter = PrizeListAdapter(
+                    WillyShmoApplication.willyShmoApplicationContext,
                     activity,
                     WillyShmoApplication.prizeNames,
                     WillyShmoApplication.bitmapImages,
@@ -56,7 +57,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
                 )
             }
             catch(e: Exception) {
-                sendToastMessage("error constructing PrizeListAdapter: $e.message")
+                sendToastMessage(getString(R.string.prize_list_adapter_create_error) + " " + e.message)
                 writeToLog("PrizesAvailableActivity", "error constructing PrizeListAdapter: $e.message")
             }
             // Check to see if we have a frame in which to embed the details

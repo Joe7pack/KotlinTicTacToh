@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentActivity
 import java.math.BigDecimal
 
 class PrizeListAdapter(
+    context: Context?,
     activity: FragmentActivity?,
     private val imageDescription: Array<String?>,
     private val imageBitmap: Array<Bitmap?>,
@@ -46,7 +47,7 @@ class PrizeListAdapter(
                     vi = inflater!!.inflate(R.layout.prizes, null)
                 }
             } catch (e: Exception) {
-                sendToastMessage("PrizeListAdapter inflater error: " + e.message) //this won't work since we never set mApplicationContext!
+                sendToastMessage(mApplicationContext!!.getString(R.string.prize_list_inflator_error) + e.message)
                 writeToLog("PrizeListAdapter", "getView: $e.message")
             }
             val prizeDescription = vi?.findViewById<View>(R.id.prize_description) as TextView
@@ -72,7 +73,7 @@ class PrizeListAdapter(
                     textDistance.text = resources.getString(R.string.multiple_locations)
                 }
                 else -> {
-                    textDistance.text = "???"
+                    textDistance.text = resources.getString(R.string.distance_unknown)
                 }
             }
             return vi
@@ -99,7 +100,7 @@ class PrizeListAdapter(
         var mErrorHandler: ErrorHandler? = null
         private var mApplicationContext: Context? = null
         private lateinit var mResources: Resources
-        private lateinit var mCallerActivity: Activity
+        //private lateinit var mCallerActivity: Activity
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {
@@ -110,8 +111,9 @@ class PrizeListAdapter(
 
     init {
         inflater = activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        mCallerActivity = activity
+        //mCallerActivity = activity
         mErrorHandler = ErrorHandler()
         mResources = resources
+        mApplicationContext = context
     }
 }

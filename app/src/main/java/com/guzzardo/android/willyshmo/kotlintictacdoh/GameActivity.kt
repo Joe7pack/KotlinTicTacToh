@@ -119,15 +119,19 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         if (mHostWaitDialog != null) {
             mHostWaitDialog!!.dismiss()
         }
-        val opponentName = if (mPlayer2Name == null) "Waiting for player to connect..." else "Waiting for $mPlayer2Name to connect..."
-        val hostingDescription = if (mPlayer2Name == null) "Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)" else "Hosting..."
+        val waitingString = getString(R.string.alert_dialog_waiting)
+        val opponentNameWaiting = getString(R.string.alert_dialog_waiting_player2) + " " + mPlayer1Name + " " +
+            getString(R.string.alert_dialog_to_connect)
+        val opponentName = if (mPlayer2Name == null) waitingString else opponentNameWaiting
+        val hostingDescription = if (mPlayer2Name == null) getString(R.string.alert_dialog_hosting_friend)
+            else getString(R.string.alert_dialog_hosting)
         mGameView!!.setGamePrize(true)
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(hostingDescription)
             .setMessage(opponentName)
             .setCancelable(false)
-            .setNegativeButton("Cancel") { _, _ -> cancelGame() }
+            .setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> cancelGame() }
             .create()
     }
 
@@ -135,12 +139,14 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         if (mClientWaitDialog != null) {
             mClientWaitDialog!!.dismiss()
         }
+        val connectingString = getString(R.string.alert_dialog_connecting)
+        val playerReallyWantsToPlay = getString(R.string.alert_dialog_lets_see) + " " + mPlayer2Name + " " + getString(R.string.alert_dialog_wants_to_play)
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
-            .setTitle("Connecting...")
-            .setMessage("Let's see if $mPlayer2Name really wants to play.")
+            .setTitle(connectingString)
+            .setMessage(playerReallyWantsToPlay)
             .setCancelable(false)
-            .setNegativeButton("Cancel") { _, _ -> cancelGame() }
+            .setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> cancelGame() }
             .create()
     }
 
@@ -284,7 +290,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             val cell = mGameView!!.selection
             mButtonNext!!.isEnabled = cell >= 0
             if (cell >= 0) {
-                //playHumanMoveSound()
                 playSound(R.raw.human_token_move_sound)
                 mLastCellSelected = cell
             }
@@ -357,7 +362,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         override fun onClick(v: View) {
             val player = mGameView!!.currentPlayer
             val testText = mButtonNext!!.text.toString()
-            if (testText.endsWith("Play Again?")) { //game is over
+            val playAgainString = getString(R.string.play_again_string)
+            if (testText.contains(playAgainString)) { //game is over
                 if (mServerIsPlayingNow) {
                     mHostWaitDialog = createHostWaitDialog()
                     mHostWaitDialog!!.show()
@@ -450,12 +456,12 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     private fun saveHumanWinner(winningPositionOnBoard: Int, positionStatus: Int) {
         humanWinningHashMap[winningPositionOnBoard] = positionStatus
-
-        //second value indicates position is available for use after comparing against other
-        //entries in this map
-        //second value: initialized to -1 upon creation
-        // set to 0 if not available
-        // set to 1 if available
+        /*
+         * second value indicates position is available for use after comparing against other entries in this map
+         * second value: initialized to -1 upon creation
+         * set to 0 if not available
+         * set to 1 if available
+         */
     }
 
     private fun selectBestMove(): IntArray { //this is the heart and soul of Willy Shmo - at least as far as his skill at playing this game
@@ -536,12 +542,13 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     // if we reach here then the computer cannot win on this move
                 }
             }
-            // try to block the human win on the next move here
-/*
- * There is a possibility that the human will have more than 1 winning move. So, lets save each
- * winning outcome in a HashMap and re-test them with successive available moves until we find one
- * that results in no winning next available move for human.
- */         if (tokenSelected == -1) { //try again with human selected token
+            /* try to block the human win on the next move here
+             *
+             * There is a possibility that the human will have more than 1 winning move. So, lets save each
+             * winning outcome in a HashMap and re-test them with successive available moves until we find one
+             * that results in no winning next available move for human.
+             */
+            if (tokenSelected == -1) { //try again with human selected token
                 tokenChoice = mGameView!!.selectSpecificComputerToken(mPlayer2TokenChoice, false)
                 if (tokenChoice > -1) {
 //            		int computerBlockingMove = -1;
@@ -613,7 +620,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     }
                 }
             }
-            // if we reach here then the computer cannot win on this move and the human
+            // if we reach here then Willy cannot win on this move and the human
             // cannot win on the next
             // so we'll select a position that at least doesn't give the human a win and move there
             if (tokenSelected == -1) {
@@ -791,7 +798,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
         mGameView!!.moveComputerToken(boardPosition, resultValue) //move token selected to location on board
         mLastCellSelected = boardPosition
-        //playFinishMoveSound()
         playSound(R.raw.finish_move)
         mGameView!!.disableBall(resultValue)
         mGameView!!.setCell(boardPosition, GameView.State.PLAYER2) //set State table
@@ -801,7 +807,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         var computerToken = GameView.BoardSpaceValues.EMPTY
         val index = selectBestMove() //0 = boardSpaceSelected, 1 = tokenSelected
         if (index[0] != -1) {
-            //playComputerMoveSound()
             playSound(R.raw.computer_token_move_sound)
             mGameView!!.setCell(index[0], GameView.State.PLAYER2) // set State table - the computer (Willy) is always PLAYER2
             computerToken = mGameView!!.moveComputerToken(index[0], index[1]) //move computer token to location on board
@@ -812,7 +817,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private fun networkCallBackFinish() {
         finishTurn(false, false, true) //don't send message to make computer move don't switch the player don't use player 2 for win testing
         val testText = mButtonNext!!.text.toString()
-        if (testText.endsWith("Play Again?")) {
+        val playAgainString = getString(R.string.playAgain)
+        if (testText.contains(playAgainString)) {
             highlightCurrentPlayer(GameView.State.EMPTY)
             return
         }
@@ -836,7 +842,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 val urlData = ("/gamePlayer/update/?id=$mPlayer1Id&playingNow=true&opponentId=$player2Id&userName=$mPlayer1Name")
                 val messageResponse = sendMessageToAppServer(urlData,false)
                 if (mClientWaitDialog == null) {
-                    sendToastMessage("you torqued this up really well Joe, I'm proud of you!")
+                    sendToastMessage(getString(R.string.torqued_up_really_well))
                     return true
                 }
                 mClientWaitDialog!!.dismiss()
@@ -924,9 +930,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     setNetworkMove(boardPosition, tokenMoved)
                     networkCallBackFinish()
                     val testText = mButtonNext!!.text.toString()
-                    if (testText.endsWith("Play Again?")) {
-                        if (mServerIsPlayingNow) { // if win came from client side we need to send back a message to give client the
-                            mServerThread!!.setMessageToClient("game over") // ability to respond
+                    if (testText.contains(getString(R.string.playAgain))) {
+                        if (mServerIsPlayingNow) { // if win came from client side we need to send back a message to give the client the ability to respond
+                            mServerThread!!.setMessageToClient("game over")
                         }
                     }
                 }
@@ -1386,20 +1392,21 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private fun setWinState(player: GameView.State?) {
         mButtonNext!!.isEnabled = true
         val text: String
-        var player1Name: String? = "Player 1"
-        var player2Name: String? = "Player 2"
+        var player1Name: String = getString(R.string.player_1)
+        var player2Name: String = getString(R.string.player_2)
         if (mPlayer1Name != null) {
-            player1Name = mPlayer1Name
+            player1Name = mPlayer1Name as String
         }
         if (mPlayer2Name != null) {
-            player2Name = mPlayer2Name
+            player2Name = mPlayer2Name as String
         }
+        val playAgainString = getString(R.string.playAgain)
         text = if (player == GameView.State.EMPTY) {
             getString(R.string.tie)
         } else if (player == GameView.State.PLAYER1) {
-            "$player1Name wins! Play Again?"
+            "$player1Name ${getString(R.string.player_wins)} $playAgainString"
         } else {
-            "$player2Name wins! Play Again?"
+            "$player2Name ${getString(R.string.player_wins)} $playAgainString"
         }
         mButtonNext!!.text = text
         if (HUMAN_VS_NETWORK) {
@@ -1497,7 +1504,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         mWillyScore = savedInstanceState.getInt("ga_willy_score")
         val workString = savedInstanceState.getString("ga_button")
         mButtonNext!!.text = workString
-        if (!mButtonNext!!.text.toString().endsWith("Play Again?")) {
+        val playAgainString = getString(R.string.playAgain)
+        if (!mButtonNext!!.text.toString().contains(playAgainString)) {
             mButtonNext!!.isEnabled = false
         }
         moveModeTouch = savedInstanceState.getBoolean("ga_move_mode")
@@ -1517,46 +1525,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     override fun onDestroy() {
         super.onDestroy()
         writeToLog("GameActivity", "GameActivity onDestroy() called - client thread: $mClientThread server thread: $mServerThread")
-        /*
-        if (!HUMAN_VS_NETWORK) {
-            return
-        }
-        setNetworkGameStatusAndResponse(false, false)
-        */
-        /*
-        if (mClientThread != null) {
-            mClientThread!!.closeRabbitMQConnection(mClientThread!!.rabbitMQConnection)
-            writeToLog("GameActivity", " onDestroy about to call clientThread DisposeRabbitMQTask()")
-            runBlocking {
-                CoroutineScope(Dispatchers.Default).async {
-                    val disposeRabbitMQTask = DisposeRabbitMQTask()
-                    disposeRabbitMQTask.main(
-                        mMessageClientConsumer,
-                        resources,
-                        this@GameActivity as ToastMessage
-                    )
-                }.await()
-            }
-            mClientThread = null
-        }
-        */
-        /*
-        if (mServerThread != null) {
-            mServerThread!!.closeRabbitMQConnection(mServerThread!!.rabbitMQConnection)
-            writeToLog("GameActivity", "onDestroy about to call serverThread DisposeRabbitMQTask()")
-            runBlocking {
-                CoroutineScope(Dispatchers.Default).async {
-                    val disposeRabbitMQTask = DisposeRabbitMQTask()
-                    disposeRabbitMQTask.main(
-                        mMessageServerConsumer,
-                        resources,
-                        this@GameActivity as ToastMessage
-                    )
-                }.await()
-            }
-            mServerThread = null
-        }
-        */
         if (mClientWaitDialog != null)
             mClientWaitDialog!!.dismiss()
         if (mLikeToPlayDialog != null)
@@ -1844,7 +1812,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                             mGameStarted = true
                         }
                         if (mRabbitMQClientResponse!!.startsWith("moved")) {
-                            //mGameStarted = true //I think we can comment out this line??
                             parseMove(mRabbitMQClientResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_CLIENT_TURN)
                         }
@@ -1895,7 +1862,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         super.onPause()
         writeToLog("GameActivity", "+++++++++++++++++++++> onPause called, mClientRunning: $mClientRunning, serverIsPlayingNow: $mServerIsPlayingNow, isServerRunning: $isServerRunning")
         val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-        val rnds = (0..1000000).random() // generated random from 0 to 1,000,000 included
+        val rnds = (0..1000000).random() // generated random from 0 to 1,000,000 inclusive
 
         if (mClientRunning) {
             mClientThread!!.setMessageToServer("leftGame, $mPlayer1Name $dateTime $rnds")
@@ -2076,9 +2043,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         try {
             mServerRefusedGame = AlertDialog.Builder(this@GameActivity)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setTitle("Sorry, $playerName server side has left the game")
-                //.setNeutralButton("OK") { dialog, which -> finish() }
-                .setPositiveButton("OK") { _, _ -> startTwoPlayerActivity() }
+                //.setTitle("Sorry, $playerName server side has left the game")
+                .setTitle(getString(R.string.player_sorry) + " $playerName " + getString(R.string.server_side) + " " + getString(R.string.has_left_game))
+                .setPositiveButton(R.string.ok) { _, _ -> startTwoPlayerActivity() }
                 .setCancelable(false)
                 .show()
         } catch (e: Exception) {
@@ -2101,8 +2068,9 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
-            .setTitle("Sorry, $playerName $clientOrServer side has left the game")
-            .setPositiveButton("OK") { _, _ -> startTwoPlayerActivity() }
+            //.setTitle("Sorry, $playerName $clientOrServer side has left the game")
+            .setTitle(getString(R.string.player_sorry) + " " + playerName + " " + clientOrServer + " " + getString(R.string.has_left_game))
+            .setPositiveButton(R.string.ok) { _, _ -> startTwoPlayerActivity() }
             .setCancelable(false)
             .show()
     }
@@ -2136,17 +2104,17 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private fun showPrizeWon(prizeType: Int) {
         try {
             AlertDialog.Builder(this@GameActivity)
-                .setTitle("Congratulations, you won a prize!")
-                .setPositiveButton("Accept") { _, _ ->
+                .setTitle(getString(R.string.won_a_prize))
+                .setPositiveButton(R.string.alert_dialog_accept) { _, _ ->
                     val i = Intent(this@GameActivity, PrizesAvailableActivity::class.java)
                     startActivity(i)
                 }
                 .setCancelable(true)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setNegativeButton("Reject") { _, _ -> }
+                .setNegativeButton(R.string.alert_dialog_reject) { _, _ -> }
                 .show()
         } catch (e: Exception) {
-            sendToastMessage("showPrizeWon error: $e.message")
+            sendToastMessage(getString(R.string.prize_won_error) + " " + e.message)
         }
     }
 

@@ -63,10 +63,6 @@
         ads:adUnitId="a14c4786f7a05ac"
         ads:adSize="BANNER"
         android:layout_alignParentBottom="true" />
-        <!-- ads:testDevices="TEST_EMULATOR, TEST_DEVICE_ID"
-        ads:loadAdOnCreate="true" -->
-
-
 
 </RelativeLayout>
 
