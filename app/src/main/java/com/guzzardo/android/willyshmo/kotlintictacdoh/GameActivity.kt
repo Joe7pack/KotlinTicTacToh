@@ -1307,12 +1307,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 }
                 if (currentPlayer == GameView.State.PLAYER1) {
                     player1Score += mRegularWin
-                    //playHumanWinSound()
                     playSound(R.raw.player_win)
                     checkForPrizeWin(winnerFound[4], winnerFound[5], winnerFound[6], PrizeValue.REGULARPRIZE)
                 } else {
                     player1Score += mSuperWin
-                    //playHumanWinShmoSound()
                     playSound(R.raw.player_win_shmo)
                     checkForPrizeWin(winnerFound[4], winnerFound[5], winnerFound[6], PrizeValue.SHMOPRIZE)
                 }
