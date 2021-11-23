@@ -10,7 +10,7 @@ android {
         applicationId "com.guzzardo.android.willyshmo.kotlintictacdoh"
         minSdkVersion 20
         targetSdkVersion 31
-        versionCode 41 //must increment versionCode before building bundle for deployment to Google Play Store
+        versionCode 42 //must increment versionCode before building bundle for deployment to Google Play Store
         versionName "1.3"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -25,7 +25,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            versionNameSuffix '01.41'  //alwways bump this up by 1 for release
+            versionNameSuffix '01.42'  //alwways bump this up by 1 for release
 
             //The version as seen in the Play Store is the concatenation of the versionName and versionNameSuffix.
             // In this particular case it will be displayed as Current Version 1.301.08
@@ -46,20 +46,20 @@ dependencies {
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+    implementation 'androidx.appcompat:appcompat:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation 'androidx.core:core-ktx:1.7.0'
-    implementation "androidx.fragment:fragment-ktx:1.3.6"
+    implementation "androidx.fragment:fragment-ktx:1.4.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.preference:preference-ktx:1.1.1'
-    implementation 'com.google.android.gms:play-services-ads:20.4.0'
+    implementation 'com.google.android.gms:play-services-ads:20.5.0'
     implementation 'com.google.android.gms:play-services-auth:19.2.0'
     implementation 'com.google.android.gms:play-services-location:18.0.0'
     implementation "com.google.android.material:material:1.4.0"
-    implementation 'com.google.firebase:firebase-analytics:19.0.2'
+    implementation 'com.google.firebase:firebase-analytics:20.0.0'
     implementation 'com.google.firebase:firebase-appindexing:20.0.0'
-    implementation 'com.google.firebase:firebase-core:19.0.2'
+    implementation 'com.google.firebase:firebase-core:20.0.0'
     implementation("com.android.support:support-annotations:28.0.0")
     implementation project(':license')
 }
