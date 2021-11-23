@@ -55,6 +55,14 @@
         android:text="@string/alert_dialog_entry_token_size"/>
 
     <Button
+        android:id="@+id/distance_unit_of_measure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/reset_scores"
+        android:layout_marginStart="5dip"
+        android:text="@string/distance_unit_of_measure"/>
+
+    <Button
         android:id="@+id/text_entry_button_player1_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

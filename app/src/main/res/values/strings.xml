@@ -49,8 +49,6 @@
 	<string name="alert_dialog_seeker_entry_token_color_1" translatable="false">Player 1 game token color</string>
 	<string name="alert_dialog_seeker_entry_token_color_2" translatable="false">Player 2 game token color</string>
 	<string name="player_check_string">player</string>
-	<string name="prizes" translatable="false">Win Prizes!</string>
-	<string name="show_prizes" translatable="false">Prizes you can win!</string>
 	<!-- string name="about_2">Copyright © 1986&#8211;2013 &#8211; Tom Volpert and
 		Joe Guzzardo. U.S. Patent number 4,813,681. All rights reserved.</string -->
 	<string name="about_2" translatable="false">Copyright © 1986&#8211;2021 &#8211; Tom Volpert and
@@ -82,9 +80,16 @@
 	<string name="search_again" translatable="false">Please press the Back button to search again.</string>
 	<string name="communication_lost" translatable="false">Sorry, but I\'m unable to communicate with the host server, please try again later.</string>
 	<string name="wait_for_opponent" translatable="false">Please wait while we find someone online to play against...</string>
+	<string name="prizes" translatable="false">Win Prizes!</string>
+	<string name="show_prizes" translatable="false">Prizes you can win!</string>
 	<string name="prize_list_inflator_error" translatable="false">PrizeListAdapter inflater error:</string>
 	<string name="prizes_available_create_error" translatable="false">PrizesAvailableActivity onCreate error:</string>
 	<string name="prize_list_adapter_create_error" translatable="false">error constructing PrizeListAdapter:</string>
+	<string name="prize_won_error">Prize won error:</string>
+	<string name="prizes_you_can_win" translatable="false">Prizes you can win!</string>
+	<string name="won_a_prize" translatable="false">Congratulations, you won a prize!</string>
+	<string name="network_not_available" translatable="false">Prizes and network play not available</string>
+	<string name="prize_list_wait">Please wait while we load your prize list</string>
 	<string name="alert_dialog_hosting_friend" translatable="false">Hosting... (Ask a friend to install Willy Shmo\'s Tic Tac Toe)</string>
 	<string name="alert_dialog_hosting" translatable="false">Hosting...</string>
 	<string name="alert_dialog_lets_see" translatable="false">Let\'s see if</string>
@@ -97,7 +102,7 @@
 	<string name="reset_scores" translatable="false">Reset scores</string>
 	<string name="alert_dialog_reset_scores" translatable="false">Reset scores?</string>
 	<string name="play_over_network" translatable="false">Play Over Network?</string>
-	<string name="alert_dialog_starting_token_value" translatable="false">You must choose to start as O or X</string>
+    <string name="wild_card_explanation" translatable="false">You must choose to Start as either X or O</string>
 	<string name="alert_dialog_entry_token_size" translatable="false">Game token size</string>
 	<string name="token_size_smallest" translatable="false">Small</string>
 	<string name="token_size_medium" translatable="false">Medium</string>
@@ -105,32 +110,17 @@
 	<string name="tie" translatable="false">This is a tie! Play Again?</string>
 	<string name="playAgain" translatable="false">Play Again?</string>
 	<string name="playAgainWin" translatable="false">wins! Play Again?</string>
-	<string name="wild_card_explanation" translatable="false">You must choose to Start as either X or O</string>
 	<string name="start_o" translatable="false">Start as O</string>
 	<string name="start_x" translatable="false">Start as X</string>
 	<string name="would_like_to_play" translatable="false">would like to play</string>
-	<string name="network_not_available" translatable="false">Prizes and network play not available</string>
-	<string name="prizes_you_can_win" translatable="false">Prizes you can win!</string>
-	<string name="won_a_prize" translatable="false">Congratulations, you won a prize!</string>
 	<string name="distance_in_miles" translatable="false">Distance (miles)</string>
+	<string name="distance_in_kilometers" translatable="false">Distance (kilometers)</string>
+	<string name="distance_unit_of_measure">Distance unit of measure</string>
+	<string name="miles">Miles</string>
+	<string name="kilometers">Kilometers</string>
 	<string name="not_applicable" translatable="false">N/A</string>
 	<string name="multiple_locations" translatable="false">Multiple locations</string>
 	<string name="distance_unknown" translatable="false">Unknown</string>
-	<!-- License checking status messages -->
-	<string name="check_license">Check license</string>
-	<string name="checking_license">Checking license…</string>
-	<string name="dont_allow">Don\'t allow the user access</string>
-	<string name="allow">Allow the user access</string>
-	<string name="application_error">Application error: %1$s</string>
-	<string name="prize_won_error">Prize won error: </string>
-	<!-- Unlicensed dialog messages -->
-	<string name="unlicensed_dialog_title">Application not licensed</string>
-	<string name="unlicensed_dialog_body">This application is not licensed. Please purchase it from Android Market.</string>
-	<string name="unlicensed_dialog_retry_body">Unable to validate license. Have you logged onto your Google account?.</string>
-	<string name="buy_button">Buy app</string>
-	<string name="retry_button">Retry</string>
-	<string name="quit_button">Exit</string>
-
 	<string name="location_updated">Location updated</string>
 	<string name="launch_activity">Launch Location Service</string>
 	<string name="remove_location_updates">Remove location updates</string>
@@ -143,7 +133,6 @@
 	<string name="stop_updates">Location updates stopped</string>
 	<string name="location_settings_inadequate_warning">You were already warned once!</string>
     <string name="appbar_scrolling_view_behavior">well behaved</string>
-	<string name="prize_list_wait">Please wait while we load your prize list</string>
 	<string name="im_done">I\'m done</string>
 	<string name="start_as_o">Start as O</string>
 	<string name="start_as_x">Start as X</string>
@@ -153,6 +142,18 @@
 	<string name="sound_off">Off</string>
 	<string name="loading">Loading…</string>
 	<string name="prize_image">image description</string>
-
+	<!-- License checking status messages -->
+	<string name="check_license">Check license</string>
+	<string name="checking_license">Checking license…</string>
+	<string name="dont_allow">Don\'t allow the user access</string>
+	<string name="allow">Allow the user access</string>
+	<string name="application_error">Application error: %1$s</string>
+	<!-- Unlicensed dialog messages -->
+	<string name="unlicensed_dialog_title">Application not licensed</string>
+	<string name="unlicensed_dialog_body">This application is not licensed. Please purchase it from Android Market.</string>
+	<string name="unlicensed_dialog_retry_body">Unable to validate license. Have you logged onto your Google account?.</string>
+	<string name="buy_button">Buy app</string>
+	<string name="retry_button">Retry</string>
+	<string name="quit_button">Exit</string>
 </resources>
 

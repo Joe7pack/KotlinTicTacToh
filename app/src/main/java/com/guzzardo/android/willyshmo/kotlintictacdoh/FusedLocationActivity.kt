@@ -98,7 +98,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
         mLastUpdateTime = ""
 
         // Update values using data stored in the Bundle.
-        updateValuesFromBundle(savedInstanceState)
+        //updateValuesFromBundle(savedInstanceState)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         buildLocationSettingsRequest()
         mErrorHandler = ErrorHandler()
@@ -259,10 +259,14 @@ class FusedLocationActivity : Activity(), ToastMessage {
 
     // Stores activity data in the Bundle.
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
         savedInstanceState.putBoolean(KEY_REQUESTING_LOCATION_UPDATES, mRequestingLocationUpdates!!)
         savedInstanceState.putParcelable(KEY_LOCATION, mCurrentLocation)
         savedInstanceState.putString(KEY_LAST_UPDATED_TIME_STRING, mLastUpdateTime)
-        super.onSaveInstanceState(savedInstanceState)
+    }
+
+    public override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
     }
 
     /**

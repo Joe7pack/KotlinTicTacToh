@@ -300,7 +300,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         fun showChooseTokenDialog(): AlertDialog {
             return AlertDialog.Builder(this@GameActivity)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setTitle(R.string.alert_dialog_starting_token_value)
+                .setTitle(R.string.wild_card_explanation)
                 .setSingleChoiceItems(R.array.select_starting_token, 0) { _, whichButton ->
                     when (whichButton) {
                         0 -> {
@@ -862,6 +862,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         acceptIncomingGameRequestFromClient()
                     }
                 }
+                //TODO - Server side - Add some logic here to see how far away opponent is. If the opponent is too close, deny prize award!
                 return true
             }
 
@@ -1937,6 +1938,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mServerThread!!.setMessageToClient("serverAccepted")
             val messageResponse = sendMessageToAppServer(urlData, !start)
             writeToLog("GameActivity", "setNetworkGameStatusAndResponse start guy messageResponse: $messageResponse")
+            //TODO - Client side - Add some logic here to see how far away opponent is. If the opponent is too close, deny prize award!
         } else {
             writeToLog("GameActivity", "setNetworkGameStatusAndResponse sendNoPlay: $sendNoPlay")
             urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
@@ -2153,6 +2155,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         const val HAVE_OPPONENT = "$packageName.GameActivity.HAVE_OPPONENT"
         const val START_FROM_PLAYER_LIST = "$packageName.GameActivity.START_FROM_PLAYER_LIST"
         const val PARCELABLE_VALUES = "$packageName.GameActivity.PARCELABLE_VALUES"
+        const val DISTANCE_UNIT_OF_MEASURE = "packageName.GameActivity.DISTANCE_UNIT_OF_MEASURE"
 
         private const val MSG_COMPUTER_TURN = 1
         private const val NEW_GAME_FROM_CLIENT = 2

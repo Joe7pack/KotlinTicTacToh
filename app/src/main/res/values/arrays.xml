@@ -31,4 +31,9 @@
         <item>@string/sound_off</item>
    </string-array>
 
+    <string-array name="select_distance_unit_of_measure" translatable="false">
+        <item>@string/miles</item>
+        <item>@string/kilometers</item>
+    </string-array>
+
 </resources>

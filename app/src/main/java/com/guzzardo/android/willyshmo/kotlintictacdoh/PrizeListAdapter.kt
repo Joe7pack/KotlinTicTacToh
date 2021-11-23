@@ -20,6 +20,7 @@ import java.math.BigDecimal
 class PrizeListAdapter(
     context: Context?,
     activity: FragmentActivity?,
+    private val distanceUnitOfMeasure: String,
     private val imageDescription: Array<String?>,
     private val imageBitmap: Array<Bitmap?>,
     private val imageWidth: Array<String?>,
@@ -61,8 +62,12 @@ class PrizeListAdapter(
             val textDistance = vi.findViewById<View>(R.id.prize_distance) as TextView
             when {
                 prizeLocation[position] == "1" -> {
-                    val distance = prizeDistance[position]
-                    var decimal = BigDecimal(distance)
+                    val distance = prizeDistance[position] //this is in miles
+                    var convertedDistance = distance!!.toDouble()
+                    if (distanceUnitOfMeasure == "K") {
+                        convertedDistance = convertedDistance.times(1.60934) //number of kilometers per mile
+                    }
+                    var decimal = BigDecimal(convertedDistance)
                     decimal = decimal.setScale(2, BigDecimal.ROUND_UP)
                     textDistance.text = decimal.toString()
                 }

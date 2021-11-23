@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.ListFragment
@@ -22,11 +23,19 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
         mApplicationContext = applicationContext
         mResources = resources
         errorHandler = ErrorHandler()
+        val settings = getSharedPreferences(MainActivity.UserPreferences.PREFS_NAME, MODE_PRIVATE)
+        mDistanceUnitOfMeasure = settings.getString(GameActivity.DISTANCE_UNIT_OF_MEASURE, "M").toString()
+        var distanceDescription = getString(R.string.distance_in_miles)
+        if (mDistanceUnitOfMeasure == "K") {
+            distanceDescription = getString(R.string.distance_in_kilometers)
+        }
         val customTitleSupported = requestWindowFeature(Window.FEATURE_CUSTOM_TITLE)
         try {
             setContentView(R.layout.prize_frame)
             if (customTitleSupported) {
                 window.setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.prizes_title)
+                val mTitleDistance = findViewById<View>(R.id.prize_title_distance) as TextView
+                mTitleDistance.text = distanceDescription
             }
         } catch (e: Exception) {
             sendToastMessage(getString(R.string.prizes_available_create_error) + " " + e.message)
@@ -47,6 +56,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
                 listAdapter = PrizeListAdapter(
                     WillyShmoApplication.willyShmoApplicationContext,
                     activity,
+                    mDistanceUnitOfMeasure,
                     WillyShmoApplication.prizeNames,
                     WillyShmoApplication.bitmapImages,
                     WillyShmoApplication.imageWidths,
@@ -118,6 +128,7 @@ class PrizesAvailableActivity : FragmentActivity(), ToastMessage {
         private var mApplicationContext: Context? = null
         var errorHandler: ErrorHandler? = null
         private var mResources: Resources? = null
+        private lateinit var mDistanceUnitOfMeasure: String
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources!!.getString(R.string.debug), ignoreCase = true)) {
                 Log.d(filter, msg) }

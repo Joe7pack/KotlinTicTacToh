@@ -58,23 +58,24 @@ class SettingsDialogs : Activity(), ToastMessage {
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, MODE_PRIVATE)
         mPlayer1Name = settings.getString(GameActivity.PLAYER1_NAME, "").toString()
         if (mPlayer1Name.trim().length.equals(0))
-            mPlayer1Name = getString(R.string.player_1) //"Player 1"
+            mPlayer1Name = getString(R.string.player_1)
         mPlayer2Name = settings.getString(GameActivity.PLAYER2_NAME, "").toString()
         if (mPlayer2Name.trim().length.equals(0))
-            mPlayer2Name = getString(R.string.player_2) //"Player 2"
+            mPlayer2Name = getString(R.string.player_2)
         mMoveModeTouch = settings.getBoolean(GameActivity.MOVE_MODE, false)
         mSoundMode = settings.getBoolean(GameActivity.SOUND_MODE, true)
         mTokenSize = settings.getInt(GameActivity.TOKEN_SIZE, 50)
         mTokenColor1 = settings.getInt(GameActivity.TOKEN_COLOR_1, Color.RED)
         mTokenColor2 = settings.getInt(GameActivity.TOKEN_COLOR_2, Color.BLUE)
+        mDistanceUnitOfMeasure = settings.getString(GameActivity.DISTANCE_UNIT_OF_MEASURE, "M").toString()
         mMoveModeChecked = if (!mMoveModeTouch) 0 else 1
         mSoundModeChecked = if (mSoundMode) 0 else 1
         mButtonPlayer1 = findViewById<View>(R.id.text_entry_button_player1_name) as Button
         val nameValuePlayer1 = getString(R.string.alert_dialog_text_entry_player1_name) + " " + mPlayer1Name
-        mButtonPlayer1!!.text = nameValuePlayer1 //"Player 1 Name: $mPlayer1Name"
+        mButtonPlayer1!!.text = nameValuePlayer1
         mButtonPlayer2 = findViewById<View>(R.id.text_entry_button_player2_name) as Button
         val nameValuePlayer2 = getString(R.string.alert_dialog_text_entry_player2_name) + " " + mPlayer2Name
-        mButtonPlayer2!!.text = nameValuePlayer2 //"Player 2 Name: $mPlayer2Name"
+        mButtonPlayer2!!.text = nameValuePlayer2
 
         /* Display a text message with yes/no buttons and handle each message as well as the cancel action */
         val twoButtonsTitle = findViewById<View>(R.id.reset_scores) as Button
@@ -106,6 +107,14 @@ class SettingsDialogs : Activity(), ToastMessage {
             val soundModeDialog = showSoundModeDialog()
             soundModeDialog.show()
         }
+
+        /* Display a radio button group */
+        radioButton = findViewById<View>(R.id.distance_unit_of_measure) as Button
+        radioButton.setOnClickListener {
+            val distanceUnitOfMeasureDialog = showDistanceUnitOfMeasureDialog()
+            distanceUnitOfMeasureDialog.show()
+        }
+
         val tokenSizeTitle = findViewById<View>(R.id.seeker_entry_token_size) as Button
         tokenSizeTitle.setOnClickListener {
             val tokenSizeDialog = showTokenSizeDialog()
@@ -142,6 +151,17 @@ class SettingsDialogs : Activity(), ToastMessage {
             .setTitle(R.string.sound_mode)
             .setSingleChoiceItems(R.array.select_sound_mode, mSoundModeChecked) { _, whichButton -> setSoundModeSelection(whichButton) }
             .setPositiveButton(R.string.ok) { _, _ -> setSoundMode() }
+            .setNegativeButton(R.string.alert_dialog_cancel) { dialog, _ -> dialog.cancel() }
+            .create()
+    }
+
+    private fun showDistanceUnitOfMeasureDialog(): AlertDialog {
+        mDistanceMeasureChecked = if (mDistanceUnitOfMeasure == "M") 0 else 1
+        return AlertDialog.Builder(this@SettingsDialogs)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setTitle(R.string.distance_unit_of_measure)
+            .setSingleChoiceItems(R.array.select_distance_unit_of_measure, mDistanceMeasureChecked) { _, whichButton -> setDistanceUnitOfMeasureSelection(whichButton) }
+            .setPositiveButton(R.string.ok) { _, _ -> saveDistanceUnitOfMeasure() }
             .setNegativeButton(R.string.alert_dialog_cancel) { dialog, _ -> dialog.cancel() }
             .create()
     }
@@ -206,7 +226,6 @@ class SettingsDialogs : Activity(), ToastMessage {
                         editor.commit()
                     }
                 }
-
             }
             .setNegativeButton(R.string.alert_dialog_cancel) { _, _ -> /* User clicked cancel so do some stuff */ }
             .show()
@@ -285,6 +304,7 @@ class SettingsDialogs : Activity(), ToastMessage {
         editor.putInt(GameActivity.TOKEN_SIZE, mTokenSize)
         editor.putInt(GameActivity.TOKEN_COLOR_1, mTokenColor1)
         editor.putInt(GameActivity.TOKEN_COLOR_2, mTokenColor2)
+        editor.putString(GameActivity.DISTANCE_UNIT_OF_MEASURE, mDistanceUnitOfMeasure)
         editor.commit()
         writeToLog("SettingsDialog", "onStop() called mPlayer1Name: $mPlayer1Name")
     }
@@ -362,10 +382,24 @@ class SettingsDialogs : Activity(), ToastMessage {
         mSoundMode = soundMode == 0
     }
 
+    private fun setDistanceUnitOfMeasureSelection(distanceUnitOfMeasure: Int) {
+        if (distanceUnitOfMeasure == 0)
+            mDistanceUnitOfMeasure = "M"
+        else
+            mDistanceUnitOfMeasure = "K"
+    }
+
     private fun setSoundMode() {
         val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
         editor.putBoolean(GameActivity.SOUND_MODE, mSoundMode)
+        editor.commit()
+    }
+
+    private fun saveDistanceUnitOfMeasure() {
+        val settings = getSharedPreferences(UserPreferences.PREFS_NAME, Context.MODE_PRIVATE)
+        val editor = settings.edit()
+        editor.putString(GameActivity.DISTANCE_UNIT_OF_MEASURE, mDistanceUnitOfMeasure)
         editor.commit()
     }
 
@@ -385,6 +419,8 @@ class SettingsDialogs : Activity(), ToastMessage {
         private var mMoveModeTouch = false //false = drag move mode; true = touch move mode
         private var mMoveModeChecked = 0 // 0 = drag move mode; 1 = touch move mode
         private var mSoundModeChecked = 0 // 0 = sound on; 1 = sound off
+        private var mDistanceMeasureChecked = 0 // 0 = miles; 1 = kilometers
         private var mSoundMode = true //false = no sound; true = sound
+        private var mDistanceUnitOfMeasure = "M"
     }
 }
