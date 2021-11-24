@@ -47,7 +47,7 @@
         android:text="@string/reset_scores"/>
 
     <Button
-        android:id="@+id/seeker_entry_token_size"
+        android:id="@+id/token_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/reset_scores"
@@ -58,7 +58,7 @@
         android:id="@+id/distance_unit_of_measure"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/reset_scores"
+        android:layout_below="@id/token_size"
         android:layout_marginStart="5dip"
         android:text="@string/distance_unit_of_measure"/>
 
@@ -72,28 +72,28 @@
         android:text="@string/alert_dialog_text_entry_player1_name"/>
 
     <Button
-        android:id="@+id/seeker_entry_token_color_1"
+        android:id="@+id/token_color_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@id/text_entry_button_player1_name"
         android:layout_below="@id/text_entry_button_player1_name"
-        android:text="@string/alert_dialog_seeker_entry_token_color_1"/>
+        android:text="@string/alert_dialog_token_color_1"/>
 
     <Button
         android:id="@+id/text_entry_button_player2_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@id/seeker_entry_token_color_1"
-        android:layout_below="@id/seeker_entry_token_color_1"
+        android:layout_alignEnd="@id/token_color_1"
+        android:layout_below="@id/token_color_1"
         android:text="@string/alert_dialog_text_entry_player2_name"/>
 
     <Button
-        android:id="@+id/seeker_entry_token_color_2"
+        android:id="@+id/token_color_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@id/text_entry_button_player2_name"
         android:layout_below="@id/text_entry_button_player2_name"
-        android:text="@string/alert_dialog_seeker_entry_token_color_2"/>
+        android:text="@string/alert_dialog_token_color_2"/>
 
     <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
         android:id="@+id/ad_settings"

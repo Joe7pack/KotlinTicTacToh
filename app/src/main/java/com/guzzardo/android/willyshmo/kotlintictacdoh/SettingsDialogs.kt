@@ -115,17 +115,17 @@ class SettingsDialogs : Activity(), ToastMessage {
             distanceUnitOfMeasureDialog.show()
         }
 
-        val tokenSizeTitle = findViewById<View>(R.id.seeker_entry_token_size) as Button
+        val tokenSizeTitle = findViewById<View>(R.id.token_size) as Button
         tokenSizeTitle.setOnClickListener {
             val tokenSizeDialog = showTokenSizeDialog()
             tokenSizeDialog.show()
         }
-        val tokenColorTitle = findViewById<View>(R.id.seeker_entry_token_color_1) as Button
+        val tokenColorTitle = findViewById<View>(R.id.token_color_1) as Button
         tokenColorTitle.setOnClickListener {
             val tokenColorDialog = showTokenColorDialog(1)
             tokenColorDialog.show()
         }
-        val tokenColorTitle2 = findViewById<View>(R.id.seeker_entry_token_color_2) as Button
+        val tokenColorTitle2 = findViewById<View>(R.id.token_color_2) as Button
         tokenColorTitle2.setOnClickListener {
             val tokenColorDialog2 = showTokenColorDialog(2)
             tokenColorDialog2.show()
@@ -266,7 +266,7 @@ class SettingsDialogs : Activity(), ToastMessage {
     private fun showTokenColorDialog(playerNumber: Int): AlertDialog {
         val tokenColorDialog = AlertDialog.Builder(this)
         val titleId =
-            if (playerNumber == 1) R.string.alert_dialog_seeker_entry_token_color_1 else R.string.alert_dialog_seeker_entry_token_color_2
+            if (playerNumber == 1) R.string.alert_dialog_token_color_1 else R.string.alert_dialog_token_color_2
         val newColor = if (playerNumber == 1) mTokenColor1 else mTokenColor2
         val tokenColorPickerView = TokenColorPickerView(this, this@SettingsDialogs, newColor)
         tokenColorDialog.setView(tokenColorPickerView)

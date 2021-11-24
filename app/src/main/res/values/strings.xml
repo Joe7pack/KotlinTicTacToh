@@ -46,8 +46,8 @@
 	<string name="select_player" translatable="false">Select Player</string>
 	<string name="enter_player1_name" translatable="false">Please enter a name for Player 1</string>
 	<string name="enter_player2_name" translatable="false">Please enter a name for Player 2</string>
-	<string name="alert_dialog_seeker_entry_token_color_1" translatable="false">Player 1 game token color</string>
-	<string name="alert_dialog_seeker_entry_token_color_2" translatable="false">Player 2 game token color</string>
+	<string name="alert_dialog_token_color_1" translatable="false">Player 1 game token color</string>
+	<string name="alert_dialog_token_color_2" translatable="false">Player 2 game token color</string>
 	<string name="player_check_string">player</string>
 	<!-- string name="about_2">Copyright © 1986&#8211;2013 &#8211; Tom Volpert and
 		Joe Guzzardo. U.S. Patent number 4,813,681. All rights reserved.</string -->
