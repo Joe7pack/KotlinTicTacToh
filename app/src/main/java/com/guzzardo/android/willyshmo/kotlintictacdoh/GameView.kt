@@ -805,6 +805,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         if (modeH == MeasureSpec.EXACTLY && modeW == MeasureSpec.EXACTLY) {
             mDisplayMode = ScreenOrientation.LANDSCAPE
             val screenBoardSize = if (w < h) w else h
+            //TODO - try to consolidate these 4 if conditions into a single use case
             if (screenBoardSize < 400) { //LG G1 screenBoardSize = 320
                 val result = mTokenSize * 3 / 150.0 * 40.0
                 TOKENSIZE = result.toInt()
@@ -817,24 +818,21 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
                 mOffsetY = 40
                 landscapeIncrementYPlayer = 80
                 mTokenRadius = 45
-            } else if (screenBoardSize < 800) {  // on my Galaxy Note screenBoardSize = 720, on my Nexus 6 screenBoardSize = 661
+            } else if (screenBoardSize < 800) {// on my Samsung J7 screenBoardSize = 672, on my Galaxy Note screenBoardSize = 720, on my Nexus 6 screenBoardSize = 661
                 val result = mTokenSize * 3 / 150.0 * 90.0
                 TOKENSIZE = result.toInt()
                 mOffsetY = 60 //was 120
                 landscapeIncrementYPlayer = 100
                 mTokenRadius = 55
-            } else { // my LG V10
+            } else { // my LG V10, 10.1 WXGA 2 Tablet Emulator
                 val result = mTokenSize * 3 / 150.0 * 130.0
                 TOKENSIZE = result.toInt()
                 mOffsetY = 80
-                landscapeIncrementYPlayer = TOKENSIZE // was 130;
+                landscapeIncrementYPlayer = TOKENSIZE
                 val workRadius = TOKENSIZE * .75
-                mTokenRadius =
-                    workRadius.toInt() // was hard coded at 65 then changed to TOKENSIZE / 2
+                mTokenRadius = workRadius.toInt() // was hard coded at 65 then changed to TOKENSIZE / 2
             }
-            mSxy = TOKENSIZE + 2
-            //mOffsetX = (w - (landscapeIncrementYPlayer * 4))/2;
-            mOffsetX = (w - landscapeIncrementYPlayer * 5) / 2
+            mSxy = TOKENSIZE + 2 // calculated card size
             BoardLowerLimit = mOffsetY + mSxy * 5
             val playingBoardWidth = (mSxy + GRIDLINEWIDTH) * 5
             landscapeRightMoveXLimitPlayer1 = w / 2 + playingBoardWidth / 2
@@ -842,19 +840,9 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
             landscapeRightMoveXLimitPlayer2 = w - mSxy
             landscapeLeftMoveXLimitPlayer1 = mSxy * 2
             landscapeStartingXPlayer2 = w - landscapeHumanTokenSelectedOffsetX - mSxy
+            mOffsetX = (w - playingBoardWidth) / 2
             mDstRect[MARGIN, MARGIN, mSxy - MARGIN - 1] = mSxy - MARGIN - 1
             setMeasuredDimension(w, h)
-        } else if (modeH == MeasureSpec.EXACTLY) {
-            mDisplayMode = ScreenOrientation.PORTRAIT
-            mOffsetX = 0
-            mOffsetX = 0
-            mOffsetX = PORTRAITOFFSETX
-            mOffsetY = PORTRAITOFFSETY
-            d = PORTRAITWIDTHHEIGHT
-            mDstRect[MARGIN, MARGIN, mSxy - MARGIN - 1] = mSxy - MARGIN - 1
-            setMeasuredDimension(d, d)
-        } else {
-            setMeasuredDimension(d, d)
         }
         if (!INITIALIZATIONCOMPLETED) {
             initializeBallPositions()
@@ -1317,8 +1305,8 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         private const val GRIDLINEWIDTH = 4
 
         //TODO - calculate these 3 values in onMeasure
-        private var TOKENSIZE = 0 // bitmap pixel size of X or O on board
-        private var mTokenRadius = 40
+        private var TOKENSIZE = 0 // bitmap pixel size of X or O card on board
+        private var mTokenRadius = 40 // used to specify the touch points when moved by the player's finger
         private const val PORTRAITOFFSETX = 5 // X offset to board grid in portrait mode
         private const val PORTRAITOFFSETY = 5
         private const val PORTRAITWIDTHHEIGHT = 300 // portrait width and height of view square
