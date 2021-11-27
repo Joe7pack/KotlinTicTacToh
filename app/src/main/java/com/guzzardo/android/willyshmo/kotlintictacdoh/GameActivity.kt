@@ -197,12 +197,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         val usersOnlineNumber = settings.getInt("ga_users_online_number", 0)
 
         mClient = java.lang.Boolean.valueOf(intent.getStringExtra(START_CLIENT))
-        if (mClient) { // && !mClientRunning) {
+        if (mClient) {
             mPlayer1Id = intent.getIntExtra(PLAYER1_ID, 0)
-            player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID) //clientOpponentId
+            player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID)
             mClientThread = ClientThread()
             mMessageClientConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
-            //mRabbitMQClientResponse = "clientStarting" //this causes clientThread to DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER
             mMessageClientConsumer!!.setUpMessageConsumer("client", mPlayer1Id, this, resources, "GameActivityClient")
             mMessageClientConsumer!!.setOnReceiveMessageHandler(object: OnReceiveMessageHandler {
                 override fun onReceiveMessage(message: ByteArray?) {

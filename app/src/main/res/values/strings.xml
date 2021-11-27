@@ -71,7 +71,7 @@
 	<string name="player_wins" translatable="false">wins!</string>
 	<string name="player_sorry" translatable="false">Sorry,</string>
 	<string name="users_online_failure" translatable="false">Sorry, I\'m unable to retrieve Users that are currently online, please try again.</string>
-	<string name="host_connect_failure" translatable="false">Sorry, I\'m unable to connect to the Host.</string>
+	<string name="host_connect_failure" translatable="false">Sorry, I\'m unable to connect to the Host right now.</string>
 	<string name="host_connect_failure_2" translatable="false">Please try again later.</string>
 	<string name="search_players_again" translatable="false">Please press the Back button to search for other cool players!</string>
 	<string name="enter_player_name_in_settings" translatable="false">Please enter your name in the settings menu</string>
@@ -96,8 +96,10 @@
 	<string name="alert_dialog_lets_see" translatable="false">Let\'s see if</string>
 	<string name="alert_dialog_wants_to_play" translatable="false">really wants to play.</string>
 	<string name="play_again_string" translatable="false">Play Again?</string>
-	<string name="timed_out_loss" translatable="false">10 points to your opponent!</string>
-	<string name="moved_too_slow" translatable="false">Sorry, you didn\'t move quickly enough, you lose!</string>
+	<string name="timed_out_loss" translatable="false">10 points to your opponent,</string>
+	<string name="moved_too_slow" translatable="false">Sorry, you didn\'t move quickly enough, you lose...</string>
+	<string name="timed_out_win" translatable="false"> has timed out and forfeited the game</string>
+	<string name="timed_out_win_2" translatable="false">You win 10 points!</string>
 	<string name="torqued_up_really_well" translatable="false">You torqued this up really well Joe, I\'m proud of you!</string>
 	<string name="move_mode" translatable="false">Move mode</string>
 	<string name="moves_first" translatable="false">%1$s moves first?</string>
