@@ -119,6 +119,7 @@ class PlayOverNetwork: Activity(), ToastMessage {
         return AlertDialog.Builder(this@PlayOverNetwork)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setTitle(hostingDescription)
+            .setMessage(getString(R.string.host_connect_failure_2))
             .setCancelable(false)
             .setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> finish() }
             .create()

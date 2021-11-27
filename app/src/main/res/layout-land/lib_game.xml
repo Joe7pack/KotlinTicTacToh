@@ -24,7 +24,7 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="10dp"
+        android:layout_height="15dp"
         android:id="@+id/gameWaitArea"
         android:orientation="horizontal">
 
@@ -35,7 +35,7 @@
             android:layout_marginEnd="200dip"
             android:gravity="center_horizontal"
             style="?android:attr/progressBarStyleHorizontal"
-            android:layout_marginTop="0dp"
+            android:layout_marginTop="10dp"
             android:indeterminate="false"
             android:max="100"
             android:minWidth="300dp"
@@ -48,7 +48,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginBottom="0dip"
-        android:layout_weight="2" />
+        android:layout_weight="2"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -70,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="start"
                 android:padding="10dip"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"/>
 
             <EditText
                 android:id="@+id/player1_name"
@@ -83,7 +83,7 @@
                 android:text="@string/player_1"
                 android:clickable="true"
                 android:focusable="true"
-                android:textColor="#000000" />
+                android:textColor="#000000"/>
 
             <ImageView
                 android:id="@+id/player1_token"
@@ -95,7 +95,7 @@
                 android:scaleType="fitCenter"
                 tools:background="@android:color/holo_orange_dark"
                 tools:foreground="#44ff95"
-                tools:visibility="visible" />
+                tools:visibility="visible"/>
 
         </LinearLayout>
 
@@ -107,7 +107,7 @@
             android:layout_marginLeft="5dip"
             android:layout_marginRight="5dip"
             android:minEms="10"
-            android:text="@string/im_done" />
+            android:text="@string/im_done"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -126,7 +126,7 @@
                 android:scaleType="fitCenter"
                 tools:background="@android:color/holo_orange_dark"
                 tools:foreground="#44ff95"
-                tools:visibility="visible" />
+                tools:visibility="visible"/>
 
             <EditText
                 android:id="@+id/player2_name"
@@ -139,7 +139,7 @@
                 android:text="@string/player_2"
                 android:clickable="true"
                 android:focusable="true"
-                android:textColor="#000000" />
+                android:textColor="#000000"/>
 
             <TextView
                 android:id="@+id/player2_score"
@@ -147,7 +147,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:padding="10dip"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"/>
 
         </LinearLayout>
     </RelativeLayout>

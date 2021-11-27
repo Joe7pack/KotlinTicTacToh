@@ -60,6 +60,14 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private val humanWinningHashMap: MutableMap<Int, Int> = HashMap()
     private var mClientThread: ClientThread? = null
     private var mServerThread: ServerThread? = null
+    private var mMoveWaitingTimerHandlerThread: HandlerThread? = null
+    private var mMoveWaitProgressThread: MoveWaitProgressThread? = null
+    private var looperForMoveWaiting: Looper? = null
+    private var looperForMoveWaitingHandler: Handler? = null
+    private var mMoveWaitingTimerProgress: ProgressBar? = null
+    private var mMoveWaitingProgress = 100
+    private val MOVE_WAITING = 1
+    private var mWaitingForMove = false
     private var mTokensFromClient: MutableList<IntArray>? = null
     private val mRandom = Random()
     private var mMessageClientConsumer: RabbitMQMessageConsumer? = null
@@ -95,6 +103,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         mPlayer2NameTextValue = findViewById<View>(R.id.player2_name) as EditText
         mGameTokenPlayer1 = findViewById<View>(R.id.player1_token) as ImageView
         mGameTokenPlayer2 = findViewById<View>(R.id.player2_token) as ImageView
+        mMoveWaitingTimerProgress = findViewById<View>(R.id.gameWaitBar) as ProgressBar
         mGameView!!.isFocusable = true
         mGameView!!.isFocusableInTouchMode = true
         mGameView!!.setCellListener(MyCellListener())
@@ -360,6 +369,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
 
         override fun onClick(v: View) {
+            stopMoveWaitingTimerThread()
             val player = mGameView!!.currentPlayer
             val testText = mButtonNext!!.text.toString()
             val playAgainString = getString(R.string.play_again_string)
@@ -410,6 +420,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                             } else {
                                 mClientThread!!.setMessageToServer(movedMessage)
                             }
+                            stopMoveWaitingTimerThread()
                             finishTurn(false, false, false) //don't send message to make computer move don't switch the player don't use player 2 for win testing
                             val currentPlayer = mGameView!!.currentPlayer
                             highlightCurrentPlayer(getOtherPlayer(currentPlayer))
@@ -830,6 +841,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private inner class MyHandlerCallback : Handler.Callback {
         override fun handleMessage(msg: Message): Boolean {
             writeToLog("MyHandlerCallback", "msg.what value: " + msg.what)
+            if (msg.what == PLAYER_TIMED_OUT) {
+                mForfeitGameDialog = createForfeitGameDialog()
+                mForfeitGameDialog!!.show()
+            }
             if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_CLIENT) {
                 if (mHostWaitDialog != null) {
                     mHostWaitDialog!!.dismiss()
@@ -838,7 +853,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 }
                 return true
             }
-            if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER) {
+            if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER) { //This is called from the Client thread
                 val urlData = ("/gamePlayer/update/?id=$mPlayer1Id&playingNow=true&opponentId=$player2Id&userName=$mPlayer1Name")
                 val messageResponse = sendMessageToAppServer(urlData,false)
                 if (mClientWaitDialog == null) {
@@ -848,6 +863,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mClientWaitDialog!!.dismiss()
                 writeToLog("MyHandlerCallback", "client wait dialog dismissed, messageResponse: $messageResponse")
                 mClientWaitDialog = null
+                //TODO - check distanceToOpponent here client side
                 return true
             }
             if (msg.what == ACCEPT_INCOMING_GAME_REQUEST_FROM_CLIENT) {
@@ -862,7 +878,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         acceptIncomingGameRequestFromClient()
                     }
                 }
-                //TODO - Server side - Add some logic here to see how far away opponent is. If the opponent is too close, deny prize award!
                 return true
             }
 
@@ -901,6 +916,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     mGameView!!.currentPlayer = GameView.State.PLAYER1
                     highlightCurrentPlayer(GameView.State.PLAYER1)
                     mGameView!!.setViewDisabled(false)
+                    stopMoveWaitingTimerThread()
+                    startMoveWaitingTimerThread()
                 } else {
                     mGameView!!.currentPlayer = GameView.State.PLAYER1 //this value will be switched in onClick method
                     highlightCurrentPlayer(GameView.State.PLAYER2)
@@ -1389,6 +1406,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     }
 
     private fun setWinState(player: GameView.State?) {
+        stopMoveWaitingTimerThread()
         mButtonNext!!.isEnabled = true
         val text: String
         var player1Name: String = getString(R.string.player_1)
@@ -1534,7 +1552,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mHostWaitDialog!!.dismiss()
         if (mOpponentLeftGameAlert != null)
             mOpponentLeftGameAlert!!.dismiss()
-
+        stopMoveWaitingTimerThread()
         writeToLog("GameActivity", "=====================GameActivity onDestroy() all done")
     }
 
@@ -1623,10 +1641,14 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_CLIENT)
                             mHandler.sendEmptyMessage(ACCEPT_INCOMING_GAME_REQUEST_FROM_CLIENT)
                             mGameStarted = true
+                            writeToLog("ServerThread", "got a tokenList back from opponent")
                         }
                         if (mRabbitMQServerResponse!!.startsWith("moved")) {
                             parseLine(mRabbitMQServerResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_SERVER_TURN)
+                            writeToLog("ServerThread", "got a moved message back from opponent")
+                            stopMoveWaitingTimerThread()
+                            startMoveWaitingTimerThread()
                         }
                         if (mRabbitMQServerResponse!!.startsWith("leftGame")) {
                             playerNotPlaying("client", mRabbitMQServerResponse!!, 1)
@@ -1637,6 +1659,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         mRabbitMQServerResponse = null
                     }
                     if (mMessageToClient != null) {
+                        stopMoveWaitingTimerThread()
                         val messageToBeSent = mMessageToClient //circumvent sending a null message to sendMessageToRabbitMQTask
                         writeToLog("ServerThread", "Server about to respond to client: $messageToBeSent")
                         val qName = "$mQueuePrefix-client-$player2Id"
@@ -1668,17 +1691,18 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 writeToLog("ServerThread", "error in Server Thread: " + e.message)
                 sendToastMessage(e.message)
             } finally {
+                stopMoveWaitingTimerThread()
                 mServerThread!!.closeRabbitMQConnection(mServerThread!!.rabbitMQConnection)
                 writeToLog("GameActivity", "about to call serverThread DisposeRabbitMQTask()")
                 runBlocking {
-                    CoroutineScope(Dispatchers.Default).async {
+                    withContext(CoroutineScope(Dispatchers.Default).coroutineContext) {
                         val disposeRabbitMQTask = DisposeRabbitMQTask()
                         disposeRabbitMQTask.main(
                             mMessageServerConsumer,
                             resources,
                             this@GameActivity as ToastMessage
                         )
-                    }.await()
+                    }
                 }
                 isServerRunning = false
                 mServerIsPlayingNow = false
@@ -1690,6 +1714,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     }
 
     fun playerNotPlaying(clientOrServer: String, line: String, reason: Int) {
+        stopMoveWaitingTimerThread()
         val playerName: Array<String?> = line.split(",".toRegex()).toTypedArray()
         if (playerName[1] != null) {
             mNetworkOpponentPlayerName = playerName[1]
@@ -1813,10 +1838,16 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         if (mRabbitMQClientResponse!!.startsWith("moved")) {
                             parseMove(mRabbitMQClientResponse!!)
                             mHandler.sendEmptyMessage(MSG_NETWORK_CLIENT_TURN)
+                            writeToLog("ClientThread", "got a moved response from opponent")
+                            stopMoveWaitingTimerThread()
+                            startMoveWaitingTimerThread()
                         }
                         if (mRabbitMQClientResponse!!.startsWith("moveFirst")) {
                             mGameStarted = true
                             mHandler.sendEmptyMessage(MSG_NETWORK_CLIENT_MAKE_FIRST_MOVE)
+                            writeToLog("ClientThread", "got a moveFirst message from opponent")
+                            stopMoveWaitingTimerThread()
+                            startMoveWaitingTimerThread()
                         }
                         if (mRabbitMQClientResponse!!.startsWith("noPlay")) {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 0)
@@ -1835,6 +1866,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 writeToLog("ClientThread", "error in Client Thread: "+e.message)
                 sendToastMessage(e.message)
             } finally {
+                stopMoveWaitingTimerThread()
                 mClientThread!!.closeRabbitMQConnection(mClientThread!!.rabbitMQConnection)
                 writeToLog("GameActivity", " onDestroy about to call clientThread DisposeRabbitMQTask()")
                 runBlocking {
@@ -1932,13 +1964,13 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
     private fun setNetworkGameStatusAndResponse(start: Boolean, sendNoPlay: Boolean) {
         mServerHasOpponent = null
         var urlData = "/gamePlayer/update/?playingNow=true&id=$mPlayer1Id&opponentId=$player2Id"
-        if (start) {
+        if (start) { // This is set from the Server side
             mHandler.sendEmptyMessage(NEW_GAME_FROM_CLIENT)
             mServerIsPlayingNow = true
             mServerThread!!.setMessageToClient("serverAccepted")
             val messageResponse = sendMessageToAppServer(urlData, !start)
             writeToLog("GameActivity", "setNetworkGameStatusAndResponse start guy messageResponse: $messageResponse")
-            //TODO - Client side - Add some logic here to see how far away opponent is. If the opponent is too close, deny prize award!
+            //TODO - Server side - checkDistanceToOpponent
         } else {
             writeToLog("GameActivity", "setNetworkGameStatusAndResponse sendNoPlay: $sendNoPlay")
             urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
@@ -1956,6 +1988,86 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             writeToLog("GameActivity", "setNetworkGameStatusAndResponse finish guy messageResponse: $messageResponse")
             finish()
         }
+    }
+
+    private fun startMoveWaitingTimerThread() {
+        mMoveWaitingProgress = 100
+        mMoveWaitingTimerHandlerThread = HandlerThread("moveWaitingTimerHandlerThread")
+        mMoveWaitingTimerHandlerThread!!.start()
+        looperForMoveWaiting = mMoveWaitingTimerHandlerThread!!.looper
+        if (mWaitingForMove) {
+            mWaitingForMove = false
+            mMoveWaitProgressThread = null
+        }
+        mWaitingForMove = true
+        mMoveWaitProgressThread = MoveWaitProgressThread()
+        mMoveWaitProgressThread!!.start()
+        looperForMoveWaitingHandler = object : Handler(looperForMoveWaiting!!) {
+            override fun handleMessage(msg: Message) {
+                when (msg.what) {
+                    MOVE_WAITING -> { setWaitingForMoveProgressBar(mMoveWaitingProgress) }
+                    else -> { }
+                }
+            }
+        }
+    }
+
+    private fun stopMoveWaitingTimerThread() {
+        setWaitingForMoveProgressBar(0)
+        mWaitingForMove = false
+    }
+
+    private fun setWaitingForMoveProgressBar(progress: Int) {
+        mMoveWaitingTimerProgress?.setProgress(progress)
+        writeToLog("GameActivity", "Move waiting progress bar set to: $progress")
+    }
+
+    inner class MoveWaitProgressThread: Thread() { // thread is used to change the progress value
+        var timedOut = false
+        override fun run() {
+            try {
+                while (mWaitingForMove) {
+                    sleep(1000)
+                    val msg = looperForMoveWaitingHandler!!.obtainMessage(MOVE_WAITING)
+                    looperForMoveWaitingHandler!!.sendMessage(msg)
+                    if (mMoveWaitingProgress <= 0) {
+                        mWaitingForMove = false
+                        timedOut = true
+                    }
+                    mMoveWaitingProgress -= 10
+                }
+                mMoveWaitingProgress = 0
+                setWaitingForMoveProgressBar(mMoveWaitingProgress)
+            } catch (e: Exception) {
+                writeToLog("GameActivity", "setMoveWaitProgressThread exception: $e")
+            } finally {
+                if (timedOut) {
+                    mHandler.sendEmptyMessage(PLAYER_TIMED_OUT)
+                }
+                mMoveWaitingProgress = 0
+                writeToLog("GameActivity", "setMoveWaitProgressThread all done")
+            }
+        }
+    }
+
+    private fun createForfeitGameDialog(): AlertDialog {
+        writeToLog("GameActivity", "forfeitGame")
+        if (mForfeitGameDialog != null) {
+            mForfeitGameDialog!!.dismiss()
+        }
+        return AlertDialog.Builder(this@GameActivity)
+            .setTitle(getString(R.string.moved_too_slow))
+            .setPositiveButton(getString(R.string.play_again_string)) { _, _ -> timedOutLoss() }
+            .setMessage(getString(R.string.timed_out_loss) )
+            .setCancelable(false)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setNegativeButton(getString(R.string.quit_button)) { _, _ -> finish() }
+            .create()
+    }
+
+    private fun timedOutLoss() {
+        writeToLog("GameActivity", "timedOutLoss() method entered")
+        //TODO - need to figure out how to award 10 points to the opponent use mRegularWin
     }
 
     private val newNetworkGameHandler = object: Handler(Looper.getMainLooper()) {
@@ -2022,7 +2134,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 .setPositiveButton("Accept") { _, _ -> acceptMsg.sendToTarget() }
                 .setCancelable(false)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setNegativeButton("Reject") { _, _ -> rejectMsg.sendToTarget() }
+                .setNegativeButton("Reject") { _, _ -> rejectPlayRequest() }
                 .show()
         } catch (e: Exception) {
             writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception isServerRunning: $isServerRunning")
@@ -2030,6 +2142,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             writeToLog("GameActivity", "acceptIncomingGameRequestFromClient() catch exception mServerThread: $mServerThread")
             sendToastMessage(e.message)
         }
+    }
+
+    private fun rejectPlayRequest() {
+        stopMoveWaitingTimerThread()
     }
 
     private fun displayServerRefusedGameAlert(playerName: String?) {
@@ -2170,6 +2286,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private const val MSG_NETWORK_SERVER_LEFT_GAME = 11
         private const val MSG_NETWORK_CLIENT_REFUSED_GAME = 12
         private const val MSG_NETWORK_CLIENT_LEFT_GAME = 13
+        private const val PLAYER_TIMED_OUT = 14
         private const val COMPUTER_DELAY_MS: Long = 500
         private const val THREAD_SLEEP_INTERVAL = 300 //milliseconds
         private const val mRegularWin = 10
@@ -2201,6 +2318,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private var mLikeToPlayDialog: AlertDialog? = null
         private var mServerRefusedGame: AlertDialog? = null
         private var mChooseTokenDialog: AlertDialog? = null
+        private var mForfeitGameDialog: AlertDialog? = null
         private var mNetworkOpponentPlayerName: String? = null
         private var mLastCellSelected = 0
         private var mHostName: String? = null
