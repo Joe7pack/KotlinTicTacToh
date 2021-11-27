@@ -345,28 +345,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 .create()
         }
 
-        private fun sendNewGameToServer() {
-            mGameView!!.initalizeGameValues()
-            mGameView!!.currentPlayer = GameView.State.PLAYER1
-            mButtonNext!!.text = mButtonStartText
-            mButtonNext!!.isEnabled = false
-            mPlayer1TokenChoice = GameView.BoardSpaceValues.EMPTY
-            mPlayer2TokenChoice = GameView.BoardSpaceValues.EMPTY
-            showPlayerTokenChoice()
-            mGameView!!.setTokenCards() //generate new random list of tokens in mGameView.mGameTokenCard[x]
-            for (x in GameView.mGameTokenCard.indices) {
-                if (x < 8) {
-                    mGameView!!.updatePlayerToken(x, GameView.mGameTokenCard[x]) //update ball array
-                } else {
-                    mGameView!!.setBoardSpaceValueCenter(GameView.mGameTokenCard[x])
-                }
-            }
-            mGameView!!.sendTokensToServer()
-            mGameView!!.invalidate()
-            mClientWaitDialog = createClientWaitDialog()
-            mClientWaitDialog!!.show()
-        }
-
         override fun onClick(v: View) {
             stopMoveWaitingTimerThread()
             val player = mGameView!!.currentPlayer
@@ -434,6 +412,28 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 }
             }
         }
+    }
+
+    private fun sendNewGameToServer() {
+        mGameView!!.initalizeGameValues()
+        mGameView!!.currentPlayer = GameView.State.PLAYER1
+        mButtonNext!!.text = mButtonStartText
+        mButtonNext!!.isEnabled = false
+        mPlayer1TokenChoice = GameView.BoardSpaceValues.EMPTY
+        mPlayer2TokenChoice = GameView.BoardSpaceValues.EMPTY
+        showPlayerTokenChoice()
+        mGameView!!.setTokenCards() //generate new random list of tokens in mGameView.mGameTokenCard[x]
+        for (x in GameView.mGameTokenCard.indices) {
+            if (x < 8) {
+                mGameView!!.updatePlayerToken(x, GameView.mGameTokenCard[x]) //update ball array
+            } else {
+                mGameView!!.setBoardSpaceValueCenter(GameView.mGameTokenCard[x])
+            }
+        }
+        mGameView!!.sendTokensToServer()
+        mGameView!!.invalidate()
+        mClientWaitDialog = createClientWaitDialog()
+        mClientWaitDialog!!.show()
     }
 
     private fun setGameTokenFromDialog() {  // when player has chosen value for wildcard token
@@ -887,6 +887,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             if (msg.what == MSG_NETWORK_SERVER_LEFT_GAME) {
                 mOpponentLeftGameAlert = displayOpponentLeftGameAlert("server", mPlayer2Name)
+                mPlayer2Name = null
+                mGameStarted = false
+            }
+            if (msg.what == MSG_OPPONENT_TIMED_OUT) {
+                mWinByTimeoutAlert = displayWinByTimeoutAlert(mPlayer2Name)
                 mPlayer2Name = null
                 mGameStarted = false
             }
@@ -1551,6 +1556,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mHostWaitDialog!!.dismiss()
         if (mOpponentLeftGameAlert != null)
             mOpponentLeftGameAlert!!.dismiss()
+        if (mWinByTimeoutAlert != null)
+            mWinByTimeoutAlert!!.dismiss()
         stopMoveWaitingTimerThread()
         writeToLog("GameActivity", "=====================GameActivity onDestroy() all done")
     }
@@ -1712,6 +1719,13 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
     }
 
+    fun timedOutWin() { // on client side sent from server
+        writeToLog("GameActivity", "opponent has timed out and forfeited game, so I win!")
+        mPlayer1Score += mRegularWin
+        mHandler.sendEmptyMessage(MSG_OPPONENT_TIMED_OUT)
+        //displayScores() - ensure scores are updated and persisted to database
+    }
+
     fun playerNotPlaying(clientOrServer: String, line: String, reason: Int) {
         stopMoveWaitingTimerThread()
         val playerName: Array<String?> = line.split(",".toRegex()).toTypedArray()
@@ -1824,9 +1838,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         }
                         mMessageToServer = null
                     }
-                    if (mRabbitMQClientResponse == null)
-                        continue
-                    else {
+                    if (mRabbitMQClientResponse != null) {
                         writeToLog("ClientThread", "read response: $mRabbitMQClientResponse")
                         if (mClientWaitDialog != null ) {
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER)
@@ -1854,6 +1866,10 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         }
                         if (mRabbitMQClientResponse!!.startsWith("leftGame")) {
                             playerNotPlaying("server", mRabbitMQClientResponse!!, 1)
+                            mClientRunning = false
+                        }
+                        if (mRabbitMQClientResponse!!.startsWith("timedOutLoss")) {
+                            timedOutWin()
                             mClientRunning = false
                         }
                         mRabbitMQClientResponse = null
@@ -2051,22 +2067,35 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     private fun createForfeitGameDialog(): AlertDialog {
         writeToLog("GameActivity", "forfeitGame")
+        timedOutLoss()
         if (mForfeitGameDialog != null) {
             mForfeitGameDialog!!.dismiss()
         }
         return AlertDialog.Builder(this@GameActivity)
             .setTitle(getString(R.string.moved_too_slow))
-            .setPositiveButton(getString(R.string.play_again_string)) { _, _ -> timedOutLoss() }
-            .setMessage(getString(R.string.timed_out_loss) )
+            .setPositiveButton(getString(R.string.play_again_string)) { _, _ -> startTwoPlayerActivity() }
+            .setMessage(getString(R.string.timed_out_loss) + " $mPlayer2Name!")
             .setCancelable(false)
             .setIcon(R.drawable.willy_shmo_small_icon)
             .setNegativeButton(getString(R.string.quit_button)) { _, _ -> finish() }
             .create()
     }
 
+    private fun playItAgainSam() {
+        if (mServerIsPlayingNow) {
+            mHostWaitDialog = createHostWaitDialog()
+            mHostWaitDialog!!.show()
+        } else if (mClientRunning) { //reset values on client side
+            sendNewGameToServer()
+        } else {
+            finish()
+        }
+    }
+
     private fun timedOutLoss() {
         writeToLog("GameActivity", "timedOutLoss() method entered")
         //TODO - need to figure out how to award 10 points to the opponent use mRegularWin
+        mServerThread!!.setMessageToClient("timedOutLoss")
     }
 
     private val newNetworkGameHandler = object: Handler(Looper.getMainLooper()) {
@@ -2183,8 +2212,20 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
         return AlertDialog.Builder(this@GameActivity)
             .setIcon(R.drawable.willy_shmo_small_icon)
-            //.setTitle("Sorry, $playerName $clientOrServer side has left the game")
             .setTitle(getString(R.string.player_sorry) + " " + playerName + " " + clientOrServer + " " + getString(R.string.has_left_game))
+            .setPositiveButton(R.string.ok) { _, _ -> startTwoPlayerActivity() }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun displayWinByTimeoutAlert(playerName: String?): AlertDialog {
+        if (mWinByTimeoutAlert!= null) {
+            mWinByTimeoutAlert!!.dismiss()
+        }
+        return AlertDialog.Builder(this@GameActivity)
+            .setIcon(R.drawable.willy_shmo_small_icon)
+            .setTitle(playerName + " " + getString(R.string.timed_out_win))
+            .setMessage(getString(R.string.timed_out_win_2))
             .setPositiveButton(R.string.ok) { _, _ -> startTwoPlayerActivity() }
             .setCancelable(false)
             .show()
@@ -2286,6 +2327,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private const val MSG_NETWORK_CLIENT_REFUSED_GAME = 12
         private const val MSG_NETWORK_CLIENT_LEFT_GAME = 13
         private const val PLAYER_TIMED_OUT = 14
+        private const val MSG_OPPONENT_TIMED_OUT = 15
         private const val COMPUTER_DELAY_MS: Long = 500
         private const val THREAD_SLEEP_INTERVAL = 300 //milliseconds
         private const val mRegularWin = 10
@@ -2313,6 +2355,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private lateinit var resources: Resources
         private var mHostWaitDialog: AlertDialog? = null
         private var mOpponentLeftGameAlert: AlertDialog? = null
+        private var mWinByTimeoutAlert: AlertDialog? = null
         private var mClientWaitDialog: AlertDialog? = null
         private var mLikeToPlayDialog: AlertDialog? = null
         private var mServerRefusedGame: AlertDialog? = null
