@@ -23,6 +23,7 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Compa
 import kotlinx.coroutines.*
 import org.json.JSONException
 import org.json.JSONObject
+import org.json.JSONTokener
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
@@ -214,6 +215,8 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         override fun onDestroy() {
             super.onDestroy()
             writeToLog("PlayersOnlineFragment", "onDestroy called")
+            if (mTooCloseAlert != null)
+                mTooCloseAlert!!.dismiss()
         }
 
         override fun onDestroyView() {
@@ -245,6 +248,12 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 return
             }
             mAlreadySelected = true
+            val distanceToOpponent = checkDistanceToOtherPlayer(mUserIds[position], mUserNames[position])
+            if (distanceToOpponent != null && distanceToOpponent < 0.01) {
+                //showTooCloseAlert(mUserNames[position])
+                showTooCloseToastMessage(mUserNames[position])
+                return
+            }
             setUpClientAndServer(position)
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "playerList" + "-" + mUserIds[position]
             mRabbitMQConnection = setUpRabbitMQConnection(qName)
@@ -271,26 +280,61 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "onListItemClick() completed selected opponent:  $position")
         }
 
-        private fun showCancelDialog() {
-            if (mCancelDialog == null) {
-                mCancelDialog = createCancelDialog()
-                mCancelDialog!!.show()
+        private fun checkDistanceToOtherPlayer(opposingPlayerId: String?, userName:String?): Double? {
+            writeToLog("PlayersOnlineActivity", "checkDistanceToOtherPlayer userId $opposingPlayerId, userName: $userName")
+            val urlData = "/gamePlayer/getDistancBetweenPlayers/?player1=$mPlayer1Id&player2=$opposingPlayerId"
+            var messageResponse: String? = null
+
+            runBlocking {
+                val job = CoroutineScope(Dispatchers.IO).launch {
+                    messageResponse = converseWithAppServer(urlData, false)
+                    //writeToLog("GameActivity", "sendMessageToAppServer returnMessage: $returnMessage")
+                }
+                job.join()
+            }
+            writeToLog("PlayersOnlineActivity", "checkDistanceToOtherPlayer response: $messageResponse")
+            val jsonString = messageResponse.toString()
+            //{"Distance":2.4346352620588556}
+            val jsonObject = JSONTokener(jsonString).nextValue() as JSONObject
+            val distancToOpponent = jsonObject.getString("Distance")
+            writeToLog("PlayersOnlineActivity", "checkDistanceToOtherPlayer distance: $distancToOpponent")
+            return distancToOpponent.toDoubleOrNull()
+        }
+
+        private fun converseWithAppServer(urlData: String, finishActivity: Boolean): String {
+            return SendMessageToAppServer.main(
+                urlData,
+                this as ToastMessage,
+                resources,
+                finishActivity
+            )
+        }
+
+        private fun showTooCloseToastMessage(opponentName: String?) {
+            sendToastMessage(getString(R.string.too_close, opponentName))
+        }
+
+        //TODO - replace ToastMessage with this:
+        private fun showTooCloseAlert(opponentName: String?) {
+            if (mTooCloseAlert == null) {
+                mTooCloseAlert = createTooCloseAlert(opponentName)
+                mTooCloseAlert!!.show()
             } else {
-                mCancelDialog!!.show()
+                mTooCloseAlert!!.show()
             }
         }
 
-        private fun createCancelDialog(): AlertDialog {
-            if (mCancelDialog != null) {
-                mCancelDialog!!.dismiss()
+        private fun createTooCloseAlert(opponentName: String?): AlertDialog {
+            if (mTooCloseAlert != null) {
+                mTooCloseAlert!!.dismiss()
             }
-
+            getString(R.string.too_close, opponentName);
             return AlertDialog.Builder(mApplicationContext!!)
                 .setIcon(R.drawable.willy_shmo_small_icon)
-                .setTitle(getString(R.string.trouble_connecting))
+                .setTitle(getString(R.string.too_close))
                 .setMessage(getString(R.string.search_again))
                 .setCancelable(false)
-                .setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> createCancelDialog() }
+                //.setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> return }
                 .create()
         }
 
@@ -450,7 +494,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var mRabbitMQResponse: String? = null
         private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mUsersOnline: String? = null
-        private var mCancelDialog: AlertDialog? = null
+        private var mTooCloseAlert: AlertDialog? = null
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {

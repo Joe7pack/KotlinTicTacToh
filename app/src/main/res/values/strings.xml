@@ -160,5 +160,6 @@
 	<string name="buy_button">Buy app</string>
 	<string name="retry_button">Retry</string>
 	<string name="quit_button">Exit</string>
+	<string name="too_close">Sorry, you\'re too close to %1$s to win prizes</string>
 </resources>
 
