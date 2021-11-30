@@ -114,7 +114,6 @@
 	<string name="token_size_largest" translatable="false">Large</string>
 	<string name="tie" translatable="false">This is a tie! Play Again?</string>
 	<string name="playAgain" translatable="false">Play Again?</string>
-	<string name="playAgainWin" translatable="false">wins! Play Again?</string>
 	<string name="start_o" translatable="false">Start as O</string>
 	<string name="start_x" translatable="false">Start as X</string>
 	<string name="would_like_to_play" translatable="false">would like to play</string>
