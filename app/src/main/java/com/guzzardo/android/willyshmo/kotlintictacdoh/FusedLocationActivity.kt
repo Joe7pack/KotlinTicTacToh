@@ -20,8 +20,8 @@ import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import com.guzzardo.android.willyshmo.kotlintictacdoh.PermissionUtil.PermissionAskListener
 import com.guzzardo.android.willyshmo.kotlintictacdoh.PermissionUtil.checkPermission
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLatitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLongitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.willyShmoApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,7 +169,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
      * updates have already been requested.
      */
     //note - this handler method is coded right in the view xml file!
-    fun startUpdatesButtonHandler(view: View?) {
+    fun startUpdatesButtonHandler() {
         if (!mRequestingLocationUpdates!!) {
             mRequestingLocationUpdates = true
         }
@@ -177,14 +177,14 @@ class FusedLocationActivity : Activity(), ToastMessage {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private fun checkPermissions() {
-        checkPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION,
+        checkPermission(this, Manifest.permission.ACCESS_FINE_LOCATION,
             object : PermissionAskListener {
                 override fun onPermissionAsk() {
                     writeToLog("FusedLocationActivity", "onPermissionAsk() called.")
                     ActivityCompat.requestPermissions(
                         this@FusedLocationActivity,
-                        arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
                     )
                 }
 
@@ -217,11 +217,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
     // return;
     private val location: Unit
         get() {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
@@ -231,25 +227,22 @@ class FusedLocationActivity : Activity(), ToastMessage {
                 // return;
                 writeToLog("FusedLocationActivity", "Permission not granted")
             }
-            mFusedLocationClient!!.lastLocation
-                .addOnSuccessListener(this) { location -> // Got last known location. Will always be null when called from emulator.
-                    if (location != null) {
-                        myLatitude = location.latitude
-                        myLongitude = location.longitude
-                        writeToLog("FusedLocationActivity", "My latitude: $myLatitude my Longitude: $myLongitude")
-                        latitude = myLatitude
-                        longitude = myLongitude
-                        CoroutineScope( Dispatchers.Default).launch {
-                            val getPrizeListTask = GetPrizeListTask()
-                            getPrizeListTask.main(mCallerActivity, resources)
-                        }
-                    } else {
-                        val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
-                        val myIntent = Intent(willyShmoApplicationContext, MainActivity::class.java)
-                        startActivity(myIntent)
-                        finish()
+            mFusedLocationClient!!.lastLocation.addOnSuccessListener(this) { location -> // Got last known location. Will always be null when called from emulator.
+                if (location != null) {
+                    mLatitude = location.latitude
+                    mLongitude = location.longitude
+                    writeToLog("FusedLocationActivity", "My latitude: $myLatitude my Longitude: $myLongitude")
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val getPrizeListTask = GetPrizeListTask()
+                        getPrizeListTask.main(mCallerActivity, resources)
                     }
+                } else {
+                    val willyShmoApplicationContext = WillyShmoApplication.willyShmoApplicationContext
+                    val myIntent = Intent(willyShmoApplicationContext, MainActivity::class.java)
+                    startActivity(myIntent)
+                    finish()
                 }
+            }
             setStartLocationLookupCompleted()
         }
 
@@ -297,8 +290,8 @@ class FusedLocationActivity : Activity(), ToastMessage {
             writeToLog("FusedLocationActivity", "Displaying permission rationale to provide additional context.")
             showSnackbar(R.string.permission_rationale, android.R.string.ok) { // Request permission
                 ActivityCompat.requestPermissions(
-                    this@FusedLocationActivity, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION
+                    this@FusedLocationActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
                 )
             }
         } else {
@@ -308,8 +301,8 @@ class FusedLocationActivity : Activity(), ToastMessage {
             // previously and checked "Never ask again".
             ActivityCompat.requestPermissions(
                 this@FusedLocationActivity,
-                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),  //new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),  //new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
             )
         }
     }
@@ -323,7 +316,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
                 "FusedLocationActivity",
                 "at start of onRequestPermissionsResult request code = " + requestCode + ", grantResults[0] = " + grantResults[0]
             )
-            if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION) {
+            if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
                 writeToLog(
                     "FusedLocationActivity",
                     "inside onRequestPermissionsResult request code = " + requestCode + ", grantResults[0] = " + grantResults[0]
@@ -480,7 +473,7 @@ class FusedLocationActivity : Activity(), ToastMessage {
          * Code used in requesting runtime permissions.
          */
         // private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
-        private const val MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 454
+        private const val MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 454
 
         /**
          * Constant used in the location settings dialog.

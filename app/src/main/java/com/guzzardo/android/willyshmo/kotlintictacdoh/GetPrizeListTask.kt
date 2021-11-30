@@ -21,8 +21,8 @@ class GetPrizeListTask {
         mCallerActivity = callerActivity
         mResources = resources
         writeToLog("GetPrizeListTask","main() called at: " + SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
-        val longitude = WillyShmoApplication.longitude
-        val latitude = WillyShmoApplication.latitude
+        val longitude = WillyShmoApplication.mLongitude
+        val latitude = WillyShmoApplication.mLatitude
         mCallerActivity.setGettingPrizesCalled()
         val urlData = "/prize/getPrizesByDistance/?longitude=$longitude&latitude=$latitude"
         try {

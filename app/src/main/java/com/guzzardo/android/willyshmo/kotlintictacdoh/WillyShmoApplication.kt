@@ -26,8 +26,8 @@ class WillyShmoApplication : MultiDexApplication() {
         lateinit var prizeUrls: Array<String?>
         lateinit var prizeLocations: Array<String?>
         private var mConfigMap: HashMap<String?, String?>? = null
-        var longitude = 0.0
-        var latitude = 0.0
+        var mLongitude = 0.0
+        var mLatitude = 0.0
         private var mNetworkAvailable = false
         private var mPrizesAvailable = false
         var callerActivity: ToastMessage? = null

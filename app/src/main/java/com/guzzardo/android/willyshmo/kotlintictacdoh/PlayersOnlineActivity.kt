@@ -248,6 +248,12 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 return
             }
             mAlreadySelected = true
+            //TODO - to make this work, I think we need to put the Location activity in a class of its own, separate from the Splash screen logic
+            /*
+            val myIntent = Intent(mApplicationContext, FusedLocationActivity::class.java)
+            myIntent.putExtra(GameActivity.LOCATION_CALL_SOURCE, "PlayersOnlineActivity")
+            startActivity(myIntent)
+             */
             val distanceToOpponent = checkDistanceToOtherPlayer(mUserIds[position], mUserNames[position])
             if (distanceToOpponent != null && distanceToOpponent < 0.01) {
                 //showTooCloseAlert(mUserNames[position])
@@ -264,6 +270,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "============> onListItemClick called  at: $dateTime")
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
             //FIXME - see if we can replace GlobalScope with something less delicate
+            /*
             GlobalScope.launch {
                     SendMessageToRabbitMQ().main(
                         mRabbitMQConnection,
@@ -272,6 +279,18 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                         mPlayersOnlineActivity as ToastMessage,
                         mResources
                     )
+            }
+            */
+          runBlocking {
+                CoroutineScope(Dispatchers.Default).async {
+                    SendMessageToRabbitMQ().main(
+                        mRabbitMQConnection,
+                        qName,
+                        messageToOpponent,
+                        mPlayersOnlineActivity as ToastMessage,
+                        mResources
+                    )
+                }.await()
             }
             if (mRabbitMQConnection != null) {
                 closeRabbitMQConnection(mRabbitMQConnection!!)
@@ -284,11 +303,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             writeToLog("PlayersOnlineActivity", "checkDistanceToOtherPlayer userId $opposingPlayerId, userName: $userName")
             val urlData = "/gamePlayer/getDistancBetweenPlayers/?player1=$mPlayer1Id&player2=$opposingPlayerId"
             var messageResponse: String? = null
-
             runBlocking {
                 val job = CoroutineScope(Dispatchers.IO).launch {
                     messageResponse = converseWithAppServer(urlData, false)
-                    //writeToLog("GameActivity", "sendMessageToAppServer returnMessage: $returnMessage")
                 }
                 job.join()
             }

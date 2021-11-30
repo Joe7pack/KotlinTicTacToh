@@ -33,8 +33,8 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferenc
 import com.guzzardo.android.willyshmo.kotlintictacdoh.RabbitMQMessageConsumer.OnReceiveMessageHandler
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.getConfigMap
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLatitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLongitude
 import kotlinx.coroutines.*
 import kotlinx.parcelize.Parcelize
 import org.json.JSONException
@@ -230,8 +230,8 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 mHostWaitDialog!!.show()
             }
             val androidId = "&deviceId=$androidId"
-            val latitude = "&latitude=$latitude"
-            val longitude = "&longitude=$longitude"
+            val latitude = "&latitude=$mLatitude"
+            val longitude = "&longitude=$mLongitude"
             val trackingInfo = androidId + latitude + longitude
             val urlData = ("/gamePlayer/update/?onlineNow=true&playingNow=false&opponentId=0" + trackingInfo + "&id="
                 + mPlayer1Id + "&userName=" + mPlayer1Name)
@@ -2070,6 +2070,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         timedOutLoss()
         if (mForfeitGameDialog != null) {
             mForfeitGameDialog!!.dismiss()
+            mForfeitGameDialog = null
         }
         return AlertDialog.Builder(this@GameActivity)
             .setTitle(getString(R.string.moved_too_slow))
@@ -2289,6 +2290,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private var mApplicationContext: Context? = null
         private var mGameActivity: GameActivity? = null
         var errorHandler: ErrorHandler? = null
+        //TODO - I think all of these constants can be put into an interface?
         private const val packageName = "com.guzzardo.android.willyshmo.kotlintictacdoh"
         /* Start player. Must be 1 or 2. Default is 1.  */
         const val EXTRA_START_PLAYER = "$packageName.GameActivity.EXTRA_START_PLAYER"
@@ -2312,7 +2314,6 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         const val START_FROM_PLAYER_LIST = "$packageName.GameActivity.START_FROM_PLAYER_LIST"
         const val PARCELABLE_VALUES = "$packageName.GameActivity.PARCELABLE_VALUES"
         const val DISTANCE_UNIT_OF_MEASURE = "packageName.GameActivity.DISTANCE_UNIT_OF_MEASURE"
-
         private const val MSG_COMPUTER_TURN = 1
         private const val NEW_GAME_FROM_CLIENT = 2
         private const val MSG_NETWORK_CLIENT_TURN = 3

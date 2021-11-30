@@ -5,8 +5,8 @@ import android.content.Intent
 import android.content.res.Resources
 import android.util.Log
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLatitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLongitude
 import kotlinx.coroutines.*
 
 /**
@@ -45,8 +45,8 @@ class WebServerInterfaceUsersOnlineTask {
             }
             writeToLog("WebServerInterfaceUsersOnlineTask","setPlayingNow called usersOnline: $mUsersOnline")
             val androidId = "&deviceId=$androidId"
-            val latitude = "&latitude=$latitude"
-            val longitude = "&longitude=$longitude"
+            val latitude = "&latitude=$mLatitude"
+            val longitude = "&longitude=$mLongitude"
             val trackingInfo = androidId + latitude + longitude
             val urlData = "/gamePlayer/update/?id=$mPlayer1Id$trackingInfo&onlineNow=true&playingNow=false&opponentId=0&userName=$mPlayer1Name"
             sendMessageToAppServer(urlData)

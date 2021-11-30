@@ -1,7 +1,7 @@
 package com.guzzardo.android.willyshmo.kotlintictacdoh
 
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLatitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLongitude
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.willyShmoApplicationContext
 import android.app.Activity
 import android.content.Context
@@ -60,8 +60,8 @@ class SplashScreen : Activity(), ToastMessage {
         if ("true".equals(mResources?.getString(R.string.prizesAvailable), ignoreCase = true)) {
             mPrizesAvailable = true
         }
-        latitude = 0.0
-        longitude = 0.0
+        mLatitude = 0.0
+        mLongitude = 0.0
         mCallerActivity = this
         willyShmoApplicationContext = this.applicationContext
         WillyShmoApplication.prizesAreAvailable = false

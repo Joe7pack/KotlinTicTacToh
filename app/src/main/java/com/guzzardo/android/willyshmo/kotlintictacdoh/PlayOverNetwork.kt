@@ -12,8 +12,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.androidId
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.latitude
-import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.longitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLatitude
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.mLongitude
 import kotlinx.coroutines.*
 
 class PlayOverNetwork: Activity(), ToastMessage {
@@ -77,8 +77,8 @@ class PlayOverNetwork: Activity(), ToastMessage {
     private fun addMyselfToPlayerList() {
         // add a new entry to the GamePlayer table
         val androidId = "?deviceId=$androidId"
-        val latitude = "&latitude=$latitude"
-        val longitude = "&longitude=$longitude"
+        val latitude = "&latitude=$mLatitude"
+        val longitude = "&longitude=$mLongitude"
         val trackingInfo = androidId + latitude + longitude
         val url = "/gamePlayer/createAndroid/$trackingInfo&userName=$mPlayer1Name"
         CoroutineScope( Dispatchers.Default).launch {
