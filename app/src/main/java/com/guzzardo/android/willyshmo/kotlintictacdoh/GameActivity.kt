@@ -223,7 +223,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         if (mServer && !mClient) {
             mPlayer2NetworkScore = 0
             mPlayer1NetworkScore = mPlayer2NetworkScore
-            mPlayer2Name = null
+            //mPlayer2Name = null
             displayScores()
             if (usersOnlineNumber == 0) {
                 mHostWaitDialog = createHostWaitDialog()
@@ -887,17 +887,17 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             }
             if (msg.what == MSG_NETWORK_SERVER_LEFT_GAME) {
                 mOpponentLeftGameAlert = displayOpponentLeftGameAlert("server", mPlayer2Name)
-                mPlayer2Name = null
+                //mPlayer2Name = null
                 mGameStarted = false
             }
             if (msg.what == MSG_OPPONENT_TIMED_OUT) {
                 mWinByTimeoutAlert = displayWinByTimeoutAlert(mPlayer2Name)
-                mPlayer2Name = null
+                //mPlayer2Name = null
                 mGameStarted = false
             }
             if (msg.what == MSG_NETWORK_CLIENT_LEFT_GAME || msg.what == MSG_NETWORK_CLIENT_REFUSED_GAME) {
                 mOpponentLeftGameAlert = displayOpponentLeftGameAlert("client", mPlayer2Name)
-                mPlayer2Name = null
+                //mPlayer2Name = null
                 mGameStarted = false
                 mServerIsPlayingNow = false
             }
@@ -1721,7 +1721,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     fun timedOutWin() { // on client side sent from server
         writeToLog("GameActivity", "opponent has timed out and forfeited game, so I win!")
-        mPlayer1Score += mRegularWin
+        mPlayer1NetworkScore += mRegularWin
         mHandler.sendEmptyMessage(MSG_OPPONENT_TIMED_OUT)
         //displayScores() - ensure scores are updated and persisted to database
     }
@@ -1991,7 +1991,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             urlData = "/gamePlayer/update/?id=$mPlayer1Id&playingNow=false&onlineNow=false&opponentId=0"
             mPlayer2NetworkScore = 0
             mPlayer1NetworkScore = mPlayer2NetworkScore
-            mPlayer2Name = null
+            //mPlayer2Name = null
             mServerIsPlayingNow = false
             if (mServerThread != null) {
                 writeToLog("GameActivity", "setNetworkGameStatusAndResponse server thread is running")
@@ -2074,11 +2074,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
         return AlertDialog.Builder(this@GameActivity)
             .setTitle(getString(R.string.moved_too_slow))
-            .setPositiveButton(getString(R.string.play_again_string)) { _, _ -> startTwoPlayerActivity() }
+            .setPositiveButton(getString(R.string.play_again_string)) { _, _ -> finish() } //startTwoPlayerActivity() }
             .setMessage(getString(R.string.timed_out_loss) + " $mPlayer2Name!")
             .setCancelable(false)
             .setIcon(R.drawable.willy_shmo_small_icon)
-            .setNegativeButton(getString(R.string.quit_button)) { _, _ -> finish() }
+            //.setNegativeButton(getString(R.string.quit_button)) { _, _ -> finish() }
             .create()
     }
 
