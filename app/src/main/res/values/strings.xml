@@ -8,7 +8,7 @@
 	<!-- above elements need to be changed before going to production -->
 
 	<!-- increment version number to match values found in app/build.gradle -->
-	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Kotlin Version 47(1.301.47)</string>
+	<string name="about_1" translatable="false">Willy Shmo\'s Tic Tac Toe Kotlin Version 48(1.301.48)</string>
 	<string name="willy_name" translatable="false">Willy</string>
 	<string name="domainName">http://player.alterrigo.com</string>
 	<string name="start_comp" translatable="false">Start &#812;&#812; Willy goes first</string>
