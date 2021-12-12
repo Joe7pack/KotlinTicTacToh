@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.ListFragment
@@ -184,11 +185,13 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
     class PlayersOnlineFragment : ListFragment(), ToastMessage {
         private var mCurCheckPosition = 0
         private var mAlreadySelected = false
+        private var mTooCloseAlert: AlertDialog? = null
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val view: View = inflater.inflate(R.layout.player_list_content, container, false)
             val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
                 inflater.context,
+                //R.id.player_list_layout,
                 android.R.layout.simple_list_item_1,
                 mUserNames
             )
@@ -255,10 +258,13 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             startActivity(myIntent)
              */
             val distanceToOpponent = checkDistanceToOtherPlayer(mUserIds[position], mUserNames[position])
+            WillyShmoApplication.playersTooClose = false
             if (distanceToOpponent != null && distanceToOpponent < 0.01) {
-                //showTooCloseAlert(mUserNames[position])
+                WillyShmoApplication.playersTooClose = true
                 showTooCloseToastMessage(mUserNames[position])
-                return
+                //FIXME - See if one fine day we can fix this to use an Alert Dialog instead of Toast Message
+                //showTooCloseAlert(mUserNames[position])
+                //return
             }
             setUpClientAndServer(position)
             val qName = getConfigMap("RabbitMQQueuePrefix") + "-" + "playerList" + "-" + mUserIds[position]
@@ -269,19 +275,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
             writeToLog("PlayersOnlineActivity", "============> onListItemClick called  at: $dateTime")
             val messageToOpponent = "letsPlay,$mPlayer1Name,$mPlayer1Id,$rnds, $dateTime"
-            //FIXME - see if we can replace GlobalScope with something less delicate
-            /*
-            GlobalScope.launch {
-                    SendMessageToRabbitMQ().main(
-                        mRabbitMQConnection,
-                        qName,
-                        messageToOpponent,
-                        mPlayersOnlineActivity as ToastMessage,
-                        mResources
-                    )
-            }
-            */
-          runBlocking {
+            runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     SendMessageToRabbitMQ().main(
                         mRabbitMQConnection,
@@ -311,7 +305,6 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
             }
             writeToLog("PlayersOnlineActivity", "checkDistanceToOtherPlayer response: $messageResponse")
             val jsonString = messageResponse.toString()
-            //{"Distance":2.4346352620588556}
             val jsonObject = JSONTokener(jsonString).nextValue() as JSONObject
             val distancToOpponent = jsonObject.getString("Distance")
             writeToLog("PlayersOnlineActivity", "checkDistanceToOtherPlayer distance: $distancToOpponent")
@@ -346,11 +339,14 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
                 mTooCloseAlert!!.dismiss()
             }
             getString(R.string.too_close, opponentName);
-            return AlertDialog.Builder(mApplicationContext!!)
+            return AlertDialog.Builder(
+                //ContextThemeWrapper(mApplicationContext!!, android.R.style.Al Theme_ Theme_Dialog))
+                ContextThemeWrapper(mApplicationContext!!, R.style.WillyListTheme)) // AppTheme_PopupOverlay))
                 .setIcon(R.drawable.willy_shmo_small_icon)
                 .setTitle(getString(R.string.too_close))
                 .setMessage(getString(R.string.search_again))
                 .setCancelable(false)
+                //.setView(R.id.playerListView)
                 //.setNegativeButton(getString(R.string.alert_dialog_cancel)) { _, _ -> return }
                 .create()
         }
@@ -511,7 +507,7 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
         private var mRabbitMQResponse: String? = null
         private var mMessageConsumer: RabbitMQMessageConsumer? = null
         private var mUsersOnline: String? = null
-        private var mTooCloseAlert: AlertDialog? = null
+        //private var mTooCloseAlert: AlertDialog? = null
 
         private fun writeToLog(filter: String, msg: String) {
             if ("true".equals(mResources.getString(R.string.debug), ignoreCase = true)) {

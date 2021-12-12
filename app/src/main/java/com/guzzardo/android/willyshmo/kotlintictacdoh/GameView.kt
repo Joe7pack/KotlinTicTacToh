@@ -32,6 +32,7 @@ import com.guzzardo.android.willyshmo.kotlintictacdoh.GameActivity.Companion.mov
 import com.guzzardo.android.willyshmo.kotlintictacdoh.MainActivity.UserPreferences
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.isNetworkAvailable
 import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.prizesAreAvailable
+import com.guzzardo.android.willyshmo.kotlintictacdoh.WillyShmoApplication.Companion.playersTooClose
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -164,7 +165,7 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     fun setGamePrize(prize: Boolean) {
         if (prize) {
-            if (isNetworkAvailable && prizesAreAvailable) {
+            if (isNetworkAvailable && prizesAreAvailable && !playersTooClose) {
                 prizeLocation = mRandom.nextInt(BoardSpaceValues.BOARDSIZE)
                 //mPrizeLocation = 11; //set prize to a fixed location
                 mPrizeXBoardLocation = mPrizeXBoardLocationArray[prizeLocation]
@@ -286,10 +287,8 @@ class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
         if (isClientRunning) {
             sendTokensToServer()
         }
-
-        val gameStarted = GameActivity.isGameStarted
-        val player2 = GameActivity.player2Id
-        writeToLog("GameView", "Game started: $gameStarted Opposing player ID: GameActivity.player2Id: $player2")
+        writeToLog("GameView", "Game started: ${GameActivity.isGameStarted} Opposing player ID:  ${GameActivity.mPlayer2Id}, " +
+            "Opposing player Name:  ${GameActivity.mPlayer2Name}")
     }
 
     fun updatePlayerToken(id: Int, tokenType: Int) {

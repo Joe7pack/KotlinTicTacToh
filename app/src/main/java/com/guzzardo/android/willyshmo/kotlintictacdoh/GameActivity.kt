@@ -39,6 +39,7 @@ import kotlinx.coroutines.*
 import kotlinx.parcelize.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
+import org.json.JSONTokener
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -199,7 +200,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         mClient = java.lang.Boolean.valueOf(intent.getStringExtra(START_CLIENT))
         if (mClient) {
             mPlayer1Id = intent.getIntExtra(PLAYER1_ID, 0)
-            player2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID)
+            mPlayer2Id = intent.getStringExtra(START_CLIENT_OPPONENT_ID)
             mClientThread = ClientThread()
             mMessageClientConsumer = RabbitMQMessageConsumer(this@GameActivity, Companion.resources)
             mMessageClientConsumer!!.setUpMessageConsumer("client", mPlayer1Id, this, resources, "GameActivityClient")
@@ -853,7 +854,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 return true
             }
             if (msg.what == DISMISS_WAIT_FOR_NEW_GAME_FROM_SERVER) { //This is called from the Client thread
-                val urlData = ("/gamePlayer/update/?id=$mPlayer1Id&playingNow=true&opponentId=$player2Id&userName=$mPlayer1Name")
+                val urlData = ("/gamePlayer/update/?id=$mPlayer1Id&playingNow=true&opponentId=$mPlayer2Id&userName=$mPlayer1Name")
                 val messageResponse = sendMessageToAppServer(urlData,false)
                 if (mClientWaitDialog == null) {
                     sendToastMessage(getString(R.string.torqued_up_really_well))
@@ -1558,8 +1559,32 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
             mOpponentLeftGameAlert!!.dismiss()
         if (mWinByTimeoutAlert != null)
             mWinByTimeoutAlert!!.dismiss()
+        if (mForfeitGameDialog != null)
+            mForfeitGameDialog!!.dismiss()
         stopMoveWaitingTimerThread()
         writeToLog("GameActivity", "=====================GameActivity onDestroy() all done")
+    }
+
+    private fun checkDistanceToOtherPlayer() {
+        writeToLog("GameActivity", "checkDistanceToOtherPlayer userId $mPlayer2Id, userName: $mPlayer2Name")
+        val urlData = "/gamePlayer/getDistancBetweenPlayers/?player1=${mPlayer1Id}&player2=$mPlayer2Id"
+        var messageResponse: String? = null
+        runBlocking {
+            val job = CoroutineScope(Dispatchers.IO).launch {
+                messageResponse = converseWithAppServer(urlData, false)
+            }
+            job.join()
+        }
+        writeToLog("GameActivity", "checkDistanceToOtherPlayer response: $messageResponse")
+        val jsonString = messageResponse.toString()
+        val jsonObject = JSONTokener(jsonString).nextValue() as JSONObject
+        val distancToOpponent = jsonObject.getString("Distance")
+        writeToLog("GameActivity", "checkDistanceToOtherPlayer distance: $distancToOpponent")
+        val distance = distancToOpponent.toDoubleOrNull()
+        if (distance != null && distance <  0.01) { //15000.00) { for testing with emulator only since location is set to 0 longitude and 0 latitutude
+            WillyShmoApplication.playersTooClose = true
+            sendToastMessage(getString(R.string.too_close, mPlayer2Name))
+        }
     }
 
     private inner class ServerThread: Thread() {
@@ -1593,7 +1618,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         }
 
         private fun setUpRabbitMQConnection(): RabbitMQConnection {
-            val qName = "$mQueuePrefix-client-$player2Id"
+            val qName = "$mQueuePrefix-client-$mPlayer2Id"
             return runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     SetUpRabbitMQConnection().main(
@@ -1644,9 +1669,11 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         writeToLog("ServerThread", "Retrieving command: $mRabbitMQServerResponse")
                         if (mRabbitMQServerResponse!!.contains("tokenList")) {
                             getGameSetUpFromClient(mRabbitMQServerResponse!!)
+                            checkDistanceToOtherPlayer()
                             mHandler.sendEmptyMessage(DISMISS_WAIT_FOR_NEW_GAME_FROM_CLIENT)
                             mHandler.sendEmptyMessage(ACCEPT_INCOMING_GAME_REQUEST_FROM_CLIENT)
                             mGameStarted = true
+                            //TODO - let them play but turn off prizes
                             writeToLog("ServerThread", "got a tokenList back from opponent")
                         }
                         if (mRabbitMQServerResponse!!.startsWith("moved")) {
@@ -1668,7 +1695,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                         stopMoveWaitingTimerThread()
                         val messageToBeSent = mMessageToClient //circumvent sending a null message to sendMessageToRabbitMQTask
                         writeToLog("ServerThread", "Server about to respond to client: $messageToBeSent")
-                        val qName = "$mQueuePrefix-client-$player2Id"
+                        val qName = "$mQueuePrefix-client-$mPlayer2Id"
                         runBlocking {
                             CoroutineScope(Dispatchers.Default).async {
                                 SendMessageToRabbitMQ().main(
@@ -1774,7 +1801,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
         //FIXME - consolidate client side and server side methods with a single shared method
         private fun setUpRabbitMQConnection(): RabbitMQConnection {
-            val qName = "$mQueuePrefix-server-$player2Id"
+            val qName = "$mQueuePrefix-server-$mPlayer2Id"
             return runBlocking {
                 CoroutineScope(Dispatchers.Default).async {
                     SetUpRabbitMQConnection().main(
@@ -1820,7 +1847,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 while (mClientRunning) {
                     if (mMessageToServer != null) {
                         val messageToBeSent = mMessageToServer //circumvent sending a null message to sendMessageToRabbitMQTask
-                        val qName = "$mQueuePrefix-server-$player2Id"
+                        val qName = "$mQueuePrefix-server-$mPlayer2Id"
                         runBlocking {
                             CoroutineScope(Dispatchers.Default).async {
                                 SendMessageToRabbitMQ().main(
@@ -1970,7 +1997,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                 }
             }
             mPlayer2Name = jsonObject.getString("player1Name")
-            player2Id = jsonObject.getString("player1Id")
+            mPlayer2Id = jsonObject.getString("player1Id")
         } catch (e: JSONException) {
             sendToastMessage(e.message)
         }
@@ -1978,7 +2005,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
 
     private fun setNetworkGameStatusAndResponse(start: Boolean, sendNoPlay: Boolean) {
         mServerHasOpponent = null
-        var urlData = "/gamePlayer/update/?playingNow=true&id=$mPlayer1Id&opponentId=$player2Id"
+        var urlData = "/gamePlayer/update/?playingNow=true&id=$mPlayer1Id&opponentId=$mPlayer2Id"
         if (start) { // This is set from the Server side
             mHandler.sendEmptyMessage(NEW_GAME_FROM_CLIENT)
             mServerIsPlayingNow = true
@@ -2334,15 +2361,15 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         private const val mRegularWin = 10
         private const val mSuperWin = 30
         private var mPlayer1Id = 0
-        var player2Id: String? = null
+        var mPlayer2Id: String? = null
+        private var mPlayer1Name: String? = null
+        var mPlayer2Name: String? = null
         private var mGameView: GameView? = null
         private var mPlayer1Score = 0
         private var mPlayer2Score = 0
         private var mWillyScore = 0
         private var mPlayer1NetworkScore = 0
         private var mPlayer2NetworkScore = 0
-        private var mPlayer1Name: String? = null
-        private var mPlayer2Name: String? = null
         var moveModeTouch  = false //false = drag move mode; true = touch move mode
         var soundMode = false //false = no sound; true = sound
         private var HUMAN_VS_HUMAN = false
