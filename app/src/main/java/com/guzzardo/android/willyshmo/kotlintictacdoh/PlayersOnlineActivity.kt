@@ -259,7 +259,9 @@ class PlayersOnlineActivity : FragmentActivity(), ToastMessage {
              */
             val distanceToOpponent = checkDistanceToOtherPlayer(mUserIds[position], mUserNames[position])
             WillyShmoApplication.playersTooClose = false
-            if (distanceToOpponent != null && distanceToOpponent < 0.01) {
+            val minDistanceToOpponent = if (getConfigMap("MinDistanceToOpponent")?.toDoubleOrNull() == null) 0.01
+                else getConfigMap("MinDistanceToOpponent")?.toDouble()
+            if (distanceToOpponent != null && distanceToOpponent < minDistanceToOpponent!!) {
                 WillyShmoApplication.playersTooClose = true
                 showTooCloseToastMessage(mUserNames[position])
                 //FIXME - See if one fine day we can fix this to use an Alert Dialog instead of Toast Message
