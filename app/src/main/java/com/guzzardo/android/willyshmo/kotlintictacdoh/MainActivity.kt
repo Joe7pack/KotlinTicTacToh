@@ -246,6 +246,7 @@ class MainActivity : Activity(), ToastMessage {
             mStatusText!!.text = result
             mCheckLicenseButton!!.isEnabled = true
         }
+        sendToastMessage("Licensing result: $result")
     }
 
     private fun displayDialog(showRetry: Boolean) {
@@ -300,7 +301,7 @@ class MainActivity : Activity(), ToastMessage {
         private var mApplicationContext: Context? = null
         var mErrorHandler: ErrorHandler? = null
         private const val BASE64_PUBLIC_KEY =
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt6bYx4PqPNnRxsW9DuBAOarpGA6ds7v866szk3e28yIF5LjV/EValnRMLsRylX8FP+BEYeGZvB6THbiQ5Gm7H8i+S2tUv6sngc894hBWZnQKAmwrwgl0Zm+vtYo8fnI6jppIxX4A9+4TrzW+Onl4LeW3kafJ9nIa3P73xSLhtFoxbGjBlEVhUQDVkRl27RXC5LuyULWzsYaUOCI9Yyf06DeDlahl2SwkRoTyB0+LdYsmp0fmw49OsW6P4FkLKvo3UGl75EZyTm3vd8oze4NXNy9GiSxpfD12jhtToKDub/qd7EMJrFadUkuGoTg/qQtmDk4YVoWJvLb26KcUH51PdQIDAQAB"
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA99ZomXn6WBzKJixBIWw3TmV832CqBDlcP4XXtBl5LxOTYaxkwDBiNGKYhdwdjP/vOcKEQCnRQyK4FKRqCShGR2lnZ/h/O52g/P8ymCvk/c+cD7zR3utO8yoYB8Ssy7ia5DCRNghyz3t1N87AyLg8DhviEC9ubkUHq+zj0Tmgd35xE0mG2DC4I2KjOWoFH39YtCgm03THovIn6KIIj6pNYtRdQpluf7e6x3g3oOBa9XLk773QdJxORoTvY97z90uNgxDSo+r13FHqQQbK7nW9zRS663eqibsN6+rYXlF41fAyVp4vH5fGLRBrl7Nj4R+xD0hKNVKSckA2UVaf9UxHTQIDAQAB"
 
         // Generate your own 20 random bytes, and put them here.
         private val SALT = byteArrayOf(

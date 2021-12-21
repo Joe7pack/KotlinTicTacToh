@@ -209,8 +209,8 @@ class SettingsDialogs : Activity(), ToastMessage {
                         intent.putExtra(GameActivity.PLAYER1_NAME, player1Name)
                         editor.putString(GameActivity.PLAYER1_NAME, player1Name)
                         mPlayer1Name = player1Name
-                        val player1TitleAndName = getString(R.string.alert_dialog_text_entry_player1_name) + ": $mPlayer1Name"
-                        mButtonPlayer1!!.text = player1TitleAndName //"Player 1 Name: $mPlayer1Name"
+                        val player1TitleAndName = getString(R.string.alert_dialog_text_entry_player1_name) + " $mPlayer1Name"
+                        mButtonPlayer1!!.text = player1TitleAndName
                         editor.commit()
                     }
                 } else {

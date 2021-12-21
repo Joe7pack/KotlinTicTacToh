@@ -6,14 +6,14 @@
 
 
 
-	android:layout_width="fill_parent"
-	android:layout_height="fill_parent"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
 	android:gravity="start"
 	android:orientation="vertical" >
 
 	<TextView
 		android:id="@+id/textView"
-		android:layout_width="fill_parent"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:gravity="start"
 		android:shadowColor="@android:color/background_dark"
@@ -26,7 +26,7 @@
 
 	<TextView
 		android:id="@+id/waiterText"
-		android:layout_width="fill_parent"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/textView"
 

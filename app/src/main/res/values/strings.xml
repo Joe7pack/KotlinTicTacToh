@@ -160,5 +160,6 @@
 	<string name="retry_button">Retry</string>
 	<string name="quit_button">Exit</string>
 	<string name="too_close">Sorry, you\'re too close to %1$s to win prizes</string>
+	<string name="new_player_added">Great %1$s, now you can now search for and play against others</string>
 </resources>
 

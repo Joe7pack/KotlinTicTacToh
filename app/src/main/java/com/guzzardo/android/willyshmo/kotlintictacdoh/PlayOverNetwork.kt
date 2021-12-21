@@ -52,7 +52,11 @@ class PlayOverNetwork: Activity(), ToastMessage {
         if (mPlayer1Id == 0) {
             //setSharedPreferences()
             addMyselfToPlayerList()
+            //mPlayer1Id = -1 //lets see if this prevents adding a new player twice
+            //I think its a database connection problem, seems to work fine about half the time or so
             writeToLog("PlayOverNetwork", "onResume() added brand new player")
+            getString(R.string.new_player_added, mPlayer1Name);
+            sendToastMessage(getString(R.string.new_player_added))
             finish()
         } else {
             var returnMessage: String? = null
@@ -76,6 +80,7 @@ class PlayOverNetwork: Activity(), ToastMessage {
 
     private fun addMyselfToPlayerList() {
         // add a new entry to the GamePlayer table
+        writeToLog("PlayOverNetwork", "addMyselfToPlayerList() called")
         val androidId = "?deviceId=$androidId"
         val latitude = "&latitude=$mLatitude"
         val longitude = "&longitude=$mLongitude"

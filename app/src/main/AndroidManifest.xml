@@ -21,7 +21,8 @@
     android:icon="@drawable/icon"
     android:label="@string/app_name"
     android:theme="@style/Theme.AppCompat.Light"
-    android:screenOrientation="landscape" >
+    android:screenOrientation="landscape"
+    android:supportsRtl="true">
 
     <!-- android:debuggable="true" -->
     <!-- don't forget to remove this before releasing to public! -->
