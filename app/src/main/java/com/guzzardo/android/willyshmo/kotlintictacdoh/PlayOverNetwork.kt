@@ -55,8 +55,8 @@ class PlayOverNetwork: Activity(), ToastMessage {
             //mPlayer1Id = -1 //lets see if this prevents adding a new player twice
             //I think its a database connection problem, seems to work fine about half the time or so
             writeToLog("PlayOverNetwork", "onResume() added brand new player")
-            getString(R.string.new_player_added, mPlayer1Name);
-            sendToastMessage(getString(R.string.new_player_added))
+            val newPlayerMessage = getString(R.string.new_player_added, mPlayer1Name);
+            sendToastMessage(newPlayerMessage)
             finish()
         } else {
             var returnMessage: String? = null
