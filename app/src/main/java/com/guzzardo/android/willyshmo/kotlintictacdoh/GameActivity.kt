@@ -845,10 +845,12 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
         override fun handleMessage(msg: Message): Boolean {
             writeToLog("MyHandlerCallback", "msg.what value: " + msg.what)
             if (msg.what == PLAYER_TIMED_OUT_CLIENT) {
+                playSound(R.raw.timeout3)
                 mForfeitGameDialog = createForfeitGameDialog("client")
                 mForfeitGameDialog!!.show()
             }
             if (msg.what == PLAYER_TIMED_OUT_SERVER) {
+                playSound(R.raw.timeout4)
                 mForfeitGameDialog = createForfeitGameDialog("server")
                 mForfeitGameDialog!!.show()
             }
@@ -929,7 +931,7 @@ class GameActivity() : Activity(), ToastMessage, Parcelable {
                     highlightCurrentPlayer(GameView.State.PLAYER1)
                     mGameView!!.setViewDisabled(false)
                     stopMoveWaitingTimerThread()
-                    startMoveWaitingTimerThread("client")
+                    startMoveWaitingTimerThread("server")
                 } else {
                     mGameView!!.currentPlayer = GameView.State.PLAYER1 //this value will be switched in onClick method
                     highlightCurrentPlayer(GameView.State.PLAYER2)
